@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "PowerShell(npm *)",
+      "Bash(curl -s -o /dev/null -w \"login: %{http_code}\\\\n\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"root: %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"observations direct: %{http_code}\\\\n\" http://localhost:3000/observations)",
+      "Bash(certutil -hashfile \"E:\\\\MyApp\\\\assets\\\\logo-icon.png\" MD5)",
+      "Bash(grep *)",
+      "Bash(curl -s http://localhost:3000/login)",
+      "Bash(curl *)",
+      "Read(//c/Users/mouat/AppData/Local/Temp/**)",
+      "Bash(awk '{if\\($1!=\"N/A\"\\) sum+=$1; count++} END {print \"questions:\", count, \" total possible:\", sum}')",
+      "Bash(powershell -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue\")"
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Segoe UI", Tahoma, Arial, sans-serif;
+  /* Single source of truth for the app's page canvas color. Applied once
+     below on html/body, so every page inherits it automatically — no page
+     or component should ever set its own background color/hex value.
+     (The Login page is the one deliberate exception: it paints a full-screen
+     photo background of its own instead of a flat color.) */
+  --background-app: #fff4ec;
+}
+
+html,
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--background-app);
+  color: #1a1a1a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 transparent;
+}
+
+.input-field {
+  @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-brand-black placeholder:text-gray-400 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20;
+}
+
+.label-field {
+  @apply mb-1.5 block text-sm font-medium text-brand-grayDark;
+}
+
+/* Borderless, on-image field style: thin translucent border, near-transparent
+   fill, white text — used where inputs float directly over a photo with no
+   card container behind them. */
+.input-field-glass {
+  @apply w-full rounded-xl border-[1.5px] border-white/70 bg-white/10 px-4 py-2.5 text-sm text-white outline-none backdrop-blur-[2px] transition placeholder:text-white/70 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30 [text-shadow:0_1px_2px_rgb(0_0_0_/_0.45)];
+}
+
+.label-field-glass {
+  @apply mb-1.5 block text-sm font-semibold text-white [text-shadow:0_1px_3px_rgb(0_0_0_/_0.55)];
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orangeDark disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-brand-grayDark shadow-sm transition hover:bg-brand-grayLight;
+}
+
+.card {
+  @apply rounded-2xl border border-gray-100 bg-white p-6 shadow-card;
+}
