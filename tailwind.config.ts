@@ -26,14 +26,17 @@ const config: Config = {
           gray: "#7C8F85",
           // Secondary text — field labels, sub-text.
           grayDark: "#46584F",
-          // Elevated/hover surface — chip bg, hover bg, table header bg.
-          grayLight: "#E8F2ED",
+          // Elevated/hover surface — chip bg, hover bg, table header bg,
+          // nav-pill hover/badge bg in the sidebar menu.
+          grayLight: "#DCEAE3",
           // Primary text — headings/body copy.
           black: "#142620",
-          // Card/surface background.
-          surface: "#FFFFFF",
+          // Card/surface background — cards, inputs, the sidebar menu
+          // panel. A step darker than pure white so boxes read as a
+          // distinct surface against the page canvas.
+          surface: "#F3FAF7",
           // Shared border color.
-          border: "#D7E6DE",
+          border: "#C6DAD0",
           // Secondary accent (gold) — used sparingly for one
           // distinguishing highlight, never as the primary action color.
           gold: "#B8952E",

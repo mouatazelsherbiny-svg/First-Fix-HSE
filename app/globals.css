@@ -10,7 +10,7 @@
      (The Login page is the one deliberate exception: it paints a full-screen
      photo background of its own instead of a flat color.)
      Light forest theme — soft mint/sage canvas. */
-  --background-app: #F1F7F4;
+  --background-app: #E6F1EB;
 }
 
 html,
@@ -25,7 +25,7 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #C9DBD2 transparent;
+  scrollbar-color: #B9D3C6 transparent;
 }
 
 .input-field {
