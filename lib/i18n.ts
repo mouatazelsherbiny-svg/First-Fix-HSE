@@ -334,6 +334,11 @@ export interface TranslationShape {
     trendOpen: string;
     trendClosed: string;
     safetyTipTitle: string;
+    team: string;
+    totalEmployees: string;
+    recentObservations: string;
+    recentPermits: string;
+    viewAll: string;
   };
 }
 
@@ -672,6 +677,11 @@ export const translations: Record<Locale, TranslationShape> = {
       trendOpen: "Open",
       trendClosed: "Closed",
       safetyTipTitle: "Safety Tip of the Day",
+      team: "Team",
+      totalEmployees: "Total Employees",
+      recentObservations: "Recent Observations",
+      recentPermits: "Recent Permits",
+      viewAll: "View all",
     },
   },
   ar: {
@@ -1008,6 +1018,11 @@ export const translations: Record<Locale, TranslationShape> = {
       trendOpen: "مفتوح",
       trendClosed: "مغلق",
       safetyTipTitle: "نصيحة السلامة اليومية",
+      team: "الفريق",
+      totalEmployees: "إجمالي الموظفين",
+      recentObservations: "أحدث الملاحظات",
+      recentPermits: "أحدث تصاريح العمل",
+      viewAll: "عرض الكل",
     },
   },
 };

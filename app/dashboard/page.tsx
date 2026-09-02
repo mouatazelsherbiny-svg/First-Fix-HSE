@@ -11,9 +11,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SafetyTipCard from "@/components/SafetyTipCard";
-import ConstructionIllustration from "@/components/ConstructionIllustration";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
@@ -48,7 +48,7 @@ function DashboardContent() {
   const { observations } = useObservations();
   const { records: toolboxRecords } = useToolboxTalk();
   const { records: kpiRecords } = useWeeklyKpi();
-  const { disciplinaryRecords, employees } = useHsePassport();
+  const { disciplinaryRecords, employees, ppeRecords, trainingRecords } = useHsePassport();
   const { permits } = usePermits();
 
   const projectObservations = useMemo(
@@ -77,14 +77,30 @@ function DashboardContent() {
     return projectKpi[0];
   }, [kpiRecords, project]);
 
-  const projectEmployeeIds = useMemo(
-    () =>
-      new Set(
-        employees.filter((e) => e.project === project).map((e) => e.id)
-      ),
+  const projectEmployees = useMemo(
+    () => employees.filter((e) => e.project === project),
     [employees, project]
   );
+  const projectEmployeeIds = useMemo(
+    () => new Set(projectEmployees.map((e) => e.id)),
+    [projectEmployees]
+  );
+  const departmentBreakdown = useMemo(() => {
+    const counts = new Map<string, number>();
+    projectEmployees.forEach((e) => {
+      counts.set(e.department, (counts.get(e.department) ?? 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .map(([department, count]) => ({ department, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [projectEmployees]);
   const totalViolations = disciplinaryRecords.filter((r) =>
+    projectEmployeeIds.has(r.employeeId)
+  ).length;
+  const totalPpeRecords = ppeRecords.filter((r) =>
+    projectEmployeeIds.has(r.employeeId)
+  ).length;
+  const totalTrainingRecords = trainingRecords.filter((r) =>
     projectEmployeeIds.has(r.employeeId)
   ).length;
 
@@ -129,13 +145,56 @@ function DashboardContent() {
     return buckets;
   }, [projectObservations, locale]);
 
+  const recentObservations = useMemo(
+    () =>
+      projectObservations
+        .slice()
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 5),
+    [projectObservations]
+  );
+
+  const recentPermits = useMemo(
+    () =>
+      projectPermits
+        .slice()
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 5),
+    [projectPermits]
+  );
+
   return (
     <div className="xl:grid xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start xl:gap-6">
       {/* Left sidebar — hidden below xl to avoid crowding the main content */}
       <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-6">
         <SafetyTipCard />
         <div className="card">
-          <ConstructionIllustration />
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            {t.dashboard.team}
+          </h2>
+          <p className="text-3xl font-extrabold text-brand-black">
+            {projectEmployees.length}
+          </p>
+          <p className="text-xs font-medium text-brand-gray">
+            {t.dashboard.totalEmployees}
+          </p>
+          {departmentBreakdown.length > 0 && (
+            <ul className="mt-4 space-y-2 border-t border-brand-grayLight pt-3">
+              {departmentBreakdown.map((d) => (
+                <li
+                  key={d.department}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="font-medium text-brand-grayDark">
+                    {d.department}
+                  </span>
+                  <span className="text-xs font-semibold text-brand-gray">
+                    {d.count}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </aside>
 
@@ -312,10 +371,131 @@ function DashboardContent() {
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
             {t.dashboard.hsePassport}
           </h2>
-          <p className="text-3xl font-extrabold text-brand-black">{totalViolations}</p>
-          <p className="text-xs font-medium text-brand-gray">
-            {t.dashboard.totalViolations}
-          </p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-2xl font-extrabold text-brand-black">
+                {totalViolations}
+              </p>
+              <p className="text-[11px] font-medium text-brand-gray">
+                {t.dashboard.totalViolations}
+              </p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold text-brand-black">
+                {totalPpeRecords}
+              </p>
+              <p className="text-[11px] font-medium text-brand-gray">
+                {t.nav.ppe}
+              </p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold text-brand-black">
+                {totalTrainingRecords}
+              </p>
+              <p className="text-[11px] font-medium text-brand-gray">
+                {t.nav.training}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent activity */}
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <div className="card">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+              {t.dashboard.recentObservations}
+            </h2>
+            <Link
+              href="/observations"
+              className="text-xs font-semibold text-brand-orange hover:underline"
+            >
+              {t.dashboard.viewAll}
+            </Link>
+          </div>
+          {recentObservations.length > 0 ? (
+            <ul className="divide-y divide-brand-grayLight">
+              {recentObservations.map((o) => (
+                <li key={o.id} className="py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={`/observations/${o.id}`}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-brand-black">
+                        #{o.reportNumber} · {o.observationType}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-brand-gray">
+                        {o.classification} ·{" "}
+                        {new Date(o.createdAt).toLocaleDateString(
+                          locale === "ar" ? "ar-EG" : "en-US",
+                          { month: "short", day: "numeric" }
+                        )}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
+                        o.status
+                      )}`}
+                    >
+                      {o.status}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyNote text={t.dashboard.noDataYet} />
+          )}
+        </div>
+
+        <div className="card">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+              {t.dashboard.recentPermits}
+            </h2>
+            <Link
+              href="/permit-to-work"
+              className="text-xs font-semibold text-brand-orange hover:underline"
+            >
+              {t.dashboard.viewAll}
+            </Link>
+          </div>
+          {recentPermits.length > 0 ? (
+            <ul className="divide-y divide-brand-grayLight">
+              {recentPermits.map((p) => (
+                <li key={p.id} className="py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={`/permit-to-work/${p.id}`}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-brand-black">
+                        #{p.permitNumber} · {p.permitType}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-brand-gray">
+                        {p.workLocation} ·{" "}
+                        {new Date(p.createdAt).toLocaleDateString(
+                          locale === "ar" ? "ar-EG" : "en-US",
+                          { month: "short", day: "numeric" }
+                        )}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
+                        p.status
+                      )}`}
+                    >
+                      {p.status}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyNote text={t.dashboard.noDataYet} />
+          )}
         </div>
       </div>
 
