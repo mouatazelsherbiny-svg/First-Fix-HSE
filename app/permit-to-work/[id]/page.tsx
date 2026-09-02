@@ -12,6 +12,7 @@ import { usePermits } from "@/context/PermitContext";
 import { PERMIT_STATUSES } from "@/lib/mockData";
 import { PermitStatus } from "@/types/permit";
 import { getPermitProgress } from "@/lib/permitProgress";
+import PermitQrCode from "@/components/PermitQrCode";
 
 export default function PermitDetailPage() {
   return (
@@ -36,12 +37,21 @@ function PermitDetail() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [isClosing, setIsClosing] = useState(false);
+  const [permitUrl, setPermitUrl] = useState("");
 
   useEffect(() => {
     if (permit) {
       setStatus(permit.status);
       setCloseOutDetails(permit.closeOutDetails);
       setCloseOutPhotos(permit.closeOutPhotos);
+    }
+  }, [permit]);
+
+  // Computed after mount only (window is unavailable during server
+  // rendering) so the QR always encodes this permit's real, current URL.
+  useEffect(() => {
+    if (permit && typeof window !== "undefined") {
+      setPermitUrl(`${window.location.origin}/permit-to-work/${permit.id}`);
     }
   }, [permit]);
 
@@ -259,6 +269,12 @@ function PermitDetail() {
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {permitUrl && (
+          <div className="max-w-xs">
+            <PermitQrCode label={t.ptw.qrCode} hint={t.ptw.qrCodeHint} value={permitUrl} />
           </div>
         )}
       </div>

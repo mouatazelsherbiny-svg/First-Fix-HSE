@@ -307,6 +307,8 @@ export interface TranslationShape {
     receiverSignature: string;
     signatureClear: string;
     signatureRequired: string;
+    qrCode: string;
+    qrCodeHint: string;
     submit: string;
     cancel: string;
     success: string;
@@ -693,6 +695,8 @@ export const translations: Record<Locale, TranslationShape> = {
       receiverSignature: "Receiver Signature",
       signatureClear: "Clear",
       signatureRequired: "Please provide both the Issuer and Receiver signatures before submitting.",
+      qrCode: "Permit QR Code",
+      qrCodeHint: "Scan to view this permit's details",
       submit: "Submit Permit",
       cancel: "Cancel",
       success: "Permit to Work submitted successfully!",
@@ -1077,6 +1081,8 @@ export const translations: Record<Locale, TranslationShape> = {
       receiverSignature: "توقيع المستلم",
       signatureClear: "مسح",
       signatureRequired: "من فضلك وقّع كل من المُصدر والمستلم قبل الإرسال.",
+      qrCode: "رمز QR الخاص بالتصريح",
+      qrCodeHint: "امسح الرمز لعرض بيانات هذا التصريح",
       submit: "إرسال التصريح",
       cancel: "إلغاء",
       success: "تم إرسال تصريح العمل بنجاح!",
