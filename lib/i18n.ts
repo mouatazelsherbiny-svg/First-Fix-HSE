@@ -117,6 +117,17 @@ export interface TranslationShape {
     totalScored: string;
     finalScore: string;
     grandTotal: string;
+    submit: string;
+    submitting: string;
+    submitted: string;
+    success: string;
+    selectProjectAndDate: string;
+  };
+  checklistNames: {
+    environmental: string;
+    fireAssessment: string;
+    safetyHealth: string;
+    tcEnergization: string;
   };
   toolbox: {
     formTitle: string;
@@ -322,6 +333,7 @@ export interface TranslationShape {
     latestRecordFrom: string;
     ficc: string;
     monthlyChecklists: string;
+    submittedOn: string;
     hsePassport: string;
     totalViolations: string;
     permitToWork: string;
@@ -460,6 +472,17 @@ export const translations: Record<Locale, TranslationShape> = {
       totalScored: "Total Points Scored",
       finalScore: "Final Score %",
       grandTotal: "FINAL AVERAGE SCORE",
+      submit: "Submit Checklist",
+      submitting: "Submitting...",
+      submitted: "Submitted",
+      success: "Checklist submitted successfully!",
+      selectProjectAndDate: "Please select a project and an inspection date before submitting.",
+    },
+    checklistNames: {
+      environmental: "Environmental Checklist",
+      fireAssessment: "Fire Assessment Checklist",
+      safetyHealth: "Health & Safety Checklist",
+      tcEnergization: "T&C / Energization Checklist",
     },
     toolbox: {
       formTitle: "Toolbox Talk & Training",
@@ -665,6 +688,7 @@ export const translations: Record<Locale, TranslationShape> = {
       latestRecordFrom: "Latest record from",
       ficc: "FICC",
       monthlyChecklists: "Monthly Checklists",
+      submittedOn: "Submitted",
       hsePassport: "HSE Passport",
       totalViolations: "Total Violations (Disciplinary)",
       permitToWork: "Permit to Work",
@@ -801,6 +825,17 @@ export const translations: Record<Locale, TranslationShape> = {
       totalScored: "إجمالي النقاط المحققة",
       finalScore: "النتيجة النهائية %",
       grandTotal: "المتوسط النهائي للنتيجة",
+      submit: "إرسال القائمة",
+      submitting: "جارٍ الإرسال...",
+      submitted: "تم الإرسال",
+      success: "تم إرسال القائمة بنجاح!",
+      selectProjectAndDate: "من فضلك اختر المشروع وتاريخ الفحص قبل الإرسال.",
+    },
+    checklistNames: {
+      environmental: "القائمة البيئية",
+      fireAssessment: "قائمة تقييم الحريق",
+      safetyHealth: "قائمة الصحة والسلامة",
+      tcEnergization: "قائمة الفحص والتشغيل الكهربائي",
     },
     toolbox: {
       formTitle: "التدريب والتوعية اليومية",
@@ -1006,6 +1041,7 @@ export const translations: Record<Locale, TranslationShape> = {
       latestRecordFrom: "آخر سجل بتاريخ",
       ficc: "FICC",
       monthlyChecklists: "القوائم الشهرية",
+      submittedOn: "تم الإرسال",
       hsePassport: "جواز السلامة",
       totalViolations: "إجمالي المخالفات (تأديبي)",
       permitToWork: "تصريح العمل",

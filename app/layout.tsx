@@ -7,6 +7,7 @@ import { ToolboxTalkProvider } from "@/context/ToolboxTalkContext";
 import { HsePassportProvider } from "@/context/HsePassportContext";
 import { WeeklyKpiProvider } from "@/context/WeeklyKpiContext";
 import { PermitProvider } from "@/context/PermitContext";
+import { ChecklistSubmissionProvider } from "@/context/ChecklistSubmissionContext";
 
 export const metadata: Metadata = {
   title: "First Fix HSE",
@@ -30,7 +31,9 @@ export default function RootLayout({
               <ToolboxTalkProvider>
                 <HsePassportProvider>
                   <WeeklyKpiProvider>
-                    <PermitProvider>{children}</PermitProvider>
+                    <PermitProvider>
+                      <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
+                    </PermitProvider>
                   </WeeklyKpiProvider>
                 </HsePassportProvider>
               </ToolboxTalkProvider>

@@ -20,6 +20,7 @@ import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { usePermits } from "@/context/PermitContext";
+import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { useAuth } from "@/context/AuthContext";
 import { getStatusColorClasses } from "@/lib/statusColors";
 
@@ -50,11 +51,22 @@ function DashboardContent() {
   const { records: kpiRecords } = useWeeklyKpi();
   const { disciplinaryRecords, employees, ppeRecords, trainingRecords } = useHsePassport();
   const { permits } = usePermits();
+  const { submissions: checklistSubmissions } = useChecklistSubmissions();
 
   const projectObservations = useMemo(
     () => observations.filter((o) => o.projectName === project),
     [observations, project]
   );
+
+  const latestChecklistSubmissions = useMemo(() => {
+    const map: Record<string, string> = {};
+    checklistSubmissions
+      .filter((s) => s.projectName === project)
+      .forEach((s) => {
+        if (!map[s.templateKey]) map[s.templateKey] = s.inspectionDate || s.createdAt;
+      });
+    return map;
+  }, [checklistSubmissions, project]);
   const openCount = projectObservations.filter((o) => o.status === "Open").length;
   const closedCount = projectObservations.filter((o) => o.status === "Closed").length;
 
@@ -308,20 +320,36 @@ function DashboardContent() {
           <EmptyNote text={t.dashboard.noDataYet} />
         </div>
 
-        {/* Monthly Checklists — checklists don't persist a submitted score yet */}
+        {/* Monthly Checklists */}
         <div className="card">
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
             {t.dashboard.monthlyChecklists}
           </h2>
           <ul className="space-y-2">
-            {CHECKLIST_PAGES.map((c) => (
-              <li key={c.key} className="flex items-center justify-between text-sm">
-                <span className="font-medium text-brand-grayDark">{c.key}</span>
-                <span className="text-xs font-semibold text-brand-gray">
-                  {t.dashboard.notSubmittedYet}
-                </span>
-              </li>
-            ))}
+            {CHECKLIST_PAGES.map((c) => {
+              const submittedOn = latestChecklistSubmissions[c.key];
+              return (
+                <li key={c.key}>
+                  <Link
+                    href={c.href}
+                    className="flex items-center justify-between text-sm transition hover:text-brand-orange"
+                  >
+                    <span className="font-medium text-brand-grayDark">
+                      {t.checklistNames[c.key as keyof typeof t.checklistNames]}
+                    </span>
+                    {submittedOn ? (
+                      <span className="text-xs font-semibold text-green-600">
+                        {t.dashboard.submittedOn} {submittedOn}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-brand-gray">
+                        {t.dashboard.notSubmittedYet}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
 

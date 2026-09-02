@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { PROJECTS } from "@/lib/mockData";
 import {
   ChecklistTemplate as ChecklistTemplateData,
@@ -32,8 +33,13 @@ export default function ChecklistTemplate({
 }) {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { addSubmission } = useChecklistSubmissions();
 
   const inspectedBy = user ? `${user.name} (${user.employeeCode})` : "";
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const [general, setGeneral] = useState<GeneralInfo>({
     inspectionDate: "",
@@ -77,6 +83,44 @@ export default function ChecklistTemplate({
   const grandScored = sectionStats.reduce((a, s) => a + s.scored, 0);
   const grandPct =
     grandPossible > 0 ? Math.round((grandScored / grandPossible) * 100) : 0;
+
+  const handleSubmit = async () => {
+    setSubmitError("");
+
+    if (!general.projectName || !general.inspectionDate) {
+      setSubmitError(t.checklist.selectProjectAndDate);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await addSubmission({
+        templateKey: template.key,
+        projectName: general.projectName,
+        inspectionDate: general.inspectionDate,
+        projectDirector: general.projectDirector,
+        totalManpower: Number(general.totalManpower) || 0,
+        activity: general.activity,
+        sectionStats: sectionStats.map(({ section, possible, scored, pct }) => ({
+          id: section.id,
+          title: section.title,
+          possible,
+          scored,
+          pct,
+        })),
+        possibleMap,
+        scoredMap,
+        grandPossible,
+        grandScored,
+        grandPct,
+      });
+      setSubmitSuccess(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : t.common.genericError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div>
@@ -348,6 +392,34 @@ export default function ChecklistTemplate({
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Submit */}
+      <div className="mt-6">
+        {submitError && (
+          <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {submitError}
+          </div>
+        )}
+        {submitSuccess && (
+          <div className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            {t.checklist.success}
+          </div>
+        )}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || submitSuccess}
+            className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting
+              ? t.checklist.submitting
+              : submitSuccess
+              ? t.checklist.submitted
+              : t.checklist.submit}
+          </button>
         </div>
       </div>
     </div>
