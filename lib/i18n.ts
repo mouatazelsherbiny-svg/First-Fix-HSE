@@ -275,6 +275,11 @@ export interface TranslationShape {
     workLocationPlaceholder: string;
     contractor: string;
     contractorPlaceholder: string;
+    contractorFirstFix: string;
+    contractorSubcontractor: string;
+    subcontractorNamePlaceholder: string;
+    contractorTypeRequired: string;
+    subcontractorNameRequired: string;
     numberOfWorkers: string;
     workDescription: string;
     workDescriptionPlaceholder: string;
@@ -656,6 +661,11 @@ export const translations: Record<Locale, TranslationShape> = {
       workLocationPlaceholder: "e.g. Level 3, East Wing",
       contractor: "Contractor / Company",
       contractorPlaceholder: "e.g. First Fix Contracting",
+      contractorFirstFix: "First Fix",
+      contractorSubcontractor: "Subcontractor",
+      subcontractorNamePlaceholder: "Enter the subcontractor's company name",
+      contractorTypeRequired: "Please select First Fix or Subcontractor.",
+      subcontractorNameRequired: "Please enter the subcontractor's name.",
       numberOfWorkers: "Number of Workers",
       workDescription: "Description of Work",
       workDescriptionPlaceholder: "Describe the work to be carried out...",
@@ -1035,6 +1045,11 @@ export const translations: Record<Locale, TranslationShape> = {
       workLocationPlaceholder: "مثال: الدور الثالث، الجناح الشرقي",
       contractor: "المقاول / الشركة",
       contractorPlaceholder: "مثال: فيرست فيكس للمقاولات",
+      contractorFirstFix: "فيرست فيكس",
+      contractorSubcontractor: "مقاول من الباطن",
+      subcontractorNamePlaceholder: "اكتب اسم شركة المقاول من الباطن",
+      contractorTypeRequired: "من فضلك اختر فيرست فيكس أو مقاول من الباطن.",
+      subcontractorNameRequired: "من فضلك اكتب اسم المقاول من الباطن.",
       numberOfWorkers: "عدد العمال",
       workDescription: "وصف العمل",
       workDescriptionPlaceholder: "اكتب وصفًا للعمل المطلوب تنفيذه...",

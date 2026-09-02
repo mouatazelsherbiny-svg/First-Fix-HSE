@@ -46,7 +46,8 @@ function NewPermitForm() {
   const [permitType, setPermitType] = useState("");
   const [permitTypeOther, setPermitTypeOther] = useState("");
   const [workLocation, setWorkLocation] = useState("");
-  const [contractor, setContractor] = useState("");
+  const [contractorType, setContractorType] = useState<"First Fix" | "Subcontractor" | "">("");
+  const [subcontractorName, setSubcontractorName] = useState("");
   const [numberOfWorkers, setNumberOfWorkers] = useState("");
   const [workDescription, setWorkDescription] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -83,10 +84,24 @@ function NewPermitForm() {
     e.preventDefault();
     setError("");
 
+    if (!contractorType) {
+      setError(t.ptw.contractorTypeRequired);
+      return;
+    }
+    if (contractorType === "Subcontractor" && !subcontractorName.trim()) {
+      setError(t.ptw.subcontractorNameRequired);
+      return;
+    }
     if (!issuerSignature || !receiverSignature) {
       setError(t.ptw.signatureRequired);
       return;
     }
+
+    // Store the canonical English value regardless of UI language, same as
+    // every other semantic value in this app (statuses, hazard names, etc.)
+    // — only the button *label* is translated.
+    const contractor =
+      contractorType === "First Fix" ? "First Fix" : subcontractorName.trim();
 
     try {
       await addPermit({
@@ -127,7 +142,7 @@ function NewPermitForm() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-brand-black">{t.ptw.formTitle}</h1>
         <p className="mt-1 text-sm text-brand-gray">{t.ptw.formSubtitle}</p>
@@ -145,7 +160,7 @@ function NewPermitForm() {
       )}
 
       <form onSubmit={handleSubmit} className="card space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="label-field">{t.ptw.permitNumber}</label>
             <input
@@ -165,50 +180,6 @@ function NewPermitForm() {
               readOnly
               disabled
               className="input-field bg-brand-grayLight text-brand-gray"
-            />
-          </div>
-
-          <div>
-            <label className="label-field">{t.ptw.receiver}</label>
-            <input
-              type="text"
-              value={receiver}
-              onChange={(e) => setReceiver(e.target.value)}
-              placeholder={t.ptw.receiverPlaceholder}
-              className="input-field"
-            />
-          </div>
-
-          <div>
-            <label className="label-field">{t.ptw.hseValidator}</label>
-            <input
-              type="text"
-              value={hseValidator}
-              onChange={(e) => setHseValidator(e.target.value)}
-              placeholder={t.ptw.hseValidatorPlaceholder}
-              className="input-field"
-            />
-          </div>
-
-          <div>
-            <label className="label-field">{t.ptw.supervisorForeman}</label>
-            <input
-              type="text"
-              value={supervisorForeman}
-              onChange={(e) => setSupervisorForeman(e.target.value)}
-              placeholder={t.ptw.supervisorForemanPlaceholder}
-              className="input-field"
-            />
-          </div>
-
-          <div>
-            <label className="label-field">{t.ptw.emergencyContactNumber}</label>
-            <input
-              type="tel"
-              value={emergencyContactNumber}
-              onChange={(e) => setEmergencyContactNumber(e.target.value)}
-              placeholder={t.ptw.emergencyContactNumberPlaceholder}
-              className="input-field"
             />
           </div>
 
@@ -251,7 +222,7 @@ function NewPermitForm() {
           </div>
 
           {isOther && (
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-1">
               <label className="label-field">{t.ptw.permitTypeOther} *</label>
               <input
                 type="text"
@@ -278,12 +249,82 @@ function NewPermitForm() {
 
           <div>
             <label className="label-field">{t.ptw.contractor} *</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setContractorType("First Fix")}
+                className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                  contractorType === "First Fix"
+                    ? "bg-brand-orange text-brand-onAccent"
+                    : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                }`}
+              >
+                {t.ptw.contractorFirstFix}
+              </button>
+              <button
+                type="button"
+                onClick={() => setContractorType("Subcontractor")}
+                className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                  contractorType === "Subcontractor"
+                    ? "bg-brand-orange text-brand-onAccent"
+                    : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                }`}
+              >
+                {t.ptw.contractorSubcontractor}
+              </button>
+            </div>
+            {contractorType === "Subcontractor" && (
+              <input
+                type="text"
+                required
+                value={subcontractorName}
+                onChange={(e) => setSubcontractorName(e.target.value)}
+                placeholder={t.ptw.subcontractorNamePlaceholder}
+                className="input-field mt-3"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.receiver}</label>
             <input
               type="text"
-              required
-              value={contractor}
-              onChange={(e) => setContractor(e.target.value)}
-              placeholder={t.ptw.contractorPlaceholder}
+              value={receiver}
+              onChange={(e) => setReceiver(e.target.value)}
+              placeholder={t.ptw.receiverPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.hseValidator}</label>
+            <input
+              type="text"
+              value={hseValidator}
+              onChange={(e) => setHseValidator(e.target.value)}
+              placeholder={t.ptw.hseValidatorPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.supervisorForeman}</label>
+            <input
+              type="text"
+              value={supervisorForeman}
+              onChange={(e) => setSupervisorForeman(e.target.value)}
+              placeholder={t.ptw.supervisorForemanPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.emergencyContactNumber}</label>
+            <input
+              type="tel"
+              value={emergencyContactNumber}
+              onChange={(e) => setEmergencyContactNumber(e.target.value)}
+              placeholder={t.ptw.emergencyContactNumberPlaceholder}
               className="input-field"
             />
           </div>
@@ -374,7 +415,7 @@ function NewPermitForm() {
 
         <div>
           <label className="label-field">{t.ptw.hazardsIdentified}</label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {HAZARD_CATEGORIES.map((h) => (
               <label
                 key={h}
@@ -437,7 +478,7 @@ function NewPermitForm() {
 
         <div>
           <label className="label-field">{t.ptw.ppeRequired}</label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {PPE_FOR_PERMIT.map((p) => (
               <label
                 key={p}

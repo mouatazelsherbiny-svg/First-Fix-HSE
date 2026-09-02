@@ -95,7 +95,7 @@ function PermitDetail() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <Link
         href="/permit-to-work"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"
@@ -143,7 +143,7 @@ function PermitDetail() {
       )}
 
       <div className="card mb-5 space-y-4">
-        <dl className="grid gap-4 sm:grid-cols-2">
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label={t.ptw.projectName} value={permit.projectName} />
           <Field label={t.ptw.workLocation} value={permit.workLocation} />
           <Field label={t.ptw.contractor} value={permit.contractor} />
