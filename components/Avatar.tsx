@@ -33,7 +33,7 @@ export default function Avatar({
     <div
       style={style}
       title={name}
-      className={`flex shrink-0 items-center justify-center rounded-full bg-brand-orange font-bold text-white ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-brand-orange font-bold text-brand-onAccent ${className}`}
     >
       <span style={{ fontSize: size * 0.42 }}>{initial}</span>
     </div>

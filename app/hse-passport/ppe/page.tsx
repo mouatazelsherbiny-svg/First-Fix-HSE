@@ -70,7 +70,7 @@ function PpeContent() {
           <div className="card overflow-x-auto !p-0">
             <table className="w-full min-w-[820px] text-start text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.description}</th>
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.received}</th>
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.dateReceived}</th>
@@ -83,7 +83,7 @@ function PpeContent() {
                 {PPE_TYPES.map((tp) => {
                   const r = latestByType.get(tp);
                   return (
-                    <tr key={tp} className="border-b border-gray-50 last:border-0">
+                    <tr key={tp} className="border-b border-brand-border last:border-0">
                       <td className="px-4 py-3 sm:px-6">
                         <div className="flex items-center gap-2.5">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orangeLight text-brand-orange">
@@ -97,7 +97,7 @@ function PpeContent() {
                           type="checkbox"
                           checked={!!r?.received}
                           disabled
-                          className="h-4 w-4 rounded border-gray-300 text-brand-orange"
+                          className="h-4 w-4 rounded border-brand-border text-brand-orange"
                         />
                       </td>
                       <td className="px-4 py-3 text-brand-grayDark sm:px-6">
@@ -262,7 +262,7 @@ function AddPpeForm({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-start text-sm">
           <thead>
-            <tr className="border-b border-gray-100 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+            <tr className="border-b border-brand-border text-xs font-semibold uppercase tracking-wide text-brand-gray">
               <th className="px-2 py-2 text-start">{t.hse.ppe.description}</th>
               <th className="px-2 py-2 text-start">{t.hse.ppe.received}</th>
               <th className="px-2 py-2 text-start">{t.hse.ppe.dateReceived}</th>
@@ -275,7 +275,7 @@ function AddPpeForm({
             {PPE_TYPES.map((tp) => {
               const row = rows[tp];
               return (
-                <tr key={tp} className="border-b border-gray-50 last:border-0">
+                <tr key={tp} className="border-b border-brand-border last:border-0">
                   <td className="px-2 py-2.5">
                     <div className="flex items-center gap-2">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orangeLight text-brand-orange">
@@ -289,7 +289,7 @@ function AddPpeForm({
                       type="checkbox"
                       checked={row.received}
                       onChange={(e) => updateRow(tp, { received: e.target.checked })}
-                      className="h-4 w-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange/40"
+                      className="h-4 w-4 rounded border-brand-border text-brand-orange focus:ring-brand-orange/40"
                     />
                   </td>
                   <td className="px-2 py-2.5">
@@ -346,7 +346,7 @@ function AddPpeForm({
         onChange={setAttachments}
       />
 
-      <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+      <div className="flex justify-end gap-3 border-t border-brand-border pt-4">
         <button type="button" onClick={onDone} className="btn-secondary">
           {t.hse.cancel}
         </button>

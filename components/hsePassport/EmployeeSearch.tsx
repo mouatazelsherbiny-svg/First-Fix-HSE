@@ -73,7 +73,7 @@ export default function EmployeeSearch({
       />
 
       {query.trim() && (
-        <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-gray-100">
+        <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-brand-border">
           {matches.length === 0 ? (
             <p className="px-4 py-3 text-sm text-brand-gray">{t.hse.noMatches}</p>
           ) : (
@@ -85,7 +85,7 @@ export default function EmployeeSearch({
                   onSelect(e);
                   setQuery("");
                 }}
-                className="flex w-full items-center justify-between gap-3 border-b border-gray-50 px-4 py-3 text-start transition last:border-0 hover:bg-brand-grayLight/50"
+                className="flex w-full items-center justify-between gap-3 border-b border-brand-border px-4 py-3 text-start transition last:border-0 hover:bg-brand-grayLight/50"
               >
                 <span>
                   <span className="block text-sm font-semibold text-brand-black">

@@ -69,7 +69,7 @@ function ToolboxTalkList() {
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[720px] text-start text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.toolbox.col.date}</th>
                 <th className="px-4 py-3 text-start">{t.toolbox.col.project}</th>
                 <th className="px-4 py-3 text-start">{t.toolbox.col.topic}</th>
@@ -82,7 +82,7 @@ function ToolboxTalkList() {
               {filtered.map((r) => (
                 <tr
                   key={r.id}
-                  className="border-b border-gray-50 transition last:border-0 hover:bg-brand-grayLight/30"
+                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
                 >
                   <td className="px-4 py-3 text-brand-grayDark">
                     {r.date

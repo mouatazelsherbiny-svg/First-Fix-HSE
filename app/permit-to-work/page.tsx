@@ -69,7 +69,7 @@ function PermitList() {
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[860px] text-start text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.ptw.col.permitNumber}</th>
                 <th className="px-4 py-3 text-start">{t.ptw.col.project}</th>
                 <th className="px-4 py-3 text-start">{t.ptw.col.type}</th>
@@ -83,7 +83,7 @@ function PermitList() {
               {filtered.map((p) => (
                 <tr
                   key={p.id}
-                  className="border-b border-gray-50 transition last:border-0 hover:bg-brand-grayLight/30"
+                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
                 >
                   <td className="px-4 py-3 font-semibold text-brand-black">
                     #{p.permitNumber}

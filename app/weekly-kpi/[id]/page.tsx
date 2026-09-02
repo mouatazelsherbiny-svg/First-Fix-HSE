@@ -154,7 +154,7 @@ function WeeklyKpiDetail() {
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+        <div className="flex items-center justify-end gap-3 border-t border-brand-border pt-5">
           <button type="submit" className="btn-primary">
             {t.weeklyKpi.save}
           </button>

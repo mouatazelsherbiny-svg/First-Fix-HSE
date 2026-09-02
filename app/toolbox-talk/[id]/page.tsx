@@ -102,7 +102,7 @@ function ToolboxTalkDetail() {
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2"
+                    className="flex items-center gap-2 rounded-lg border border-brand-border bg-brand-surface p-2"
                   >
                     {isImage ? (
                       // eslint-disable-next-line @next/next/no-img-element

@@ -173,7 +173,7 @@ export default function ChecklistTemplate({
         {sectionStats.map(({ section, possible, scored }) => (
           <div
             key={section.id}
-            className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card"
+            className="overflow-hidden rounded-2xl border border-brand-border bg-brand-surface shadow-card"
           >
             <div className="bg-black px-4 py-3 sm:px-6">
               <h3 className="text-sm font-bold text-white sm:text-base">
@@ -196,7 +196,7 @@ export default function ChecklistTemplate({
               </h3>
             </div>
 
-            <div className="hidden items-center gap-4 border-b border-gray-100 px-6 pt-4 text-end text-[11px] font-semibold uppercase tracking-wide text-brand-gray sm:flex">
+            <div className="hidden items-center gap-4 border-b border-brand-border px-6 pt-4 text-end text-[11px] font-semibold uppercase tracking-wide text-brand-gray sm:flex">
               <span className="flex-1" />
               <span className="w-32">{t.checklist.possible}</span>
               <span className="w-32">{t.checklist.scored}</span>
@@ -206,7 +206,7 @@ export default function ChecklistTemplate({
               {section.questions.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="flex flex-col gap-3 border-b border-gray-50 px-4 py-3 last:border-0 sm:flex-row sm:items-center sm:gap-4 sm:px-6"
+                  className="flex flex-col gap-3 border-b border-brand-border px-4 py-3 last:border-0 sm:flex-row sm:items-center sm:gap-4 sm:px-6"
                 >
                   <p className="flex-1 text-sm text-brand-grayDark">
                     <span className="font-semibold text-brand-black">
@@ -262,7 +262,7 @@ export default function ChecklistTemplate({
               ))}
             </div>
 
-            <div className="flex flex-col items-start gap-3 border-t border-gray-100 bg-brand-grayLight/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex flex-col items-start gap-3 border-t border-brand-border bg-brand-grayLight/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <span className="text-xs font-bold uppercase tracking-wide text-brand-grayDark">
                 {t.checklist.possiblePointsAwarded}
               </span>
@@ -297,7 +297,7 @@ export default function ChecklistTemplate({
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[560px] text-start text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start sm:px-6">
                   {t.checklist.section}
                 </th>
@@ -316,7 +316,7 @@ export default function ChecklistTemplate({
               {sectionStats.map(({ section, possible, scored, pct }) => (
                 <tr
                   key={section.id}
-                  className="border-b border-gray-50 last:border-0"
+                  className="border-b border-brand-border last:border-0"
                 >
                   <td className="px-4 py-3 font-medium text-brand-black sm:px-6">
                     {section.id}. {section.title}
@@ -333,16 +333,16 @@ export default function ChecklistTemplate({
                 </tr>
               ))}
               <tr className="bg-brand-orange">
-                <td className="px-4 py-3 font-bold text-white sm:px-6">
+                <td className="px-4 py-3 font-bold text-brand-onAccent sm:px-6">
                   {t.checklist.grandTotal}
                 </td>
-                <td className="px-4 py-3 font-bold text-white sm:px-6">
+                <td className="px-4 py-3 font-bold text-brand-onAccent sm:px-6">
                   {grandPossible}
                 </td>
-                <td className="px-4 py-3 font-bold text-white sm:px-6">
+                <td className="px-4 py-3 font-bold text-brand-onAccent sm:px-6">
                   {grandScored}
                 </td>
-                <td className="px-4 py-3 font-bold text-white sm:px-6">
+                <td className="px-4 py-3 font-bold text-brand-onAccent sm:px-6">
                   {grandPct}%
                 </td>
               </tr>

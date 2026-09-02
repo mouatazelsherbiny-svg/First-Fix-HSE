@@ -146,7 +146,7 @@ function ObservationDetail() {
                   key={i}
                   src={src}
                   alt={`obs-${i}`}
-                  className="aspect-square w-full rounded-lg border border-gray-200 object-cover"
+                  className="aspect-square w-full rounded-lg border border-brand-border object-cover"
                 />
               ))}
             </div>
@@ -191,7 +191,7 @@ function ObservationDetail() {
           onChange={setCloseOutPhotos}
         />
 
-        <div className="flex justify-end border-t border-gray-100 pt-5">
+        <div className="flex justify-end border-t border-brand-border pt-5">
           <button onClick={handleSave} className="btn-primary">
             {t.detail.save}
           </button>

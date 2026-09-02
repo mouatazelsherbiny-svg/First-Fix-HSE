@@ -123,7 +123,7 @@ function NewWeeklyKpiForm() {
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+        <div className="flex items-center justify-end gap-3 border-t border-brand-border pt-5">
           <button
             type="button"
             onClick={() => router.push("/weekly-kpi")}

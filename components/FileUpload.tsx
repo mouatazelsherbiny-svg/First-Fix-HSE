@@ -46,7 +46,7 @@ export default function FileUpload({ label, files, onChange }: FileUploadProps) 
           e.preventDefault();
           handleFiles(e.dataTransfer.files);
         }}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
+        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-border bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ export default function FileUpload({ label, files, onChange }: FileUploadProps) 
             return (
               <div
                 key={i}
-                className="group relative flex items-center gap-2 overflow-hidden rounded-lg border border-gray-200 bg-white p-2"
+                className="group relative flex items-center gap-2 overflow-hidden rounded-lg border border-brand-border bg-brand-surface p-2"
               >
                 {isImage ? (
                   // eslint-disable-next-line @next/next/no-img-element

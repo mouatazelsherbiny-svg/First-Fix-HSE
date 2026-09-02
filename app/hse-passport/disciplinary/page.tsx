@@ -152,7 +152,7 @@ function DisciplinaryActionContent() {
                 autoComplete="off"
               />
               {query.trim() && (
-                <div className="absolute z-30 mt-1 max-h-64 w-full max-w-xs overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg">
+                <div className="absolute z-30 mt-1 max-h-64 w-full max-w-xs overflow-y-auto rounded-xl border border-brand-border bg-brand-surface shadow-lg">
                   {matches.length === 0 ? (
                     <p className="px-4 py-3 text-sm text-brand-gray">{t.hse.noMatches}</p>
                   ) : (
@@ -164,7 +164,7 @@ function DisciplinaryActionContent() {
                           setSelectedEmployee(e);
                           setQuery("");
                         }}
-                        className="flex w-full flex-col border-b border-gray-50 px-4 py-2.5 text-start transition last:border-0 hover:bg-brand-grayLight/50"
+                        className="flex w-full flex-col border-b border-brand-border px-4 py-2.5 text-start transition last:border-0 hover:bg-brand-grayLight/50"
                       >
                         <span className="text-sm font-semibold text-brand-black">{e.name}</span>
                         <span className="text-xs text-brand-gray">
@@ -264,9 +264,9 @@ function DisciplinaryActionContent() {
                     key={i}
                     className="flex flex-col items-center gap-2 rounded-xl bg-brand-orange p-4 text-center"
                   >
-                    <Icon className="h-7 w-7 shrink-0 text-white" strokeWidth={1.8} />
-                    <span className="text-lg font-extrabold text-white">{i + 1}</span>
-                    <span className="text-xs font-medium text-white/90">{rule}</span>
+                    <Icon className="h-7 w-7 shrink-0 text-brand-onAccent" strokeWidth={1.8} />
+                    <span className="text-lg font-extrabold text-brand-onAccent">{i + 1}</span>
+                    <span className="text-xs font-medium text-brand-onAccent/80">{rule}</span>
                   </div>
                 );
               })}
@@ -299,7 +299,7 @@ function DisciplinaryActionContent() {
             <div className="card overflow-x-auto !p-0">
               <table className="w-full min-w-[560px] text-start text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                  <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                     <th className="px-4 py-3 text-start sm:px-6">{t.hse.date}</th>
                     <th className="px-4 py-3 text-start sm:px-6">{t.hse.disciplinary.type}</th>
                     <th className="px-4 py-3 text-start sm:px-6">
@@ -310,7 +310,7 @@ function DisciplinaryActionContent() {
                 </thead>
                 <tbody>
                   {scopedRecords.map((r) => (
-                    <tr key={r.id} className="border-b border-gray-50 last:border-0">
+                    <tr key={r.id} className="border-b border-brand-border last:border-0">
                       <td className="px-4 py-3 text-brand-grayDark sm:px-6">{r.date}</td>
                       <td className="px-4 py-3 font-medium text-brand-black sm:px-6">{r.type}</td>
                       <td className="px-4 py-3 text-brand-grayDark sm:px-6">
@@ -472,7 +472,7 @@ function AddDisciplinaryForm({
         files={attachments}
         onChange={setAttachments}
       />
-      <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+      <div className="flex justify-end gap-3 border-t border-brand-border pt-4">
         <button type="button" onClick={onDone} className="btn-secondary">
           {t.hse.cancel}
         </button>

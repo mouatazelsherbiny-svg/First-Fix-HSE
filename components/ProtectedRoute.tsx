@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 export default function ProtectedRoute({
   children,
@@ -32,8 +32,12 @@ export default function ProtectedRoute({
 
   return (
     <div className="min-h-screen">
-      <Navbar />
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
+      <Sidebar />
+      {/* pt-14 clears the mobile top bar; lg:ps-64 clears the fixed
+          sidebar's width once it's always-visible from `lg` up. */}
+      <main className="min-h-screen pt-14 lg:ps-64 lg:pt-0">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</div>
+      </main>
     </div>
   );
 }

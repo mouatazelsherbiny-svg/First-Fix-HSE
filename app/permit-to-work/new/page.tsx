@@ -285,7 +285,7 @@ function NewPermitForm() {
             {HAZARD_CATEGORIES.map((h) => (
               <label
                 key={h}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
               >
                 <input
                   type="checkbox"
@@ -305,7 +305,7 @@ function NewPermitForm() {
             {PPE_FOR_PERMIT.map((p) => (
               <label
                 key={p}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
               >
                 <input
                   type="checkbox"
@@ -327,8 +327,8 @@ function NewPermitForm() {
               onClick={() => setIsolationRequired(true)}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 isolationRequired
-                  ? "bg-brand-orange text-white"
-                  : "border border-gray-200 bg-white text-brand-grayDark hover:bg-brand-grayLight"
+                  ? "bg-brand-orange text-brand-onAccent"
+                  : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
               }`}
             >
               {t.ptw.isolationYes}
@@ -338,8 +338,8 @@ function NewPermitForm() {
               onClick={() => setIsolationRequired(false)}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 !isolationRequired
-                  ? "bg-brand-orange text-white"
-                  : "border border-gray-200 bg-white text-brand-grayDark hover:bg-brand-grayLight"
+                  ? "bg-brand-orange text-brand-onAccent"
+                  : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
               }`}
             >
               {t.ptw.isolationNo}
@@ -372,7 +372,7 @@ function NewPermitForm() {
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+        <div className="flex items-center justify-end gap-3 border-t border-brand-border pt-5">
           <button
             type="button"
             onClick={() => router.push("/permit-to-work")}

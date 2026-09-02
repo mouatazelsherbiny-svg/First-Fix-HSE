@@ -40,7 +40,7 @@ export default function ImageUpload({ label, images, onChange }: ImageUploadProp
           e.preventDefault();
           handleFiles(e.dataTransfer.files);
         }}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
+        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-border bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +77,7 @@ export default function ImageUpload({ label, images, onChange }: ImageUploadProp
           {images.map((src, i) => (
             <div
               key={i}
-              className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200"
+              className="group relative aspect-square overflow-hidden rounded-lg border border-brand-border"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt={`upload-${i}`} className="h-full w-full object-cover" />

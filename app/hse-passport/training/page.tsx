@@ -72,7 +72,7 @@ function TrainingContent() {
             </h3>
             <div className="flex h-4 w-full overflow-hidden rounded-full bg-brand-grayLight">
               <div
-                className="flex items-center justify-center bg-brand-orange text-[10px] font-bold text-white transition-all"
+                className="flex items-center justify-center bg-brand-orange text-[10px] font-bold text-brand-onAccent transition-all"
                 style={{ width: `${completedPct}%` }}
               />
               <div
@@ -282,7 +282,7 @@ function AddTrainingForm({
         files={attachments}
         onChange={setAttachments}
       />
-      <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+      <div className="flex justify-end gap-3 border-t border-brand-border pt-4">
         <button type="button" onClick={onDone} className="btn-secondary">
           {t.hse.cancel}
         </button>

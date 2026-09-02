@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SafetyTipCard from "@/components/SafetyTipCard";
+import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
@@ -164,7 +165,9 @@ function DashboardContent() {
   );
 
   return (
-    <div className="xl:grid xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start xl:gap-6">
+    <div className="relative isolate">
+      <DashboardBackground />
+      <div className="relative z-10 xl:grid xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start xl:gap-6">
       {/* Left sidebar — hidden below xl to avoid crowding the main content */}
       <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-6">
         <SafetyTipCard />
@@ -507,25 +510,28 @@ function DashboardContent() {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F2F2F2" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#22332B" />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12, fill: "#6B6E70" }}
-                axisLine={{ stroke: "#F2F2F2" }}
+                tick={{ fontSize: 12, fill: "#7E9089" }}
+                axisLine={{ stroke: "#22332B" }}
                 tickLine={false}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 12, fill: "#6B6E70" }}
+                tick={{ fontSize: 12, fill: "#7E9089" }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #F2F2F2",
+                  border: "1px solid #22332B",
+                  backgroundColor: "#111E19",
                   fontSize: 12,
                 }}
+                labelStyle={{ color: "#EAF3EE" }}
+                itemStyle={{ color: "#B7C7BF" }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar
@@ -545,6 +551,7 @@ function DashboardContent() {
         </div>
       </div>
       </div>
+    </div>
     </div>
   );
 }
