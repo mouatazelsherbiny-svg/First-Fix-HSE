@@ -69,13 +69,13 @@ const DARK_TONE_CLASSES: Record<Tone, string> = {
   gray: "bg-white/10 text-white/70",
 };
 
-export function getStatusColorClasses(value: string, dark = true): string {
+export function getStatusColorClasses(value: string, dark = false): string {
   const tone = WORD_TONE[value] ?? "gray";
   return (dark ? DARK_TONE_CLASSES : LIGHT_TONE_CLASSES)[tone];
 }
 
 /** Full pill classes (shape + color) — pairs with <Badge/>. */
-export function getBadgeClasses(value: string, dark = true): string {
+export function getBadgeClasses(value: string, dark = false): string {
   return `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
     value,
     dark

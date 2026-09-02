@@ -13,7 +13,6 @@ import {
 } from "recharts";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import SafetyTipCard from "@/components/SafetyTipCard";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
@@ -86,15 +85,6 @@ function DashboardContent() {
     () => new Set(projectEmployees.map((e) => e.id)),
     [projectEmployees]
   );
-  const departmentBreakdown = useMemo(() => {
-    const counts = new Map<string, number>();
-    projectEmployees.forEach((e) => {
-      counts.set(e.department, (counts.get(e.department) ?? 0) + 1);
-    });
-    return Array.from(counts.entries())
-      .map(([department, count]) => ({ department, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [projectEmployees]);
   const totalViolations = disciplinaryRecords.filter((r) =>
     projectEmployeeIds.has(r.employeeId)
   ).length;
@@ -167,41 +157,7 @@ function DashboardContent() {
   return (
     <div className="relative isolate">
       <DashboardBackground />
-      <div className="relative z-10 xl:grid xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start xl:gap-6">
-      {/* Left sidebar — hidden below xl to avoid crowding the main content */}
-      <aside className="hidden xl:sticky xl:top-20 xl:flex xl:flex-col xl:gap-6">
-        <SafetyTipCard />
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.team}
-          </h2>
-          <p className="text-3xl font-extrabold text-brand-black">
-            {projectEmployees.length}
-          </p>
-          <p className="text-xs font-medium text-brand-gray">
-            {t.dashboard.totalEmployees}
-          </p>
-          {departmentBreakdown.length > 0 && (
-            <ul className="mt-4 space-y-2 border-t border-brand-grayLight pt-3">
-              {departmentBreakdown.map((d) => (
-                <li
-                  key={d.department}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="font-medium text-brand-grayDark">
-                    {d.department}
-                  </span>
-                  <span className="text-xs font-semibold text-brand-gray">
-                    {d.count}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </aside>
-
-      <div>
+      <div className="relative z-10">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-brand-black">
             {t.dashboard.titlePrefix} - {project}
@@ -510,28 +466,28 @@ function DashboardContent() {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#22332B" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D7E6DE" />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12, fill: "#7E9089" }}
-                axisLine={{ stroke: "#22332B" }}
+                tick={{ fontSize: 12, fill: "#7C8F85" }}
+                axisLine={{ stroke: "#D7E6DE" }}
                 tickLine={false}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 12, fill: "#7E9089" }}
+                tick={{ fontSize: 12, fill: "#7C8F85" }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #22332B",
-                  backgroundColor: "#111E19",
+                  border: "1px solid #D7E6DE",
+                  backgroundColor: "#FFFFFF",
                   fontSize: 12,
                 }}
-                labelStyle={{ color: "#EAF3EE" }}
-                itemStyle={{ color: "#B7C7BF" }}
+                labelStyle={{ color: "#142620" }}
+                itemStyle={{ color: "#46584F" }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar
@@ -551,7 +507,6 @@ function DashboardContent() {
         </div>
       </div>
       </div>
-    </div>
     </div>
   );
 }

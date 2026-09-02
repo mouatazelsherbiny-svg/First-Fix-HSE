@@ -9,8 +9,8 @@
      or component should ever set its own background color/hex value.
      (The Login page is the one deliberate exception: it paints a full-screen
      photo background of its own instead of a flat color.)
-     Dark forest-green/black theme. */
-  --background-app: #0B1512;
+     Light forest theme — soft mint/sage canvas. */
+  --background-app: #F1F7F4;
 }
 
 html,
@@ -20,12 +20,12 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-app);
-  color: #EAF3EE;
+  color: #142620;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #22332B transparent;
+  scrollbar-color: #C9DBD2 transparent;
 }
 
 .input-field {
