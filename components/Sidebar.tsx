@@ -23,6 +23,7 @@ import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { usePermits } from "@/context/PermitContext";
+import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import Logo from "./Logo";
 import LanguageToggle from "./LanguageToggle";
@@ -156,6 +157,7 @@ export default function Sidebar() {
   const { records: toolboxRecords } = useToolboxTalk();
   const { records: kpiRecords } = useWeeklyKpi();
   const { permits } = usePermits();
+  const { submissions: checklistSubmissions } = useChecklistSubmissions();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
 
   // Close the mobile drawer automatically after any navigation.
@@ -193,6 +195,12 @@ export default function Sidebar() {
       icon: ClipboardCheck,
       count: permits.length,
     },
+    {
+      href: "/permit-to-work/my-permits",
+      label: t.nav.myPermits,
+      icon: ClipboardCheck,
+      count: permits.filter((p) => p.projectName === user?.project).length,
+    },
   ];
 
   const hsePassportGroup: NavGroupItem = {
@@ -213,8 +221,7 @@ export default function Sidebar() {
     label: t.nav.monthlyChecklists,
     icon: CalendarCheck,
     basePath: "/checklists",
-    // No count: checklist submissions aren't persisted yet (see the
-    // Dashboard's own "not submitted yet" placeholder for these pages).
+    count: checklistSubmissions.length,
     children: [
       { href: "/checklists/environmental", label: t.nav.envChecklist },
       { href: "/checklists/fire-assessment", label: t.nav.fireChecklist },

@@ -11,6 +11,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
 import { PERMIT_STATUSES } from "@/lib/mockData";
 import { PermitStatus } from "@/types/permit";
+import { getPermitProgress } from "@/lib/permitProgress";
 
 export default function PermitDetailPage() {
   return (
@@ -34,6 +35,7 @@ function PermitDetail() {
   const [closeOutPhotos, setCloseOutPhotos] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (permit) {
@@ -73,6 +75,20 @@ function PermitDetail() {
     }
   };
 
+  const handleClosePermit = async () => {
+    setError("");
+    setIsClosing(true);
+    try {
+      await updatePermit(permit.id, { permitStatus: "Closed" });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.common.genericError);
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
   const dateStr = new Date(permit.createdAt).toLocaleDateString(
     locale === "ar" ? "ar-EG" : "en-US",
     { year: "numeric", month: "long", day: "numeric" }
@@ -96,12 +112,22 @@ function PermitDetail() {
             {t.ptw.requestedOn} {dateStr}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge
             value={permit.permitType}
             label={permit.permitType === "Other" ? permit.permitTypeOther || t.ptw.other : permit.permitType}
           />
           <Badge value={permit.status} />
+          <Badge
+            value={getPermitProgress(permit)}
+            label={
+              getPermitProgress(permit) === "New Permit"
+                ? t.ptw.statusNewPermit
+                : getPermitProgress(permit) === "In Progress"
+                ? t.ptw.statusInProgress
+                : t.ptw.statusClosed
+            }
+          />
         </div>
       </div>
 
@@ -122,7 +148,14 @@ function PermitDetail() {
           <Field label={t.ptw.workLocation} value={permit.workLocation} />
           <Field label={t.ptw.contractor} value={permit.contractor} />
           <Field label={t.ptw.numberOfWorkers} value={String(permit.numberOfWorkers)} />
-          <Field label={t.ptw.requestedBy} value={permit.requestedBy} />
+          <Field label={t.ptw.issuerBy} value={permit.requestedBy} />
+          <Field label={t.ptw.receiver} value={permit.receiver || "—"} />
+          <Field label={t.ptw.hseValidator} value={permit.hseValidator || "—"} />
+          <Field label={t.ptw.supervisorForeman} value={permit.supervisorForeman || "—"} />
+          <Field
+            label={t.ptw.emergencyContactNumber}
+            value={permit.emergencyContactNumber || "—"}
+          />
           <Field label={t.ptw.approvedBy} value={permit.approvedBy || t.ptw.notApprovedYet} />
           <Field
             label={t.ptw.startDate}
@@ -200,6 +233,74 @@ function PermitDetail() {
               ))}
             </ul>
           </div>
+        )}
+
+        {(permit.issuerSignature || permit.receiverSignature) && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {permit.issuerSignature && (
+              <div>
+                <p className="label-field">{t.ptw.issuerSignature}</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={permit.issuerSignature}
+                  alt={t.ptw.issuerSignature}
+                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface object-contain"
+                />
+              </div>
+            )}
+            {permit.receiverSignature && (
+              <div>
+                <p className="label-field">{t.ptw.receiverSignature}</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={permit.receiverSignature}
+                  alt={t.ptw.receiverSignature}
+                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface object-contain"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="card mb-5 space-y-4">
+        <h2 className="text-base font-semibold text-brand-black">
+          {t.ptw.permitProgressTitle}
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <span
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              getPermitProgress(permit) === "New Permit"
+                ? "bg-brand-orange text-brand-onAccent"
+                : "border border-brand-border bg-brand-surface text-brand-gray"
+            }`}
+          >
+            {t.ptw.statusNewPermit}
+          </span>
+          <span
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              getPermitProgress(permit) === "In Progress"
+                ? "bg-brand-orange text-brand-onAccent"
+                : "border border-brand-border bg-brand-surface text-brand-gray"
+            }`}
+          >
+            {t.ptw.statusInProgress}
+          </span>
+          <button
+            type="button"
+            onClick={handleClosePermit}
+            disabled={permit.permitStatus === "Closed" || isClosing}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed ${
+              permit.permitStatus === "Closed"
+                ? "bg-brand-orange text-brand-onAccent"
+                : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+            }`}
+          >
+            {isClosing ? t.common.loading : t.ptw.statusClosed}
+          </button>
+        </div>
+        {permit.permitStatus === "Closed" && (
+          <p className="text-xs font-medium text-brand-gray">{t.ptw.permitClosedNote}</p>
         )}
       </div>
 

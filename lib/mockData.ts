@@ -71,6 +71,8 @@ export const PERMIT_TYPES = [
   "Excavation",
   "Electrical Isolation (LOTO)",
   "Lifting Operation",
+  "Energization",
+  "Hydro Test",
   "Other",
 ];
 
@@ -106,6 +108,15 @@ export const PERMIT_STATUSES: PermitToWork["status"][] = [
   "Closed",
   "Rejected",
   "Expired",
+];
+
+// The simplified, self-managed "Permit Status" pill (separate from the
+// approval-workflow status above) — see PermitProgressStatus in
+// types/permit.ts and lib/permitProgress.ts.
+export const PERMIT_PROGRESS_STATUSES: PermitToWork["permitStatus"][] = [
+  "New Permit",
+  "In Progress",
+  "Closed",
 ];
 
 export const TRAINING_TOPICS = [

@@ -42,6 +42,7 @@ const WORD_TONE: Record<string, Tone> = {
   // Blue — informational / positive callout
   "Good Practice": "blue",
   Approved: "blue",
+  "New Permit": "blue",
 
   // Neutral gray — no strong signal
   Pending: "gray",

@@ -49,6 +49,13 @@ function mapRow(row: any): PermitToWork {
     attachments: row.attachments ?? [],
     status: row.status,
     requestedBy: row.requested_by,
+    receiver: row.receiver ?? "",
+    hseValidator: row.hse_validator ?? "",
+    supervisorForeman: row.supervisor_foreman ?? "",
+    emergencyContactNumber: row.emergency_contact_number ?? "",
+    issuerSignature: row.issuer_signature ?? "",
+    receiverSignature: row.receiver_signature ?? "",
+    permitStatus: row.permit_status ?? "New Permit",
     approvedBy: row.approved_by ?? undefined,
     closeOutDetails: row.close_out_details ?? "",
     closeOutPhotos: row.close_out_photos ?? [],
@@ -106,6 +113,13 @@ export function PermitProvider({ children }: { children: ReactNode }) {
             attachments: permit.attachments,
             status: permit.status,
             requested_by: permit.requestedBy,
+            receiver: permit.receiver,
+            hse_validator: permit.hseValidator,
+            supervisor_foreman: permit.supervisorForeman,
+            emergency_contact_number: permit.emergencyContactNumber,
+            issuer_signature: permit.issuerSignature,
+            receiver_signature: permit.receiverSignature,
+            permit_status: permit.permitStatus,
             close_out_details: permit.closeOutDetails,
             close_out_photos: permit.closeOutPhotos,
             created_by,
@@ -124,6 +138,7 @@ export function PermitProvider({ children }: { children: ReactNode }) {
         const payload: Record<string, unknown> = {};
         if (patch.status !== undefined) payload.status = patch.status;
         if (patch.approvedBy !== undefined) payload.approved_by = patch.approvedBy;
+        if (patch.permitStatus !== undefined) payload.permit_status = patch.permitStatus;
         if (patch.closeOutDetails !== undefined)
           payload.close_out_details = patch.closeOutDetails;
         if (patch.closeOutPhotos !== undefined)

@@ -38,6 +38,7 @@ export interface TranslationShape {
     weeklyKpi: string;
     monthlyChecklists: string;
     permitToWork: string;
+    myPermits: string;
     logout: string;
     hello: string;
   };
@@ -255,7 +256,15 @@ export interface TranslationShape {
     formTitle: string;
     formSubtitle: string;
     permitNumber: string;
-    requestedBy: string;
+    issuerBy: string;
+    receiver: string;
+    receiverPlaceholder: string;
+    hseValidator: string;
+    hseValidatorPlaceholder: string;
+    supervisorForeman: string;
+    supervisorForemanPlaceholder: string;
+    emergencyContactNumber: string;
+    emergencyContactNumberPlaceholder: string;
     projectName: string;
     projectPlaceholder: string;
     permitType: string;
@@ -273,7 +282,14 @@ export interface TranslationShape {
     startTime: string;
     endDate: string;
     endTime: string;
+    permitStatus: string;
+    permitStatusHint: string;
+    statusNewPermit: string;
+    statusInProgress: string;
+    statusClosed: string;
     hazardsIdentified: string;
+    addHazardPlaceholder: string;
+    addHazardBtn: string;
     ppeRequired: string;
     isolationRequired: string;
     isolationYes: string;
@@ -282,6 +298,10 @@ export interface TranslationShape {
     precautionsPlaceholder: string;
     permitPhoto: string;
     attachments: string;
+    issuerSignature: string;
+    receiverSignature: string;
+    signatureClear: string;
+    signatureRequired: string;
     submit: string;
     cancel: string;
     success: string;
@@ -292,6 +312,8 @@ export interface TranslationShape {
     empty: string;
     emptyCta: string;
     search: string;
+    myPermitsTitle: string;
+    myPermitsSubtitle: string;
     col: {
       permitNumber: string;
       project: string;
@@ -299,6 +321,7 @@ export interface TranslationShape {
       location: string;
       validity: string;
       status: string;
+      permitStatus: string;
       actions: string;
     };
     view: string;
@@ -310,6 +333,9 @@ export interface TranslationShape {
     statusPlaceholder: string;
     approvedBy: string;
     notApprovedYet: string;
+    permitProgressTitle: string;
+    closePermitBtn: string;
+    permitClosedNote: string;
     closeOutDetails: string;
     closeOutDetailsPlaceholder: string;
     closeOutPhoto: string;
@@ -393,6 +419,7 @@ export const translations: Record<Locale, TranslationShape> = {
       weeklyKpi: "Weekly KPI",
       monthlyChecklists: "Monthly Checklists",
       permitToWork: "Permit to Work",
+      myPermits: "My Permits",
       logout: "Log Out",
       hello: "Hello",
     },
@@ -610,7 +637,15 @@ export const translations: Record<Locale, TranslationShape> = {
       formTitle: "New Permit to Work",
       formSubtitle: "Request a new Permit to Work (PTW). Fields marked with * are required.",
       permitNumber: "Permit Number",
-      requestedBy: "Requested By / ID",
+      issuerBy: "Issuer By / ID",
+      receiver: "Receiver",
+      receiverPlaceholder: "Name of the person receiving the permit",
+      hseValidator: "HSE Validator",
+      hseValidatorPlaceholder: "Name of the HSE validator",
+      supervisorForeman: "Supervisor / Foreman",
+      supervisorForemanPlaceholder: "Name of the supervisor / foreman",
+      emergencyContactNumber: "Emergency Contact Number",
+      emergencyContactNumberPlaceholder: "e.g. +966 5x xxx xxxx",
       projectName: "Project Name",
       projectPlaceholder: "Select a project",
       permitType: "Permit Type",
@@ -628,7 +663,14 @@ export const translations: Record<Locale, TranslationShape> = {
       startTime: "Start Time",
       endDate: "End Date",
       endTime: "End Time",
+      permitStatus: "Permit Status",
+      permitStatusHint: "Set automatically to \"New Permit\" — it updates itself while the permit is open, and edit access is enabled to close it.",
+      statusNewPermit: "New Permit",
+      statusInProgress: "In Progress",
+      statusClosed: "Closed",
       hazardsIdentified: "Hazards Identified",
+      addHazardPlaceholder: "Add another hazard...",
+      addHazardBtn: "+ Add",
       ppeRequired: "PPE Required",
       isolationRequired: "Isolation / LOTO Certificate Required?",
       isolationYes: "Yes",
@@ -637,6 +679,10 @@ export const translations: Record<Locale, TranslationShape> = {
       precautionsPlaceholder: "Describe the control measures in place...",
       permitPhoto: "Site / Permit Photo",
       attachments: "Attachments (Risk Assessment, Isolation Certificate, etc.)",
+      issuerSignature: "Issuer Signature",
+      receiverSignature: "Receiver Signature",
+      signatureClear: "Clear",
+      signatureRequired: "Please provide both the Issuer and Receiver signatures before submitting.",
       submit: "Submit Permit",
       cancel: "Cancel",
       success: "Permit to Work submitted successfully!",
@@ -647,6 +693,8 @@ export const translations: Record<Locale, TranslationShape> = {
       empty: "No permits yet. Create your first one!",
       emptyCta: "New Permit",
       search: "Search by permit number, project...",
+      myPermitsTitle: "My Permits",
+      myPermitsSubtitle: "Permits requested for your project",
       col: {
         permitNumber: "Permit #",
         project: "Project",
@@ -654,6 +702,7 @@ export const translations: Record<Locale, TranslationShape> = {
         location: "Location",
         validity: "Validity",
         status: "Status",
+        permitStatus: "Permit Status",
         actions: "Actions",
       },
       view: "View / Edit",
@@ -665,6 +714,9 @@ export const translations: Record<Locale, TranslationShape> = {
       statusPlaceholder: "Select status",
       approvedBy: "Approved By",
       notApprovedYet: "Not approved yet",
+      permitProgressTitle: "Permit Status",
+      closePermitBtn: "Close Permit",
+      permitClosedNote: "This permit is closed.",
       closeOutDetails: "Close-out Details",
       closeOutDetailsPlaceholder: "Describe how the work was completed and the area left safe...",
       closeOutPhoto: "Close-out Photo",
@@ -746,6 +798,7 @@ export const translations: Record<Locale, TranslationShape> = {
       weeklyKpi: "مؤشرات الأداء الأسبوعية",
       monthlyChecklists: "القوائم الشهرية",
       permitToWork: "تصريح العمل",
+      myPermits: "تصاريحي",
       logout: "تسجيل الخروج",
       hello: "أهلاً",
     },
@@ -963,7 +1016,15 @@ export const translations: Record<Locale, TranslationShape> = {
       formTitle: "طلب تصريح عمل جديد",
       formSubtitle: "قدّم طلب تصريح عمل (PTW) جديد. الحقول المميزة بـ * إلزامية.",
       permitNumber: "رقم التصريح",
-      requestedBy: "مقدَّم الطلب / الرقم الوظيفي",
+      issuerBy: "مُصدر التصريح / الرقم الوظيفي",
+      receiver: "المستلم",
+      receiverPlaceholder: "اسم الشخص المستلم للتصريح",
+      hseValidator: "مدقق السلامة (HSE Validator)",
+      hseValidatorPlaceholder: "اسم مدقق السلامة",
+      supervisorForeman: "المشرف / رئيس العمال",
+      supervisorForemanPlaceholder: "اسم المشرف / رئيس العمال",
+      emergencyContactNumber: "رقم الطوارئ",
+      emergencyContactNumberPlaceholder: "مثال: 05xxxxxxxx",
       projectName: "اسم المشروع",
       projectPlaceholder: "اختر المشروع",
       permitType: "نوع التصريح",
@@ -981,7 +1042,14 @@ export const translations: Record<Locale, TranslationShape> = {
       startTime: "وقت البدء",
       endDate: "تاريخ الانتهاء",
       endTime: "وقت الانتهاء",
+      permitStatus: "حالة التصريح",
+      permitStatusHint: "تُحدَّد تلقائيًا بـ \"تصريح جديد\" — وتتحدث تلقائيًا أثناء سريان التصريح، مع إتاحة التعديل لإغلاقه.",
+      statusNewPermit: "تصريح جديد",
+      statusInProgress: "قيد التنفيذ",
+      statusClosed: "مغلق",
       hazardsIdentified: "المخاطر المحددة",
+      addHazardPlaceholder: "أضف خطرًا آخر...",
+      addHazardBtn: "+ إضافة",
       ppeRequired: "معدات الوقاية الشخصية المطلوبة",
       isolationRequired: "هل يلزم شهادة عزل الطاقة (LOTO)؟",
       isolationYes: "نعم",
@@ -990,6 +1058,10 @@ export const translations: Record<Locale, TranslationShape> = {
       precautionsPlaceholder: "اكتب إجراءات التحكم المتبعة...",
       permitPhoto: "صورة الموقع / التصريح",
       attachments: "المرفقات (تقييم المخاطر، شهادة العزل، إلخ)",
+      issuerSignature: "توقيع المُصدر",
+      receiverSignature: "توقيع المستلم",
+      signatureClear: "مسح",
+      signatureRequired: "من فضلك وقّع كل من المُصدر والمستلم قبل الإرسال.",
       submit: "إرسال التصريح",
       cancel: "إلغاء",
       success: "تم إرسال تصريح العمل بنجاح!",
@@ -1000,6 +1072,8 @@ export const translations: Record<Locale, TranslationShape> = {
       empty: "لا توجد تصاريح بعد. أضف أول تصريح لك!",
       emptyCta: "تصريح جديد",
       search: "ابحث برقم التصريح أو المشروع...",
+      myPermitsTitle: "تصاريحي",
+      myPermitsSubtitle: "التصاريح الخاصة بمشروعك",
       col: {
         permitNumber: "رقم التصريح",
         project: "المشروع",
@@ -1007,6 +1081,7 @@ export const translations: Record<Locale, TranslationShape> = {
         location: "الموقع",
         validity: "الصلاحية",
         status: "الحالة",
+        permitStatus: "حالة التصريح",
         actions: "إجراءات",
       },
       view: "عرض / تعديل",
@@ -1018,6 +1093,9 @@ export const translations: Record<Locale, TranslationShape> = {
       statusPlaceholder: "اختر الحالة",
       approvedBy: "تمت الموافقة بواسطة",
       notApprovedYet: "لم تتم الموافقة بعد",
+      permitProgressTitle: "حالة التصريح",
+      closePermitBtn: "إغلاق التصريح",
+      permitClosedNote: "هذا التصريح مغلق.",
       closeOutDetails: "تفاصيل الإغلاق",
       closeOutDetailsPlaceholder: "اكتب كيف تم إنجاز العمل وترك المنطقة آمنة...",
       closeOutPhoto: "صورة الإغلاق",

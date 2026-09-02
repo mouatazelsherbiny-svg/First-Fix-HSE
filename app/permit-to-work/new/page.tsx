@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ImageUpload from "@/components/ImageUpload";
 import FileUpload from "@/components/FileUpload";
+import SignaturePad from "@/components/SignaturePad";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
@@ -36,6 +37,11 @@ function NewPermitForm() {
 
   const requestedBy = user ? `${user.name} (${user.employeeCode})` : "";
 
+  const [receiver, setReceiver] = useState("");
+  const [hseValidator, setHseValidator] = useState("");
+  const [supervisorForeman, setSupervisorForeman] = useState("");
+  const [emergencyContactNumber, setEmergencyContactNumber] = useState("");
+
   const [projectName, setProjectName] = useState("");
   const [permitType, setPermitType] = useState("");
   const [permitTypeOther, setPermitTypeOther] = useState("");
@@ -48,19 +54,39 @@ function NewPermitForm() {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [hazardsIdentified, setHazardsIdentified] = useState<string[]>([]);
+  const [customHazards, setCustomHazards] = useState<string[]>([]);
+  const [newHazard, setNewHazard] = useState("");
   const [ppeRequired, setPpeRequired] = useState<string[]>([]);
   const [isolationRequired, setIsolationRequired] = useState(false);
   const [precautions, setPrecautions] = useState("");
   const [permitPhotos, setPermitPhotos] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<UploadedPermitFile[]>([]);
+  const [issuerSignature, setIssuerSignature] = useState("");
+  const [receiverSignature, setReceiverSignature] = useState("");
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  const addCustomHazard = () => {
+    const value = newHazard.trim();
+    if (!value) return;
+    setCustomHazards((prev) => [...prev, value]);
+    setNewHazard("");
+  };
+
+  const removeCustomHazard = (index: number) => {
+    setCustomHazards((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const isOther = permitType === "Other";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!issuerSignature || !receiverSignature) {
+      setError(t.ptw.signatureRequired);
+      return;
+    }
 
     try {
       await addPermit({
@@ -75,7 +101,7 @@ function NewPermitForm() {
         startTime,
         endDate,
         endTime,
-        hazardsIdentified,
+        hazardsIdentified: [...hazardsIdentified, ...customHazards],
         ppeRequired,
         isolationRequired,
         precautions,
@@ -83,6 +109,13 @@ function NewPermitForm() {
         attachments,
         status: "Pending Approval",
         requestedBy,
+        receiver,
+        hseValidator,
+        supervisorForeman,
+        emergencyContactNumber,
+        issuerSignature,
+        receiverSignature,
+        permitStatus: "New Permit",
         closeOutDetails: "",
         closeOutPhotos: [],
       });
@@ -125,13 +158,57 @@ function NewPermitForm() {
           </div>
 
           <div>
-            <label className="label-field">{t.ptw.requestedBy}</label>
+            <label className="label-field">{t.ptw.issuerBy}</label>
             <input
               type="text"
               value={requestedBy}
               readOnly
               disabled
               className="input-field bg-brand-grayLight text-brand-gray"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.receiver}</label>
+            <input
+              type="text"
+              value={receiver}
+              onChange={(e) => setReceiver(e.target.value)}
+              placeholder={t.ptw.receiverPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.hseValidator}</label>
+            <input
+              type="text"
+              value={hseValidator}
+              onChange={(e) => setHseValidator(e.target.value)}
+              placeholder={t.ptw.hseValidatorPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.supervisorForeman}</label>
+            <input
+              type="text"
+              value={supervisorForeman}
+              onChange={(e) => setSupervisorForeman(e.target.value)}
+              placeholder={t.ptw.supervisorForemanPlaceholder}
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">{t.ptw.emergencyContactNumber}</label>
+            <input
+              type="tel"
+              value={emergencyContactNumber}
+              onChange={(e) => setEmergencyContactNumber(e.target.value)}
+              placeholder={t.ptw.emergencyContactNumberPlaceholder}
+              className="input-field"
             />
           </div>
 
@@ -280,6 +357,22 @@ function NewPermitForm() {
         </div>
 
         <div>
+          <label className="label-field">{t.ptw.permitStatus}</label>
+          <div className="flex flex-wrap gap-3">
+            <span className="rounded-xl bg-brand-orange px-4 py-2 text-sm font-semibold text-brand-onAccent">
+              {t.ptw.statusNewPermit}
+            </span>
+            <span className="rounded-xl border border-brand-border bg-brand-surface px-4 py-2 text-sm font-semibold text-brand-gray">
+              {t.ptw.statusInProgress}
+            </span>
+            <span className="rounded-xl border border-brand-border bg-brand-surface px-4 py-2 text-sm font-semibold text-brand-gray">
+              {t.ptw.statusClosed}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-brand-gray">{t.ptw.permitStatusHint}</p>
+        </div>
+
+        <div>
           <label className="label-field">{t.ptw.hazardsIdentified}</label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {HAZARD_CATEGORIES.map((h) => (
@@ -297,6 +390,49 @@ function NewPermitForm() {
               </label>
             ))}
           </div>
+
+          <div className="mt-3 flex gap-2">
+            <input
+              type="text"
+              value={newHazard}
+              onChange={(e) => setNewHazard(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCustomHazard();
+                }
+              }}
+              placeholder={t.ptw.addHazardPlaceholder}
+              className="input-field"
+            />
+            <button
+              type="button"
+              onClick={addCustomHazard}
+              className="btn-secondary shrink-0 whitespace-nowrap"
+            >
+              {t.ptw.addHazardBtn}
+            </button>
+          </div>
+
+          {customHazards.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {customHazards.map((h, i) => (
+                <span
+                  key={`${h}-${i}`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-orangeLight px-3 py-1 text-xs font-semibold text-brand-orangeDark"
+                >
+                  {h}
+                  <button
+                    type="button"
+                    onClick={() => removeCustomHazard(i)}
+                    className="text-brand-orangeDark/70 hover:text-brand-orangeDark"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -369,6 +505,19 @@ function NewPermitForm() {
             label={t.ptw.attachments}
             files={attachments}
             onChange={setAttachments}
+          />
+        </div>
+
+        <div className="grid gap-5 border-t border-brand-border pt-5 sm:grid-cols-2">
+          <SignaturePad
+            label={t.ptw.issuerSignature}
+            value={issuerSignature}
+            onChange={setIssuerSignature}
+          />
+          <SignaturePad
+            label={t.ptw.receiverSignature}
+            value={receiverSignature}
+            onChange={setReceiverSignature}
           />
         </div>
 

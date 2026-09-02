@@ -6,6 +6,14 @@ export type PermitStatus =
   | "Rejected"
   | "Expired";
 
+// The simplified, self-managed lifecycle status shown as "Permit Status" in
+// the UI (separate from the approval-workflow `status` above). The app only
+// ever writes "New Permit" (on create) or "Closed" (when someone closes the
+// permit) — "In Progress" is never persisted, it's derived at render time by
+// getPermitProgress() (lib/permitProgress.ts) from the current time vs. the
+// permit's scheduled window.
+export type PermitProgressStatus = "New Permit" | "In Progress" | "Closed";
+
 export interface PermitToWork {
   id: string;
   permitNumber: number;
@@ -28,6 +36,13 @@ export interface PermitToWork {
   attachments: UploadedPermitFile[];
   status: PermitStatus;
   requestedBy: string;
+  receiver: string;
+  hseValidator: string;
+  supervisorForeman: string;
+  emergencyContactNumber: string;
+  issuerSignature: string;
+  receiverSignature: string;
+  permitStatus: PermitProgressStatus;
   approvedBy?: string;
   closeOutDetails: string;
   closeOutPhotos: string[];

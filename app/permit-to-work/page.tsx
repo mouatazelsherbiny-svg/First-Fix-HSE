@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
+import { getPermitProgress } from "@/lib/permitProgress";
 
 export default function PermitToWorkPage() {
   return (
@@ -67,7 +68,7 @@ function PermitList() {
         </div>
       ) : (
         <div className="card overflow-x-auto !p-0">
-          <table className="w-full min-w-[860px] text-start text-sm">
+          <table className="w-full min-w-[980px] text-start text-sm">
             <thead>
               <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.ptw.col.permitNumber}</th>
@@ -76,6 +77,7 @@ function PermitList() {
                 <th className="px-4 py-3 text-start">{t.ptw.col.location}</th>
                 <th className="px-4 py-3 text-start">{t.ptw.col.validity}</th>
                 <th className="px-4 py-3 text-start">{t.ptw.col.status}</th>
+                <th className="px-4 py-3 text-start">{t.ptw.col.permitStatus}</th>
                 <th className="px-4 py-3 text-end">{t.ptw.col.actions}</th>
               </tr>
             </thead>
@@ -101,6 +103,23 @@ function PermitList() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge value={p.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {(() => {
+                      const progress = getPermitProgress(p);
+                      return (
+                        <Badge
+                          value={progress}
+                          label={
+                            progress === "New Permit"
+                              ? t.ptw.statusNewPermit
+                              : progress === "In Progress"
+                              ? t.ptw.statusInProgress
+                              : t.ptw.statusClosed
+                          }
+                        />
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-end">
                     <Link
