@@ -60,7 +60,7 @@ export default function DashboardBackground() {
               y1={n1.y}
               x2={n2.x}
               y2={n2.y}
-              stroke="#5B9BD5"
+              stroke="#E8590C"
               strokeWidth="0.15"
               className="dashboard-bg-pulse"
               style={{ animationDelay: `${(i % 6) * 0.6}s` }}
@@ -73,7 +73,7 @@ export default function DashboardBackground() {
             cx={n.x}
             cy={n.y}
             r="0.55"
-            fill={i % 4 === 0 ? "#D4AF37" : "#5B9BD5"}
+            fill={i % 4 === 0 ? "#D4AF37" : "#E8590C"}
             className="dashboard-bg-pulse"
             style={{ animationDelay: `${(i % 5) * 0.7}s` }}
           />

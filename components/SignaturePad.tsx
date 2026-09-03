@@ -36,6 +36,9 @@ export default function SignaturePad({ label, value, onChange }: SignaturePadPro
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2;
+    // Fixed dark ink on a fixed light pad (see the canvas's `bg-white`
+    // below) — deliberately independent of the app's own (dark) theme,
+    // so a signature always looks like normal ink on paper.
     ctx.strokeStyle = "#101B2D";
 
     if (value) {
@@ -115,7 +118,7 @@ export default function SignaturePad({ label, value, onChange }: SignaturePadPro
         onPointerMove={handlePointerMove}
         onPointerUp={stopDrawing}
         onPointerLeave={stopDrawing}
-        className="h-32 w-full touch-none rounded-xl border border-brand-border bg-brand-surface"
+        className="h-32 w-full touch-none rounded-xl border border-brand-border bg-white"
       />
     </div>
   );

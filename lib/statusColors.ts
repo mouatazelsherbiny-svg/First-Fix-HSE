@@ -5,8 +5,10 @@
  * (components/Badge.tsx) instead of choosing its own color.
  *
  * Each word maps to a semantic tone, not directly to CSS classes, so the
- * same word renders consistently on both light cards (the norm) and dark
- * cards (e.g. the Training History panel) via one lookup.
+ * same word renders consistently everywhere via one lookup. The app's
+ * cards are dark by default (charcoal + orange theme), so the translucent
+ * "dark" variant is the default; pass dark={false} only for a badge placed
+ * on a light surface.
  */
 type Tone = "red" | "redStrong" | "green" | "amber" | "blue" | "gray";
 
@@ -50,6 +52,7 @@ const WORD_TONE: Record<string, Tone> = {
   "N/A": "gray",
 };
 
+// Opt-in variant for a badge placed on a light surface (dark={false}).
 const LIGHT_TONE_CLASSES: Record<Tone, string> = {
   red: "bg-red-50 text-red-700",
   redStrong: "bg-red-600 text-white",
@@ -59,8 +62,8 @@ const LIGHT_TONE_CLASSES: Record<Tone, string> = {
   gray: "bg-brand-grayLight text-brand-grayDark",
 };
 
-// For badges placed on a dark card (e.g. Training History) — same tones,
-// translucent so they read cleanly against black instead of glowing white.
+// The default variant — translucent so tones read cleanly against the
+// app's dark charcoal cards instead of glowing as a pale white chip.
 const DARK_TONE_CLASSES: Record<Tone, string> = {
   red: "bg-red-500/20 text-red-400",
   redStrong: "bg-red-500/40 text-red-300",
@@ -70,7 +73,7 @@ const DARK_TONE_CLASSES: Record<Tone, string> = {
   gray: "bg-white/10 text-white/70",
 };
 
-export function getStatusColorClasses(value: string, dark = false): string {
+export function getStatusColorClasses(value: string, dark = true): string {
   const tone = WORD_TONE[value] ?? "gray";
   return (dark ? DARK_TONE_CLASSES : LIGHT_TONE_CLASSES)[tone];
 }
@@ -79,12 +82,15 @@ export function getStatusColorClasses(value: string, dark = false): string {
 // props take literal colors, not Tailwind classes). Same lookup, same
 // meaning — a value is always the same color whether it's a badge or a
 // chart slice.
+// One step brighter than the light-theme equivalents would be — dark,
+// muted hues read as muddy against a charcoal card, so chart fills lean
+// toward the lighter end of each Tailwind ramp instead.
 const TONE_HEX: Record<Tone, string> = {
-  red: "#DC2626",
-  redStrong: "#991B1B",
-  green: "#16A34A",
-  amber: "#D97706",
-  blue: "#2563EB",
+  red: "#EF4444",
+  redStrong: "#DC2626",
+  green: "#22C55E",
+  amber: "#F59E0B",
+  blue: "#3B82F6",
   gray: "#94A3B8",
 };
 
@@ -94,7 +100,7 @@ export function getChartColor(value: string): string {
 }
 
 /** Full pill classes (shape + color) — pairs with <Badge/>. */
-export function getBadgeClasses(value: string, dark = false): string {
+export function getBadgeClasses(value: string, dark = true): string {
   return `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
     value,
     dark

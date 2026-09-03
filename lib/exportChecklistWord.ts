@@ -57,8 +57,12 @@ interface ChecklistExportData {
   labels: ChecklistExportLabels;
 }
 
-const HEADER_SHADING = { type: ShadingType.SOLID, color: "E4EAF2", fill: "E4EAF2" };
-const TOTAL_SHADING = { type: ShadingType.SOLID, color: "1E4B79", fill: "1E4B79" };
+// Word documents are always viewed/printed on a light page, independent
+// of the web app's own (now dark) theme — these stay fixed, print-safe
+// colors rather than following the app's brand tokens. Only TOTAL_SHADING
+// intentionally tracks the brand accent (currently safety orange).
+const HEADER_SHADING = { type: ShadingType.SOLID, color: "EDEEF0", fill: "EDEEF0" };
+const TOTAL_SHADING = { type: ShadingType.SOLID, color: "E8590C", fill: "E8590C" };
 
 function headerCell(text: string, width?: number): TableCell {
   return new TableCell({

@@ -10,9 +10,9 @@ import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { buildNotifications } from "@/lib/notifications";
 
 const TONE_CLASSES: Record<"red" | "amber" | "blue", string> = {
-  red: "bg-red-50 text-red-700",
-  amber: "bg-amber-50 text-amber-700",
-  blue: "bg-blue-50 text-blue-700",
+  red: "bg-red-500/10 text-red-400",
+  amber: "bg-amber-500/10 text-amber-400",
+  blue: "bg-blue-500/10 text-blue-400",
 };
 
 /** Shared top bar rendered once, above every page's content (see

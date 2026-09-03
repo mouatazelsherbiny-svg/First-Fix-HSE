@@ -9,8 +9,8 @@
      or component should ever set its own background color/hex value.
      (The Login page is the one deliberate exception: it paints a full-screen
      photo background of its own instead of a flat color.)
-     Professional navy/slate theme — clean cool-gray canvas. */
-  --background-app: #E3E9F1;
+     Dark charcoal + safety-orange theme — a dark, low-glare canvas. */
+  --background-app: #17191C;
 }
 
 html,
@@ -20,12 +20,12 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-app);
-  color: #101B2D;
+  color: #F3F4F6;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #B7C3D6 transparent;
+  scrollbar-color: #4B5058 transparent;
 }
 
 .input-field {

@@ -18,6 +18,9 @@ export default function PermitQrCode({ label, hint, value }: PermitQrCodeProps) 
 
   useEffect(() => {
     let active = true;
+    // Deliberately fixed dark-on-light colors, independent of the app's
+    // own (dark) theme — a QR code needs strong, reliable contrast to
+    // scan, and inverting it to match a dark card would break that.
     QRCode.toDataURL(value, {
       width: 220,
       margin: 1,

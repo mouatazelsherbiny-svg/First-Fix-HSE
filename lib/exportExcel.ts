@@ -29,12 +29,15 @@ export async function exportToExcel(filename: string, sheets: ExcelSheet[]): Pro
       width: c.width ?? 22,
     }));
 
+    // Fixed, print-safe header colors — an .xlsx is always opened on a
+    // light sheet background regardless of the web app's own (dark) theme,
+    // so this deliberately does NOT follow the brand.* tokens.
     const headerRow = worksheet.getRow(1);
-    headerRow.font = { bold: true, color: { argb: "FF101B2D" } };
+    headerRow.font = { bold: true, color: { argb: "FF1F2933" } };
     headerRow.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FFE4EAF2" },
+      fgColor: { argb: "FFEDEEF0" },
     };
 
     sheet.rows.forEach((row) => worksheet.addRow(row));

@@ -570,13 +570,13 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {classificationData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #D6DEE9", backgroundColor: "#FFFFFF", fontSize: 12 }}
-                      labelStyle={{ color: "#101B2D" }}
-                      itemStyle={{ color: "#48566B" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      labelStyle={{ color: "#F3F4F6" }}
+                      itemStyle={{ color: "#C7CBD1" }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
@@ -603,13 +603,13 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {riskRatingData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #D6DEE9", backgroundColor: "#FFFFFF", fontSize: 12 }}
-                      labelStyle={{ color: "#101B2D" }}
-                      itemStyle={{ color: "#48566B" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      labelStyle={{ color: "#F3F4F6" }}
+                      itemStyle={{ color: "#C7CBD1" }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
@@ -636,13 +636,13 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {permitStatusData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #D6DEE9", backgroundColor: "#FFFFFF", fontSize: 12 }}
-                      labelStyle={{ color: "#101B2D" }}
-                      itemStyle={{ color: "#48566B" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      labelStyle={{ color: "#F3F4F6" }}
+                      itemStyle={{ color: "#C7CBD1" }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
@@ -662,31 +662,31 @@ function DashboardContent() {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={kpiTrendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D6DEE9" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#34383E" />
                   <XAxis
                     dataKey="label"
-                    tick={{ fontSize: 12, fill: "#8592A3" }}
-                    axisLine={{ stroke: "#D6DEE9" }}
+                    tick={{ fontSize: 12, fill: "#8B92A0" }}
+                    axisLine={{ stroke: "#34383E" }}
                     tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fontSize: 12, fill: "#8592A3" }}
+                    tick={{ fontSize: 12, fill: "#8B92A0" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{ borderRadius: 12, border: "1px solid #D6DEE9", backgroundColor: "#FFFFFF", fontSize: 12 }}
-                    labelStyle={{ color: "#101B2D" }}
-                    itemStyle={{ color: "#48566B" }}
+                    contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                    labelStyle={{ color: "#F3F4F6" }}
+                    itemStyle={{ color: "#C7CBD1" }}
                   />
                   <Line
                     type="monotone"
                     dataKey="value"
                     name={t.dashboard.kpiTrendTitle}
-                    stroke="#1E4B79"
+                    stroke="#E8590C"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: "#1E4B79" }}
+                    dot={{ r: 3, fill: "#E8590C" }}
                     activeDot={{ r: 5 }}
                   />
                 </LineChart>
@@ -706,40 +706,40 @@ function DashboardContent() {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D6DEE9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#34383E" />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12, fill: "#8592A3" }}
-                axisLine={{ stroke: "#D6DEE9" }}
+                tick={{ fontSize: 12, fill: "#8B92A0" }}
+                axisLine={{ stroke: "#34383E" }}
                 tickLine={false}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 12, fill: "#8592A3" }}
+                tick={{ fontSize: 12, fill: "#8B92A0" }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #D6DEE9",
-                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #34383E",
+                  backgroundColor: "#202327",
                   fontSize: 12,
                 }}
-                labelStyle={{ color: "#101B2D" }}
-                itemStyle={{ color: "#48566B" }}
+                labelStyle={{ color: "#F3F4F6" }}
+                itemStyle={{ color: "#C7CBD1" }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar
                 dataKey="open"
                 name={t.dashboard.trendOpen}
-                fill="#DC2626"
+                fill="#EF4444"
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="closed"
                 name={t.dashboard.trendClosed}
-                fill="#16A34A"
+                fill="#22C55E"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
