@@ -42,6 +42,7 @@ export interface TranslationShape {
     monthlyChecklists: string;
     permitToWork: string;
     myPermits: string;
+    myChecklist: string;
     logout: string;
     hello: string;
   };
@@ -132,6 +133,21 @@ export interface TranslationShape {
     fireAssessment: string;
     safetyHealth: string;
     tcEnergization: string;
+  };
+  myChecklist: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    search: string;
+    colType: string;
+    colInspectedBy: string;
+    colInspectionDate: string;
+    colProjectDirector: string;
+    colTotalManpower: string;
+    colActivity: string;
+    colProjectName: string;
+    colFinalScore: string;
+    colActions: string;
   };
   toolbox: {
     formTitle: string;
@@ -453,6 +469,7 @@ export const translations: Record<Locale, TranslationShape> = {
       monthlyChecklists: "Monthly Checklists",
       permitToWork: "Permit to Work",
       myPermits: "My Permits",
+      myChecklist: "My Checklist",
       logout: "Log Out",
       hello: "Hello",
     },
@@ -543,6 +560,21 @@ export const translations: Record<Locale, TranslationShape> = {
       fireAssessment: "Fire Assessment Checklist",
       safetyHealth: "Health & Safety Checklist",
       tcEnergization: "T&C / Energization Checklist",
+    },
+    myChecklist: {
+      title: "My Checklists",
+      subtitle: "Monthly checklists submitted for your project",
+      empty: "No checklists submitted yet for your project.",
+      search: "Search by activity or project director...",
+      colType: "Checklist Type",
+      colInspectedBy: "Inspected By",
+      colInspectionDate: "Inspection Date",
+      colProjectDirector: "Project Director",
+      colTotalManpower: "Total Manpower",
+      colActivity: "Activity",
+      colProjectName: "Project Name",
+      colFinalScore: "Final Average Score",
+      colActions: "Actions",
     },
     toolbox: {
       formTitle: "Toolbox Talk & Training",
@@ -862,6 +894,7 @@ export const translations: Record<Locale, TranslationShape> = {
       monthlyChecklists: "القوائم الشهرية",
       permitToWork: "تصريح العمل",
       myPermits: "تصاريحي",
+      myChecklist: "قوائم فحصي",
       logout: "تسجيل الخروج",
       hello: "أهلاً",
     },
@@ -952,6 +985,21 @@ export const translations: Record<Locale, TranslationShape> = {
       fireAssessment: "قائمة تقييم الحريق",
       safetyHealth: "قائمة الصحة والسلامة",
       tcEnergization: "قائمة الفحص والتشغيل الكهربائي",
+    },
+    myChecklist: {
+      title: "قوائم الفحص الخاصة بي",
+      subtitle: "قوائم الفحص الشهرية المرسلة لمشروعك",
+      empty: "لا توجد قوائم فحص مُرسلة بعد لمشروعك.",
+      search: "ابحث بالنشاط أو مدير المشروع...",
+      colType: "نوع القائمة",
+      colInspectedBy: "تم الفحص بواسطة",
+      colInspectionDate: "تاريخ الفحص",
+      colProjectDirector: "مدير المشروع",
+      colTotalManpower: "إجمالي عدد العمالة",
+      colActivity: "النشاط",
+      colProjectName: "اسم المشروع",
+      colFinalScore: "متوسط النتيجة النهائية",
+      colActions: "إجراءات",
     },
     toolbox: {
       formTitle: "التدريب والتوعية اليومية",

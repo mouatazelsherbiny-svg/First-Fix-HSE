@@ -100,6 +100,7 @@ export default function ChecklistTemplate({
     try {
       await addSubmission({
         templateKey: template.key,
+        inspectedBy,
         projectName: general.projectName,
         inspectionDate: general.inspectionDate,
         projectDirector: general.projectDirector,

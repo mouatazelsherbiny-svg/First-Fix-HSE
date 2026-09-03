@@ -9,6 +9,7 @@ export interface ChecklistSectionStat {
 export interface ChecklistSubmission {
   id: string;
   templateKey: string;
+  inspectedBy: string;
   projectName: string;
   inspectionDate: string;
   projectDirector: string;

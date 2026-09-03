@@ -227,6 +227,7 @@ export default function Sidebar() {
       { href: "/checklists/fire-assessment", label: t.nav.fireChecklist },
       { href: "/checklists/safety-health", label: t.nav.shChecklist },
       { href: "/checklists/tc-energization", label: t.nav.tcChecklist },
+      { href: "/checklists/my-checklist", label: t.nav.myChecklist },
     ],
   };
 

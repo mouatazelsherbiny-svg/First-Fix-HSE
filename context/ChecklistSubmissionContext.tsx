@@ -28,6 +28,7 @@ function mapRow(row: any): ChecklistSubmission {
   return {
     id: row.id,
     templateKey: row.template_key,
+    inspectedBy: row.inspected_by ?? "",
     projectName: row.project_name ?? "",
     inspectionDate: row.inspection_date ?? "",
     projectDirector: row.project_director ?? "",
@@ -77,6 +78,7 @@ export function ChecklistSubmissionProvider({
           .from("checklist_submissions")
           .insert({
             template_key: s.templateKey,
+            inspected_by: s.inspectedBy,
             project_name: s.projectName,
             inspection_date: s.inspectionDate || null,
             project_director: s.projectDirector,
