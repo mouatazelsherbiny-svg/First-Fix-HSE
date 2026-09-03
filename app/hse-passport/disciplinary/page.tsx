@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FileUpload from "@/components/FileUpload";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import {
@@ -112,12 +113,47 @@ function DisciplinaryActionContent() {
     setQuery("");
   };
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.hse.disciplinary.title,
+        columns: [
+          { header: t.hse.employeeName, key: "employeeName" },
+          { header: t.hse.employeeIdCol, key: "employeeIdCol" },
+          { header: t.hse.projectCol, key: "project" },
+          { header: t.hse.date, key: "date" },
+          { header: t.hse.disciplinary.type, key: "type" },
+          { header: t.hse.disciplinary.violationCategory, key: "violationCategory" },
+          { header: t.hse.details, key: "details", width: 40 },
+        ],
+        rows: disciplinaryRecords.map((r) => {
+          const emp = employees.find((e) => e.id === r.employeeId);
+          return {
+            employeeName: emp?.name ?? "—",
+            employeeIdCol: emp?.employeeId ?? "—",
+            project: emp?.project ?? "—",
+            date: r.date,
+            type: r.type,
+            violationCategory: r.violationCategory ?? "—",
+            details: r.details,
+          };
+        }),
+      },
+    ],
+    [disciplinaryRecords, employees, t]
+  );
+
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-brand-black">
           {t.hse.disciplinary.title}
         </h1>
+        <ExportExcelButton
+          filename={t.hse.disciplinary.title}
+          sheets={exportSheets}
+          disabled={disciplinaryRecords.length === 0}
+        />
       </div>
 
       {/* Filter bar */}

@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
 import FileUpload from "@/components/FileUpload";
 import Badge from "@/components/Badge";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { EmployeeRecord, PPE_TYPES, PPE_CONDITIONS } from "@/lib/mockData";
@@ -21,7 +22,7 @@ export default function PpePage() {
 
 function PpeContent() {
   const { t } = useLanguage();
-  const { ppeRecords, addPPERecord } = useHsePassport();
+  const { ppeRecords, addPPERecord, employees } = useHsePassport();
   const [employee, setEmployee] = useState<EmployeeRecord | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -40,10 +41,49 @@ function PpeContent() {
 
   const totalIssued = PPE_TYPES.filter((tp) => latestByType.get(tp)?.received).length;
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.hse.ppe.title,
+        columns: [
+          { header: t.hse.employeeName, key: "employeeName" },
+          { header: t.hse.employeeIdCol, key: "employeeIdCol" },
+          { header: t.hse.projectCol, key: "project" },
+          { header: t.hse.ppe.ppeType, key: "ppeType" },
+          { header: t.hse.ppe.received, key: "received" },
+          { header: t.hse.ppe.dateReceived, key: "dateReceived" },
+          { header: t.hse.ppe.replacementDue, key: "replacementDue" },
+          { header: t.hse.ppe.condition, key: "condition" },
+          { header: t.hse.ppe.remarks, key: "remarks", width: 30 },
+        ],
+        rows: ppeRecords.map((r) => {
+          const emp = employees.find((e) => e.id === r.employeeId);
+          return {
+            employeeName: emp?.name ?? "—",
+            employeeIdCol: emp?.employeeId ?? "—",
+            project: emp?.project ?? "—",
+            ppeType: r.ppeType,
+            received: r.received ? "Yes" : "No",
+            dateReceived: r.dateReceived || "—",
+            replacementDue: r.replacementDueDate || "—",
+            condition: r.conditionAtReturn,
+            remarks: r.remarks || "—",
+          };
+        }),
+      },
+    ],
+    [ppeRecords, employees, t]
+  );
+
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-brand-black">{t.hse.ppe.title}</h1>
+        <ExportExcelButton
+          filename={t.hse.ppe.title}
+          sheets={exportSheets}
+          disabled={ppeRecords.length === 0}
+        />
       </div>
 
       <div className="mb-6">

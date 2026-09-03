@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
 import FileUpload from "@/components/FileUpload";
 import Badge from "@/components/Badge";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { EmployeeRecord } from "@/lib/mockData";
@@ -23,7 +24,7 @@ export default function TrainingPage() {
 
 function TrainingContent() {
   const { t, locale } = useLanguage();
-  const { trainingRecords, addTrainingRecord } = useHsePassport();
+  const { trainingRecords, addTrainingRecord, employees } = useHsePassport();
   const [employee, setEmployee] = useState<EmployeeRecord | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -38,10 +39,45 @@ function TrainingContent() {
   const completedPct = totalCourses > 0 ? Math.round((validCount / totalCourses) * 100) : 0;
   const remainingPct = 100 - completedPct;
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.hse.training.title,
+        columns: [
+          { header: t.hse.employeeName, key: "employeeName" },
+          { header: t.hse.employeeIdCol, key: "employeeIdCol" },
+          { header: t.hse.projectCol, key: "project" },
+          { header: t.hse.training.courseName, key: "courseName" },
+          { header: t.hse.date, key: "date" },
+          { header: t.hse.training.status, key: "status" },
+          { header: t.hse.training.hours, key: "hours" },
+        ],
+        rows: trainingRecords.map((r) => {
+          const emp = employees.find((e) => e.id === r.employeeId);
+          return {
+            employeeName: emp?.name ?? "—",
+            employeeIdCol: emp?.employeeId ?? "—",
+            project: emp?.project ?? "—",
+            courseName: r.courseName,
+            date: r.date,
+            status: r.status,
+            hours: r.hours,
+          };
+        }),
+      },
+    ],
+    [trainingRecords, employees, t]
+  );
+
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-brand-black">{t.hse.training.title}</h1>
+        <ExportExcelButton
+          filename={t.hse.training.title}
+          sheets={exportSheets}
+          disabled={trainingRecords.length === 0}
+        />
       </div>
 
       <div className="mb-6">

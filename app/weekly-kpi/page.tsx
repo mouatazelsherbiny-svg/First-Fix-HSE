@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
@@ -26,6 +27,28 @@ function WeeklyKpiList() {
     return records.filter((r) => r.projectName.toLowerCase().includes(q));
   }, [records, query]);
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.weeklyKpi.listTitle,
+        columns: [
+          { header: t.weeklyKpi.colProject, key: "project" },
+          { header: t.weeklyKpi.colDate, key: "date" },
+          ...WEEKLY_KPI_NUMERIC_FIELDS.map((f) => ({ header: f.label, key: f.key })),
+        ],
+        rows: records.map((r) => ({
+          project: r.projectName,
+          date: new Date(r.date).toLocaleDateString(
+            locale === "ar" ? "ar-EG" : "en-US",
+            { year: "numeric", month: "short", day: "numeric" }
+          ),
+          ...Object.fromEntries(WEEKLY_KPI_NUMERIC_FIELDS.map((f) => [f.key, r[f.key]])),
+        })),
+      },
+    ],
+    [records, t, locale]
+  );
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -35,9 +58,12 @@ function WeeklyKpiList() {
           </h1>
           <p className="mt-1 text-sm text-brand-gray">{t.weeklyKpi.listSubtitle}</p>
         </div>
-        <Link href="/weekly-kpi/new" className="btn-primary">
-          {t.weeklyKpi.newBtn}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={records.length === 0} />
+          <Link href="/weekly-kpi/new" className="btn-primary">
+            {t.weeklyKpi.newBtn}
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4">

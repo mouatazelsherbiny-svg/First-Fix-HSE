@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
+import { exportChecklistToWord } from "@/lib/exportChecklistWord";
 import { PROJECTS } from "@/lib/mockData";
 import {
   ChecklistTemplate as ChecklistTemplateData,
@@ -40,6 +41,7 @@ export default function ChecklistTemplate({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [isExportingWord, setIsExportingWord] = useState(false);
 
   const [general, setGeneral] = useState<GeneralInfo>({
     inspectionDate: "",
@@ -119,6 +121,26 @@ export default function ChecklistTemplate({
       setSubmitError(err instanceof Error ? err.message : t.common.genericError);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleExportWord = async () => {
+    setIsExportingWord(true);
+    try {
+      await exportChecklistToWord({
+        templateTitle: template.title,
+        inspectedBy,
+        general,
+        sectionStats,
+        possibleMap,
+        scoredMap,
+        grandPossible,
+        grandScored,
+        grandPct,
+        labels: { ...t.checklist, projectName: t.form.projectName },
+      });
+    } finally {
+      setIsExportingWord(false);
     }
   };
 
@@ -407,7 +429,15 @@ export default function ChecklistTemplate({
             {t.checklist.success}
           </div>
         )}
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={handleExportWord}
+            disabled={isExportingWord}
+            className="btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isExportingWord ? t.common.exporting : t.common.exportWord}
+          </button>
           <button
             type="button"
             onClick={handleSubmit}

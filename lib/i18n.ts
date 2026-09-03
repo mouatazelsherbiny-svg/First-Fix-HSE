@@ -7,6 +7,9 @@ export interface TranslationShape {
     genericError: string;
     autoAssigned: string;
     loading: string;
+    exportExcel: string;
+    exportWord: string;
+    exporting: string;
   };
   login: {
     title: string;
@@ -181,6 +184,9 @@ export interface TranslationShape {
     date: string;
     attachments: string;
     details: string;
+    employeeName: string;
+    employeeIdCol: string;
+    projectCol: string;
     disciplinary: {
       title: string;
       filterByProject: string;
@@ -384,6 +390,12 @@ export interface TranslationShape {
     recentObservations: string;
     recentPermits: string;
     viewAll: string;
+    analyticsTitle: string;
+    byClassification: string;
+    byRiskRating: string;
+    permitStatusBreakdown: string;
+    kpiTrendTitle: string;
+    noPermitsYet: string;
   };
 }
 
@@ -395,6 +407,9 @@ export const translations: Record<Locale, TranslationShape> = {
       genericError: "Something went wrong. Please try again.",
       autoAssigned: "Assigned automatically on submit",
       loading: "Loading...",
+      exportExcel: "Export to Excel",
+      exportWord: "Export to Word",
+      exporting: "Exporting...",
     },
     login: {
       title: "Welcome back",
@@ -569,6 +584,9 @@ export const translations: Record<Locale, TranslationShape> = {
       date: "Date",
       attachments: "Attachments",
       details: "Details",
+      employeeName: "Employee Name",
+      employeeIdCol: "Employee ID",
+      projectCol: "Project",
       disciplinary: {
         title: "Disciplinary Action",
         filterByProject: "Filter by Project",
@@ -772,6 +790,12 @@ export const translations: Record<Locale, TranslationShape> = {
       recentObservations: "Recent Observations",
       recentPermits: "Recent Permits",
       viewAll: "View all",
+      analyticsTitle: "Analytics",
+      byClassification: "Observations by Classification",
+      byRiskRating: "Observations by Risk Rating",
+      permitStatusBreakdown: "Permit Status Breakdown",
+      kpiTrendTitle: "Weekly KPI Trend — Total Manhours",
+      noPermitsYet: "No permits yet",
     },
   },
   ar: {
@@ -781,6 +805,9 @@ export const translations: Record<Locale, TranslationShape> = {
       genericError: "حدث خطأ ما. من فضلك حاول مرة أخرى.",
       autoAssigned: "يتم تعيينه تلقائيًا عند الإرسال",
       loading: "جارٍ التحميل...",
+      exportExcel: "تصدير إلى إكسل",
+      exportWord: "تصدير إلى وورد",
+      exporting: "جارٍ التصدير...",
     },
     login: {
       title: "أهلاً بعودتك",
@@ -955,6 +982,9 @@ export const translations: Record<Locale, TranslationShape> = {
       date: "التاريخ",
       attachments: "المرفقات",
       details: "التفاصيل",
+      employeeName: "اسم الموظف",
+      employeeIdCol: "الرقم الوظيفي",
+      projectCol: "المشروع",
       disciplinary: {
         title: "الإجراءات التأديبية",
         filterByProject: "فلترة حسب المشروع",
@@ -1158,6 +1188,12 @@ export const translations: Record<Locale, TranslationShape> = {
       recentObservations: "أحدث الملاحظات",
       recentPermits: "أحدث تصاريح العمل",
       viewAll: "عرض الكل",
+      analyticsTitle: "التحليلات",
+      byClassification: "الملاحظات حسب التصنيف",
+      byRiskRating: "الملاحظات حسب درجة الخطورة",
+      permitStatusBreakdown: "توزيع حالة التصاريح",
+      kpiTrendTitle: "اتجاه مؤشرات الأداء الأسبوعية — إجمالي ساعات العمل",
+      noPermitsYet: "لا توجد تصاريح بعد",
     },
   },
 };

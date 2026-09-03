@@ -5,7 +5,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -22,7 +27,9 @@ import { useHsePassport } from "@/context/HsePassportContext";
 import { usePermits } from "@/context/PermitContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { useAuth } from "@/context/AuthContext";
-import { getStatusColorClasses } from "@/lib/statusColors";
+import { getStatusColorClasses, getChartColor } from "@/lib/statusColors";
+import { getPermitProgress } from "@/lib/permitProgress";
+import { CLASSIFICATIONS, RISK_RATINGS } from "@/lib/mockData";
 
 const CHECKLIST_PAGES = [
   { key: "environmental", href: "/checklists/environmental" },
@@ -164,6 +171,60 @@ function DashboardContent() {
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .slice(0, 5),
     [projectPermits]
+  );
+
+  // Fixed category order (from the same lists used everywhere else in the
+  // app) so a slice's color never shifts when other slices appear/disappear.
+  const classificationData = useMemo(
+    () =>
+      CLASSIFICATIONS.map((name) => ({
+        name,
+        value: projectObservations.filter((o) => o.classification === name).length,
+        color: getChartColor(name),
+      })).filter((d) => d.value > 0),
+    [projectObservations]
+  );
+
+  const riskRatingData = useMemo(
+    () =>
+      RISK_RATINGS.map((name) => ({
+        name,
+        value: projectObservations.filter((o) => o.riskRating === name).length,
+        color: getChartColor(name),
+      })).filter((d) => d.value > 0),
+    [projectObservations]
+  );
+
+  const permitStatusData = useMemo(() => {
+    const labels: Record<string, string> = {
+      "New Permit": t.ptw.statusNewPermit,
+      "In Progress": t.ptw.statusInProgress,
+      Closed: t.ptw.statusClosed,
+    };
+    return (["New Permit", "In Progress", "Closed"] as const)
+      .map((status) => ({
+        name: labels[status],
+        value: projectPermits.filter((p) => getPermitProgress(p) === status).length,
+        color: getChartColor(status),
+      }))
+      .filter((d) => d.value > 0);
+  }, [projectPermits, t]);
+
+  const kpiTrendData = useMemo(
+    () =>
+      kpiRecords
+        .filter((r) => r.projectName === project)
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-8)
+        .map((r) => ({
+          label: new Date(r.date).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          value: r.totalManhours,
+        })),
+    [kpiRecords, project, locale]
   );
 
   return (
@@ -486,6 +547,157 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Analytics */}
+      <div className="mt-6">
+        <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+          {t.dashboard.analyticsTitle}
+        </h2>
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="card">
+            <h3 className="mb-3 text-sm font-semibold text-brand-black">
+              {t.dashboard.byClassification}
+            </h3>
+            {classificationData.length > 0 ? (
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={classificationData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={3}
+                    >
+                      {classificationData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} stroke="#F3FAF7" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: "1px solid #C6DAD0", backgroundColor: "#F3FAF7", fontSize: 12 }}
+                      labelStyle={{ color: "#142620" }}
+                      itemStyle={{ color: "#46584F" }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyNote text={t.dashboard.noDataYet} />
+            )}
+          </div>
+          <div className="card">
+            <h3 className="mb-3 text-sm font-semibold text-brand-black">
+              {t.dashboard.byRiskRating}
+            </h3>
+            {riskRatingData.length > 0 ? (
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={riskRatingData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={3}
+                    >
+                      {riskRatingData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} stroke="#F3FAF7" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: "1px solid #C6DAD0", backgroundColor: "#F3FAF7", fontSize: 12 }}
+                      labelStyle={{ color: "#142620" }}
+                      itemStyle={{ color: "#46584F" }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyNote text={t.dashboard.noDataYet} />
+            )}
+          </div>
+          <div className="card">
+            <h3 className="mb-3 text-sm font-semibold text-brand-black">
+              {t.dashboard.permitStatusBreakdown}
+            </h3>
+            {permitStatusData.length > 0 ? (
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={permitStatusData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={3}
+                    >
+                      {permitStatusData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} stroke="#F3FAF7" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: "1px solid #C6DAD0", backgroundColor: "#F3FAF7", fontSize: 12 }}
+                      labelStyle={{ color: "#142620" }}
+                      itemStyle={{ color: "#46584F" }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyNote text={t.dashboard.noDataYet} />
+            )}
+          </div>
+        </div>
+
+        <div className="card mt-5">
+          <h3 className="mb-3 text-sm font-semibold text-brand-black">
+            {t.dashboard.kpiTrendTitle}
+          </h3>
+          {kpiTrendData.length > 0 ? (
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={kpiTrendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#C6DAD0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 12, fill: "#7C8F85" }}
+                    axisLine={{ stroke: "#C6DAD0" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 12, fill: "#7C8F85" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 12, border: "1px solid #C6DAD0", backgroundColor: "#F3FAF7", fontSize: 12 }}
+                    labelStyle={{ color: "#142620" }}
+                    itemStyle={{ color: "#46584F" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name={t.dashboard.kpiTrendTitle}
+                    stroke="#0D9488"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: "#0D9488" }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyNote text={t.dashboard.noDataYet} />
+          )}
+        </div>
+      </div>
+
       {/* Trend chart */}
       <div className="card mt-6">
         <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
@@ -494,11 +706,11 @@ function DashboardContent() {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D7E6DE" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#C6DAD0" />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 12, fill: "#7C8F85" }}
-                axisLine={{ stroke: "#D7E6DE" }}
+                axisLine={{ stroke: "#C6DAD0" }}
                 tickLine={false}
               />
               <YAxis
@@ -510,8 +722,8 @@ function DashboardContent() {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #D7E6DE",
-                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #C6DAD0",
+                  backgroundColor: "#F3FAF7",
                   fontSize: 12,
                 }}
                 labelStyle={{ color: "#142620" }}

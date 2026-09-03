@@ -75,6 +75,24 @@ export function getStatusColorClasses(value: string, dark = false): string {
   return (dark ? DARK_TONE_CLASSES : LIGHT_TONE_CLASSES)[tone];
 }
 
+// Saturated hex equivalents of the tones above, for chart fills (SVG/canvas
+// props take literal colors, not Tailwind classes). Same lookup, same
+// meaning — a value is always the same color whether it's a badge or a
+// chart slice.
+const TONE_HEX: Record<Tone, string> = {
+  red: "#DC2626",
+  redStrong: "#991B1B",
+  green: "#16A34A",
+  amber: "#D97706",
+  blue: "#2563EB",
+  gray: "#94A3B8",
+};
+
+export function getChartColor(value: string): string {
+  const tone = WORD_TONE[value] ?? "gray";
+  return TONE_HEX[tone];
+}
+
 /** Full pill classes (shape + color) — pairs with <Badge/>. */
 export function getBadgeClasses(value: string, dark = false): string {
   return `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(

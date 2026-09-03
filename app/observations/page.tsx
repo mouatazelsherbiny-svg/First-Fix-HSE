@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 
@@ -31,6 +32,43 @@ function ObservationsList() {
     );
   }, [observations, query]);
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.list.title,
+        columns: [
+          { header: t.list.col.reportNumber, key: "reportNumber", width: 14 },
+          { header: t.list.col.project, key: "project" },
+          { header: t.list.col.type, key: "type" },
+          { header: t.list.col.classification, key: "classification" },
+          { header: t.list.col.risk, key: "risk" },
+          { header: t.list.col.status, key: "status" },
+          { header: t.form.observationDetails, key: "details", width: 40 },
+          { header: t.form.inspectedBy, key: "inspectedBy" },
+          { header: t.list.col.date, key: "date" },
+        ],
+        rows: observations.map((o) => ({
+          reportNumber: o.reportNumber,
+          project: o.projectName,
+          type:
+            o.observationType === "Others"
+              ? o.observationTypeOther || t.form.other
+              : o.observationType,
+          classification: o.classification,
+          risk: o.riskRating,
+          status: o.status,
+          details: o.observationDetails,
+          inspectedBy: o.inspectedBy,
+          date: new Date(o.createdAt).toLocaleDateString(
+            locale === "ar" ? "ar-EG" : "en-US",
+            { year: "numeric", month: "short", day: "numeric" }
+          ),
+        })),
+      },
+    ],
+    [observations, t, locale]
+  );
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -38,9 +76,12 @@ function ObservationsList() {
           <h1 className="text-2xl font-bold text-brand-black">{t.list.title}</h1>
           <p className="mt-1 text-sm text-brand-gray">{t.list.subtitle}</p>
         </div>
-        <Link href="/observations/new" className="btn-primary">
-          {t.list.newBtn}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={observations.length === 0} />
+          <Link href="/observations/new" className="btn-primary">
+            {t.list.newBtn}
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4">

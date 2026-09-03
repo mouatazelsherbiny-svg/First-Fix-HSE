@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
+import ExportExcelButton from "@/components/ExportExcelButton";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
@@ -41,6 +42,45 @@ function MyPermitsList() {
     );
   }, [projectPermits, query]);
 
+  const exportSheets = useMemo(
+    () => [
+      {
+        name: t.ptw.myPermitsTitle,
+        columns: [
+          { header: t.ptw.col.permitNumber, key: "permitNumber", width: 14 },
+          { header: t.ptw.col.project, key: "project" },
+          { header: t.ptw.col.type, key: "type" },
+          { header: t.ptw.col.location, key: "location" },
+          { header: t.ptw.contractor, key: "contractor" },
+          { header: t.ptw.startDate, key: "startDate" },
+          { header: t.ptw.startTime, key: "startTime" },
+          { header: t.ptw.endDate, key: "endDate" },
+          { header: t.ptw.endTime, key: "endTime" },
+          { header: t.ptw.col.status, key: "status" },
+          { header: t.ptw.col.permitStatus, key: "permitStatus" },
+          { header: t.ptw.issuerBy, key: "issuerBy" },
+          { header: t.ptw.receiver, key: "receiver" },
+        ],
+        rows: projectPermits.map((p) => ({
+          permitNumber: p.permitNumber,
+          project: p.projectName,
+          type: p.permitType === "Other" ? p.permitTypeOther || t.ptw.other : p.permitType,
+          location: p.workLocation,
+          contractor: p.contractor,
+          startDate: p.startDate,
+          startTime: p.startTime,
+          endDate: p.endDate,
+          endTime: p.endTime,
+          status: p.status,
+          permitStatus: getPermitProgress(p),
+          issuerBy: p.requestedBy,
+          receiver: p.receiver,
+        })),
+      },
+    ],
+    [projectPermits, t]
+  );
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -50,9 +90,16 @@ function MyPermitsList() {
             {t.ptw.myPermitsSubtitle} ({project})
           </p>
         </div>
-        <Link href="/permit-to-work/new" className="btn-primary">
-          {t.ptw.newBtn}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <ExportExcelButton
+            filename={t.ptw.myPermitsTitle}
+            sheets={exportSheets}
+            disabled={projectPermits.length === 0}
+          />
+          <Link href="/permit-to-work/new" className="btn-primary">
+            {t.ptw.newBtn}
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4">
