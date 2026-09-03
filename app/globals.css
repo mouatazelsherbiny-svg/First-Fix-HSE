@@ -9,8 +9,8 @@
      or component should ever set its own background color/hex value.
      (The Login page is the one deliberate exception: it paints a full-screen
      photo background of its own instead of a flat color.)
-     Light forest theme — soft mint/sage canvas. */
-  --background-app: #E6F1EB;
+     Professional navy/slate theme — clean cool-gray canvas. */
+  --background-app: #E3E9F1;
 }
 
 html,
@@ -20,12 +20,12 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-app);
-  color: #142620;
+  color: #101B2D;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #B9D3C6 transparent;
+  scrollbar-color: #B7C3D6 transparent;
 }
 
 .input-field {
@@ -57,4 +57,26 @@ body {
 
 .card {
   @apply rounded-2xl border border-brand-border bg-brand-surface p-6 shadow-card;
+}
+
+/* Scroll/navigation fade-in (see components/ScrollReveal.tsx). Cards start
+   fully visible by default — JS opts individual cards into the hidden
+   starting state, so a script error can never leave content invisible. */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal-item.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

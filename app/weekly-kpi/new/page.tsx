@@ -51,7 +51,7 @@ function NewWeeklyKpiForm() {
         ...values,
       });
       setSuccess(true);
-      setTimeout(() => router.push("/weekly-kpi"), 900);
+      setTimeout(() => router.push("/dashboard"), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

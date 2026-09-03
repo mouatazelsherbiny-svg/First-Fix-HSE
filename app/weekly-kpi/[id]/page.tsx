@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
@@ -23,6 +23,7 @@ export default function WeeklyKpiDetailPage() {
 function WeeklyKpiDetail() {
   const { t, locale } = useLanguage();
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { getById, updateRecord } = useWeeklyKpi();
 
   const record = getById(params.id);
@@ -71,7 +72,10 @@ function WeeklyKpiDetail() {
     try {
       await updateRecord(record.id, { projectName, date, ...values });
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => {
+        setSaved(false);
+        router.push("/dashboard");
+      }, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

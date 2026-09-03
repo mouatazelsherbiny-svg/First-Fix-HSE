@@ -36,7 +36,7 @@ export default function SignaturePad({ label, value, onChange }: SignaturePadPro
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#142620";
+    ctx.strokeStyle = "#101B2D";
 
     if (value) {
       const img = new Image();

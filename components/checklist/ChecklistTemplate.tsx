@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
@@ -35,6 +36,7 @@ export default function ChecklistTemplate({
   const { t } = useLanguage();
   const { user } = useAuth();
   const { addSubmission } = useChecklistSubmissions();
+  const router = useRouter();
 
   const inspectedBy = user ? `${user.name} (${user.employeeCode})` : "";
 
@@ -117,6 +119,7 @@ export default function ChecklistTemplate({
         grandPct,
       });
       setSubmitSuccess(true);
+      setTimeout(() => router.push("/dashboard"), 1200);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t.common.genericError);
     } finally {

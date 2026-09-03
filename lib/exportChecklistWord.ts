@@ -57,8 +57,8 @@ interface ChecklistExportData {
   labels: ChecklistExportLabels;
 }
 
-const HEADER_SHADING = { type: ShadingType.SOLID, color: "DCEAE3", fill: "DCEAE3" };
-const TOTAL_SHADING = { type: ShadingType.SOLID, color: "0D9488", fill: "0D9488" };
+const HEADER_SHADING = { type: ShadingType.SOLID, color: "E4EAF2", fill: "E4EAF2" };
+const TOTAL_SHADING = { type: ShadingType.SOLID, color: "1E4B79", fill: "1E4B79" };
 
 function headerCell(text: string, width?: number): TableCell {
   return new TableCell({

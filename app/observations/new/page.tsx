@@ -66,7 +66,7 @@ function NewObservationForm() {
         inspectedBy,
       });
       setSuccess(true);
-      setTimeout(() => router.push("/observations"), 900);
+      setTimeout(() => router.push("/dashboard"), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

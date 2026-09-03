@@ -8,40 +8,42 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light forest theme — soft mint/sage canvas with a deep teal
-        // accent and a muted gold secondary. Key NAMES are kept stable on
-        // purpose (only the hex VALUES changed) so every existing
-        // `text-brand-black` / `bg-brand-orange` / etc. call site across
-        // the app re-themes automatically without being touched file by
-        // file. See the doc comment above each key for what it now means.
+        // Professional navy/slate theme — clean cool-gray canvas with a
+        // deep navy-blue accent and a muted gold secondary. Key NAMES are
+        // kept stable on purpose (only the hex VALUES changed) so every
+        // existing `text-brand-black` / `bg-brand-orange` / etc. call site
+        // across the app re-themes automatically without being touched
+        // file by file. See the doc comment above each key for what it
+        // now means.
         brand: {
-          // Primary accent (deep teal) — buttons, active nav state, focus
-          // rings, links. Dark enough to carry white text at good contrast.
-          orange: "#0D9488",
+          // Primary accent (deep navy blue) — buttons, active nav state,
+          // focus rings, links. Dark enough to carry white text at good
+          // contrast.
+          orange: "#1E4B79",
           // Accent hover/darker shade.
-          orangeDark: "#0F766E",
+          orangeDark: "#163A5F",
           // Accent tint — active-icon-circle bg, subtle highlight chip.
-          orangeLight: "#CCFBF1",
+          orangeLight: "#DCEAF3",
           // Muted/tertiary text — placeholders, hints, meta text.
-          gray: "#7C8F85",
+          gray: "#8592A3",
           // Secondary text — field labels, sub-text.
-          grayDark: "#46584F",
+          grayDark: "#48566B",
           // Elevated/hover surface — chip bg, hover bg, table header bg,
           // nav-pill hover/badge bg in the sidebar menu.
-          grayLight: "#DCEAE3",
+          grayLight: "#E4EAF2",
           // Primary text — headings/body copy.
-          black: "#142620",
+          black: "#101B2D",
           // Card/surface background — cards, inputs, the sidebar menu
-          // panel. A step darker than pure white so boxes read as a
-          // distinct surface against the page canvas.
-          surface: "#F3FAF7",
+          // panel. Pure white so boxes read as a distinct, elevated
+          // surface against the (now slightly darker) page canvas.
+          surface: "#FFFFFF",
           // Shared border color.
-          border: "#C6DAD0",
+          border: "#D6DEE9",
           // Secondary accent (gold) — used sparingly for one
           // distinguishing highlight, never as the primary action color.
           gold: "#B8952E",
           // Text/icon color for content placed on top of a solid
-          // `brand.orange` (teal) fill — teal is dark enough here for
+          // `brand.orange` (navy) fill — navy is dark enough here for
           // plain white text/icons.
           onAccent: "#FFFFFF",
         },

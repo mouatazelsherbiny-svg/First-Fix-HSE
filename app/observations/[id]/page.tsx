@@ -61,7 +61,10 @@ function ObservationDetail() {
         closeOutPhotos,
       });
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => {
+        setSaved(false);
+        router.push("/dashboard");
+      }, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

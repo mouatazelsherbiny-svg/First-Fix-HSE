@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import ScrollReveal from "./ScrollReveal";
 
 export default function ProtectedRoute({
   children,
@@ -36,7 +38,10 @@ export default function ProtectedRoute({
       {/* pt-14 clears the mobile top bar; lg:ps-64 clears the fixed
           sidebar's width once it's always-visible from `lg` up. */}
       <main className="min-h-screen pt-14 lg:ps-64 lg:pt-0">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <Topbar />
+          <ScrollReveal>{children}</ScrollReveal>
+        </div>
       </main>
     </div>
   );

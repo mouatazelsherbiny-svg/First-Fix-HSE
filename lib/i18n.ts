@@ -397,6 +397,17 @@ export interface TranslationShape {
     kpiTrendTitle: string;
     noPermitsYet: string;
   };
+  topbar: {
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
+    notifications: string;
+    noNotifications: string;
+    permitsNeedingAttention: string;
+    ppeReplacementDue: string;
+    trainingExpired: string;
+    checklistsNotSubmitted: string;
+  };
 }
 
 export const translations: Record<Locale, TranslationShape> = {
@@ -797,6 +808,17 @@ export const translations: Record<Locale, TranslationShape> = {
       kpiTrendTitle: "Weekly KPI Trend — Total Manhours",
       noPermitsYet: "No permits yet",
     },
+    topbar: {
+      greetingMorning: "Good Morning",
+      greetingAfternoon: "Good Afternoon",
+      greetingEvening: "Good Evening",
+      notifications: "Notifications",
+      noNotifications: "You're all caught up — no new notifications",
+      permitsNeedingAttention: "{count} permit(s) ending soon or awaiting closure",
+      ppeReplacementDue: "{count} PPE item(s) due for replacement soon",
+      trainingExpired: "{count} training record(s) have expired",
+      checklistsNotSubmitted: "{count} monthly checklist(s) not submitted yet this month",
+    },
   },
   ar: {
     appName: "فيرست فيكس - الصحة والسلامة",
@@ -1194,6 +1216,17 @@ export const translations: Record<Locale, TranslationShape> = {
       permitStatusBreakdown: "توزيع حالة التصاريح",
       kpiTrendTitle: "اتجاه مؤشرات الأداء الأسبوعية — إجمالي ساعات العمل",
       noPermitsYet: "لا توجد تصاريح بعد",
+    },
+    topbar: {
+      greetingMorning: "صباح الخير",
+      greetingAfternoon: "مساء الخير",
+      greetingEvening: "مساء الخير",
+      notifications: "الإشعارات",
+      noNotifications: "لا توجد إشعارات جديدة",
+      permitsNeedingAttention: "{count} تصريح على وشك الانتهاء أو بانتظار الإغلاق",
+      ppeReplacementDue: "{count} من مهمات الوقاية الشخصية بحاجة للاستبدال قريبًا",
+      trainingExpired: "{count} من سجلات التدريب منتهية الصلاحية",
+      checklistsNotSubmitted: "{count} من قوائم الفحص الشهرية لم تُرسل بعد هذا الشهر",
     },
   },
 };

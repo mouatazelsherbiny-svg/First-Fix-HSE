@@ -30,11 +30,11 @@ export async function exportToExcel(filename: string, sheets: ExcelSheet[]): Pro
     }));
 
     const headerRow = worksheet.getRow(1);
-    headerRow.font = { bold: true, color: { argb: "FF142620" } };
+    headerRow.font = { bold: true, color: { argb: "FF101B2D" } };
     headerRow.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FFDCEAE3" },
+      fgColor: { argb: "FFE4EAF2" },
     };
 
     sheet.rows.forEach((row) => worksheet.addRow(row));

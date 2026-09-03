@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
 import FileUpload from "@/components/FileUpload";
@@ -249,6 +250,7 @@ function AddPpeForm({
   }) => Promise<void>;
 }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [rows, setRows] = useState<Record<string, PpeRowState>>(() =>
     Object.fromEntries(
       PPE_TYPES.map((tp) => {
@@ -283,6 +285,7 @@ function AddPpeForm({
         })
       );
       onDone();
+      setTimeout(() => router.push("/dashboard"), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

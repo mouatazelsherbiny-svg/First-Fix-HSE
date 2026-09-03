@@ -47,7 +47,7 @@ interface NavGroupItem {
 /** Pill row shared shell: icon badge + label + optional count badge,
  *  filled/tinted teal when the item (or its group) is the active route. */
 const PILL_ROW =
-  "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200";
+  "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-base font-medium transition-colors duration-200";
 const PILL_ACTIVE = "bg-brand-orangeLight text-brand-orange";
 const PILL_INACTIVE = "text-brand-grayDark hover:bg-brand-grayLight hover:text-brand-black";
 
@@ -126,7 +126,7 @@ function PillGroup({ label, icon: Icon, basePath, count, children }: NavGroupIte
               <Link
                 key={c.href}
                 href={c.href}
-                className={`block rounded-lg px-3 py-2 text-sm transition-colors duration-200 ${
+                className={`block rounded-lg px-3 py-2 text-[15px] transition-colors duration-200 ${
                   childActive
                     ? "font-semibold text-brand-orange"
                     : "text-brand-grayDark hover:text-brand-black"

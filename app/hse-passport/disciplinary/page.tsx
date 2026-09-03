@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpFromLine,
   TriangleAlert,
@@ -393,6 +394,7 @@ function AddDisciplinaryForm({
   }) => Promise<void>;
 }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [employeeId, setEmployeeId] = useState(lockedEmployee?.id ?? "");
   const [type, setType] = useState<DisciplinaryType | "">("");
   const [violationCategory, setViolationCategory] = useState("");
@@ -415,6 +417,7 @@ function AddDisciplinaryForm({
         attachments,
       });
       onDone();
+      setTimeout(() => router.push("/dashboard"), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }

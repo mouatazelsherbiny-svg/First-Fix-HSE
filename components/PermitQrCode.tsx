@@ -21,7 +21,7 @@ export default function PermitQrCode({ label, hint, value }: PermitQrCodeProps) 
     QRCode.toDataURL(value, {
       width: 220,
       margin: 1,
-      color: { dark: "#142620", light: "#FFFFFF" },
+      color: { dark: "#101B2D", light: "#FFFFFF" },
     })
       .then((url) => {
         if (active) setDataUrl(url);
