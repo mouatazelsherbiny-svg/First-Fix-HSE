@@ -23,6 +23,33 @@ body {
   color: #F3F4F6;
 }
 
+/* App-wide background image (the "First Fix" brand photo) for every
+   protected/internal page — applied directly as the BODY's own CSS
+   background rather than as a separate positioned React element.
+   (An earlier version used a `position: fixed` div for this — in
+   production its layout box collapsed to a tiny fraction of the
+   viewport width for reasons that weren't worth chasing further, so the
+   photo never showed. A background-image on <body> has no positioning/
+   containing-block subtleties: the browser paints it behind all content
+   by definition, no z-index or fixed-position machinery involved.)
+   The gradient layer beneath the image is a flat, semi-transparent dark
+   wash so text/cards stay readable — keep it moderate (~40%) so the
+   photo is still clearly visible, not just a hint of it.
+   LOGIN-PAGE EXCEPTION: the login page paints its own full-screen photo
+   inline and isn't affected by this (it doesn't use this shared body
+   background — see app/login/page.tsx). This body-level image is only
+   ever seen behind the protected app pages, since only those show the
+   translucent/backdrop-blurred cards, sidebar, and topbar that let it
+   show through. */
+body.app-bg-image {
+  background-image: linear-gradient(rgba(20, 22, 26, 0.4), rgba(20, 22, 26, 0.4)),
+    url("/brand/first-fix-bg.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #4B5058 transparent;
@@ -56,7 +83,7 @@ body {
 }
 
 /* Glassmorphism: translucent surface + backdrop blur so the app
-   background image (see components/AppBackground.tsx) shows through,
+   background image (the .app-bg-image rule above, on <body>) shows through,
    softened, behind every card. */
 .card {
   @apply rounded-2xl border border-brand-border bg-brand-surface/40 p-6 shadow-card backdrop-blur-xl;
