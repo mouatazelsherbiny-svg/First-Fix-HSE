@@ -1,27 +1,25 @@
-/** App-wide background layer — the "First Fix" brand image, blurred and
- *  dimmed, sitting behind every protected page (mounted once in
- *  ProtectedRoute). Paired with the translucent, backdrop-blurred surfaces
- *  (see .card / .input-field / .btn-secondary in globals.css and the
- *  Sidebar/Topbar panels) for the glassmorphism look: content genuinely
- *  floats over the image rather than just sitting on a flat dark canvas.
+/** App-wide background layer — the "First Fix" brand image sitting behind
+ *  every protected page (mounted once in ProtectedRoute), paired with the
+ *  translucent, backdrop-blurred cards/sidebar/topbar (see .card in
+ *  globals.css) for the glassmorphism look: the photo itself stays crisp
+ *  and vivid, and the "frosted glass" comes from the panels blurring it
+ *  as it shows through them — not from pre-blurring the photo itself.
  *  Fixed positioning keeps it stationary while the page scrolls.
  *
- *  NOTE: the scrim below is intentionally a MODERATE (not heavy) overlay.
- *  An earlier version used ~82% opacity in the exact same hex as the page's
- *  own flat canvas color (--background-app) — which made the photo behind
- *  it essentially invisible (a near-opaque layer of the same color as the
- *  "no background" state). Keep this well under ~55% so the image actually
- *  reads once blurred. */
+ *  History note: earlier versions pre-blurred this image AND sat it under
+ *  a near-opaque dark scrim (up to 82% — in the exact same hex as the
+ *  page's own flat canvas color), which made it essentially invisible.
+ *  Keep the scrim light; the image should read clearly. */
 export default function AppBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div
-        className="absolute inset-0 scale-110 bg-cover bg-center blur-xl"
+        className="absolute inset-0 scale-105 bg-cover bg-center"
         style={{ backgroundImage: "url(/brand/first-fix-bg.jpg)" }}
       />
-      {/* Dark scrim so text and glass surfaces stay readable — kept light
-          enough that the image is clearly visible behind the blur. */}
-      <div className="absolute inset-0 bg-[#1F2226]/45" />
+      {/* Light scrim — just enough to keep white text/icons legible;
+          the photo underneath should stay clearly visible. */}
+      <div className="absolute inset-0 bg-[#14161A]/40" />
     </div>
   );
 }

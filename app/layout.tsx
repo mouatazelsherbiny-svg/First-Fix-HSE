@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className="bg-app-base">
+    <html lang="en" dir="ltr">
       <body className="bg-app-base font-sans antialiased">
         <LanguageProvider>
           <AuthProvider>
