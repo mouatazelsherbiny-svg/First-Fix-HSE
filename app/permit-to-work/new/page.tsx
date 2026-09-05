@@ -256,7 +256,7 @@ function NewPermitForm() {
                 className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   contractorType === "First Fix"
                     ? "bg-brand-orange text-brand-onAccent"
-                    : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                    : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
                 }`}
               >
                 {t.ptw.contractorFirstFix}
@@ -267,7 +267,7 @@ function NewPermitForm() {
                 className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   contractorType === "Subcontractor"
                     ? "bg-brand-orange text-brand-onAccent"
-                    : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                    : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
                 }`}
               >
                 {t.ptw.contractorSubcontractor}
@@ -403,10 +403,10 @@ function NewPermitForm() {
             <span className="rounded-xl bg-brand-orange px-4 py-2 text-sm font-semibold text-brand-onAccent">
               {t.ptw.statusNewPermit}
             </span>
-            <span className="rounded-xl border border-brand-border bg-brand-surface px-4 py-2 text-sm font-semibold text-brand-gray">
+            <span className="rounded-xl border border-brand-border bg-brand-surface/85 px-4 py-2 text-sm font-semibold text-brand-gray">
               {t.ptw.statusInProgress}
             </span>
-            <span className="rounded-xl border border-brand-border bg-brand-surface px-4 py-2 text-sm font-semibold text-brand-gray">
+            <span className="rounded-xl border border-brand-border bg-brand-surface/85 px-4 py-2 text-sm font-semibold text-brand-gray">
               {t.ptw.statusClosed}
             </span>
           </div>
@@ -419,7 +419,7 @@ function NewPermitForm() {
             {HAZARD_CATEGORIES.map((h) => (
               <label
                 key={h}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface/85 px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
               >
                 <input
                   type="checkbox"
@@ -482,7 +482,7 @@ function NewPermitForm() {
             {PPE_FOR_PERMIT.map((p) => (
               <label
                 key={p}
-                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-brand-border bg-brand-surface/85 px-3 py-2 text-sm text-brand-grayDark transition hover:border-brand-orange"
               >
                 <input
                   type="checkbox"
@@ -505,7 +505,7 @@ function NewPermitForm() {
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 isolationRequired
                   ? "bg-brand-orange text-brand-onAccent"
-                  : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                  : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
               }`}
             >
               {t.ptw.isolationYes}
@@ -516,7 +516,7 @@ function NewPermitForm() {
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 !isolationRequired
                   ? "bg-brand-orange text-brand-onAccent"
-                  : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                  : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
               }`}
             >
               {t.ptw.isolationNo}

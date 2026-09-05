@@ -260,7 +260,7 @@ function PermitDetail() {
                 <img
                   src={permit.issuerSignature}
                   alt={t.ptw.issuerSignature}
-                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface object-contain"
+                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface/85 object-contain"
                 />
               </div>
             )}
@@ -271,7 +271,7 @@ function PermitDetail() {
                 <img
                   src={permit.receiverSignature}
                   alt={t.ptw.receiverSignature}
-                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface object-contain"
+                  className="h-24 w-full rounded-xl border border-brand-border bg-brand-surface/85 object-contain"
                 />
               </div>
             )}
@@ -294,7 +294,7 @@ function PermitDetail() {
             className={`rounded-xl px-4 py-2 text-sm font-semibold ${
               getPermitProgress(permit) === "New Permit"
                 ? "bg-brand-orange text-brand-onAccent"
-                : "border border-brand-border bg-brand-surface text-brand-gray"
+                : "border border-brand-border bg-brand-surface/85 text-brand-gray"
             }`}
           >
             {t.ptw.statusNewPermit}
@@ -303,7 +303,7 @@ function PermitDetail() {
             className={`rounded-xl px-4 py-2 text-sm font-semibold ${
               getPermitProgress(permit) === "In Progress"
                 ? "bg-brand-orange text-brand-onAccent"
-                : "border border-brand-border bg-brand-surface text-brand-gray"
+                : "border border-brand-border bg-brand-surface/85 text-brand-gray"
             }`}
           >
             {t.ptw.statusInProgress}
@@ -315,7 +315,7 @@ function PermitDetail() {
             className={`rounded-xl px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed ${
               permit.permitStatus === "Closed"
                 ? "bg-brand-orange text-brand-onAccent"
-                : "border border-brand-border bg-brand-surface text-brand-grayDark hover:bg-brand-grayLight"
+                : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
             }`}
           >
             {isClosing ? t.common.loading : t.ptw.statusClosed}

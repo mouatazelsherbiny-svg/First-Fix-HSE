@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "./Sidebar";
+import AppBackground from "./AppBackground";
 import Topbar from "./Topbar";
 import ScrollReveal from "./ScrollReveal";
 
@@ -21,9 +22,10 @@ export default function ProtectedRoute({
     }
   }, [isLoading, user, router]);
 
-  // No background color here by design — the page canvas color is set once,
-  // globally, on <html>/<body> (see globals.css: --background-app) and every
-  // page inherits it automatically. Nothing below should set its own color.
+  // The flat page canvas color still lives once, globally, on <html>/<body>
+  // (see globals.css: --background-app) as the fallback underneath
+  // everything. AppBackground layers the brand image + scrim on top of
+  // that, fixed behind the whole app (see components/AppBackground.tsx).
   if (isLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -34,6 +36,7 @@ export default function ProtectedRoute({
 
   return (
     <div className="min-h-screen">
+      <AppBackground />
       <Sidebar />
       {/* pt-14 clears the mobile top bar; lg:ps-64 clears the fixed
           sidebar's width once it's always-visible from `lg` up. */}

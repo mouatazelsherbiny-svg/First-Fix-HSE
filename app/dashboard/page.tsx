@@ -570,11 +570,11 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {classificationData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#292D32" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #3E434B", backgroundColor: "#292D32", fontSize: 12 }}
                       labelStyle={{ color: "#F3F4F6" }}
                       itemStyle={{ color: "#C7CBD1" }}
                     />
@@ -603,11 +603,11 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {riskRatingData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#292D32" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #3E434B", backgroundColor: "#292D32", fontSize: 12 }}
                       labelStyle={{ color: "#F3F4F6" }}
                       itemStyle={{ color: "#C7CBD1" }}
                     />
@@ -636,11 +636,11 @@ function DashboardContent() {
                       paddingAngle={3}
                     >
                       {permitStatusData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#202327" strokeWidth={2} />
+                        <Cell key={entry.name} fill={entry.color} stroke="#292D32" strokeWidth={2} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #3E434B", backgroundColor: "#292D32", fontSize: 12 }}
                       labelStyle={{ color: "#F3F4F6" }}
                       itemStyle={{ color: "#C7CBD1" }}
                     />
@@ -662,11 +662,11 @@ function DashboardContent() {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={kpiTrendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#34383E" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3E434B" />
                   <XAxis
                     dataKey="label"
                     tick={{ fontSize: 12, fill: "#8B92A0" }}
-                    axisLine={{ stroke: "#34383E" }}
+                    axisLine={{ stroke: "#3E434B" }}
                     tickLine={false}
                   />
                   <YAxis
@@ -676,7 +676,7 @@ function DashboardContent() {
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{ borderRadius: 12, border: "1px solid #34383E", backgroundColor: "#202327", fontSize: 12 }}
+                    contentStyle={{ borderRadius: 12, border: "1px solid #3E434B", backgroundColor: "#292D32", fontSize: 12 }}
                     labelStyle={{ color: "#F3F4F6" }}
                     itemStyle={{ color: "#C7CBD1" }}
                   />
@@ -706,11 +706,11 @@ function DashboardContent() {
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#34383E" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3E434B" />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 12, fill: "#8B92A0" }}
-                axisLine={{ stroke: "#34383E" }}
+                axisLine={{ stroke: "#3E434B" }}
                 tickLine={false}
               />
               <YAxis
@@ -722,8 +722,8 @@ function DashboardContent() {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid #34383E",
-                  backgroundColor: "#202327",
+                  border: "1px solid #3E434B",
+                  backgroundColor: "#292D32",
                   fontSize: 12,
                 }}
                 labelStyle={{ color: "#F3F4F6" }}

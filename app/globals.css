@@ -10,7 +10,7 @@
      (The Login page is the one deliberate exception: it paints a full-screen
      photo background of its own instead of a flat color.)
      Dark charcoal + safety-orange theme — a dark, low-glare canvas. */
-  --background-app: #17191C;
+  --background-app: #1F2226;
 }
 
 html,
@@ -29,7 +29,7 @@ body {
 }
 
 .input-field {
-  @apply w-full rounded-xl border border-brand-border bg-brand-surface px-4 py-2.5 text-sm text-brand-black placeholder:text-brand-gray outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20;
+  @apply w-full rounded-xl border border-brand-border bg-brand-surface/60 px-4 py-2.5 text-sm text-brand-black placeholder:text-brand-gray outline-none backdrop-blur-md transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20;
 }
 
 .label-field {
@@ -52,11 +52,14 @@ body {
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-xl border border-brand-border bg-brand-surface px-5 py-2.5 text-sm font-semibold text-brand-grayDark shadow-sm transition hover:bg-brand-grayLight;
+  @apply inline-flex items-center justify-center rounded-xl border border-brand-border bg-brand-surface/60 px-5 py-2.5 text-sm font-semibold text-brand-grayDark shadow-sm backdrop-blur-md transition hover:bg-brand-grayLight/80;
 }
 
+/* Glassmorphism: translucent surface + backdrop blur so the app
+   background image (see components/AppBackground.tsx) shows through,
+   softened, behind every card. */
 .card {
-  @apply rounded-2xl border border-brand-border bg-brand-surface p-6 shadow-card;
+  @apply rounded-2xl border border-brand-border bg-brand-surface/55 p-6 shadow-card backdrop-blur-xl;
 }
 
 /* Scroll/navigation fade-in (see components/ScrollReveal.tsx). Cards start

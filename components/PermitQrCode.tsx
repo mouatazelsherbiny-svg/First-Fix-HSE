@@ -40,7 +40,7 @@ export default function PermitQrCode({ label, hint, value }: PermitQrCodeProps) 
   return (
     <div>
       <p className="label-field">{label}</p>
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-brand-border bg-brand-surface p-4">
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-brand-border bg-brand-surface/85 p-4">
         {dataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={dataUrl} alt={label} className="h-40 w-40" />

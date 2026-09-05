@@ -33,16 +33,16 @@ const config: Config = {
           // Elevated/hover surface — chip bg, hover bg, table header bg,
           // nav-pill hover/badge bg in the sidebar menu. A step lighter
           // than the card surface for a visible hover/elevation cue.
-          grayLight: "#2B2F35",
+          grayLight: "#343940",
           // Primary text — headings/body copy. Near-white, not pure white,
           // so large blocks of text stay easy on the eye.
           black: "#F3F4F6",
           // Card/surface background — cards, inputs, the sidebar menu
           // panel. A step lighter than the page canvas so boxes read as a
           // distinct, elevated surface against it.
-          surface: "#202327",
+          surface: "#292D32",
           // Shared border color — visible but subtle against dark cards.
-          border: "#34383E",
+          border: "#3E434B",
           // Secondary accent (gold) — used sparingly for one
           // distinguishing highlight, never as the primary action color.
           gold: "#C9A227",

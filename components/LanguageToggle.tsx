@@ -9,7 +9,7 @@ export default function LanguageToggle({ className = "" }: { className?: string 
     <button
       type="button"
       onClick={toggleLocale}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface px-3.5 py-1.5 text-xs font-semibold text-brand-grayDark shadow-sm transition hover:border-brand-orange hover:text-brand-orange ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface/85 px-3.5 py-1.5 text-xs font-semibold text-brand-grayDark shadow-sm transition hover:border-brand-orange hover:text-brand-orange ${className}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

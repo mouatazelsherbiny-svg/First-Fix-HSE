@@ -117,7 +117,7 @@ export default function Topbar() {
         </button>
 
         {showNotifications && (
-          <div className="absolute end-0 z-20 mt-2 w-72 rounded-xl border border-brand-border bg-brand-surface p-3 shadow-cardHover">
+          <div className="absolute end-0 z-20 mt-2 w-72 rounded-xl border border-brand-border bg-brand-surface/80 p-3 shadow-cardHover backdrop-blur-xl">
             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand-grayDark">
               {t.topbar.notifications}
             </p>

@@ -243,7 +243,7 @@ export default function ChecklistTemplate({
         {sectionStats.map(({ section, possible, scored }) => (
           <div
             key={section.id}
-            className="overflow-hidden rounded-2xl border border-brand-border bg-brand-surface shadow-card"
+            className="overflow-hidden rounded-2xl border border-brand-border bg-brand-surface/55 shadow-card backdrop-blur-xl"
           >
             <div className="bg-black px-4 py-3 sm:px-6">
               <h3 className="text-sm font-bold text-white sm:text-base">

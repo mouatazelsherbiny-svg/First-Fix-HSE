@@ -201,6 +201,12 @@ export default function Sidebar() {
       icon: ClipboardCheck,
       count: permits.filter((p) => p.projectName === user?.project).length,
     },
+    {
+      href: "/my-checklists",
+      label: t.nav.myChecklist,
+      icon: CalendarCheck,
+      count: checklistSubmissions.filter((s) => s.projectName === user?.project).length,
+    },
   ];
 
   const hsePassportGroup: NavGroupItem = {
@@ -227,7 +233,6 @@ export default function Sidebar() {
       { href: "/checklists/fire-assessment", label: t.nav.fireChecklist },
       { href: "/checklists/safety-health", label: t.nav.shChecklist },
       { href: "/checklists/tc-energization", label: t.nav.tcChecklist },
-      { href: "/checklists/my-checklist", label: t.nav.myChecklist },
     ],
   };
 
@@ -241,7 +246,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile top bar (hidden from lg up, where the sidebar is always visible) */}
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-brand-border bg-brand-surface px-4 lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-brand-border bg-brand-surface/70 px-4 backdrop-blur-xl lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -267,7 +272,7 @@ export default function Sidebar() {
 
       {/* Sidebar panel */}
       <aside
-        className={`fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-brand-border bg-brand-surface transition-transform duration-300 ease-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-brand-border bg-brand-surface/70 backdrop-blur-xl transition-transform duration-300 ease-out lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : closedTranslate
         }`}
       >

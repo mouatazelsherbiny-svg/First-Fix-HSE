@@ -189,7 +189,7 @@ function DisciplinaryActionContent() {
                 autoComplete="off"
               />
               {query.trim() && (
-                <div className="absolute z-30 mt-1 max-h-64 w-full max-w-xs overflow-y-auto rounded-xl border border-brand-border bg-brand-surface shadow-lg">
+                <div className="absolute z-30 mt-1 max-h-64 w-full max-w-xs overflow-y-auto rounded-xl border border-brand-border bg-brand-surface/85 shadow-lg backdrop-blur-xl">
                   {matches.length === 0 ? (
                     <p className="px-4 py-3 text-sm text-brand-gray">{t.hse.noMatches}</p>
                   ) : (
