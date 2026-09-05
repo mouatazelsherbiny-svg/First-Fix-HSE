@@ -55,9 +55,11 @@ export default function LoginPage() {
           freezes on its last frame — deliberate, per request. Autoplay
           requires muted + playsInline to work without a user gesture on
           mobile browsers; the speaker button below lets the visitor turn
-          sound on afterwards. poster="/logo.png" shows the old static image
-          for the instant before the video has enough data to paint its
-          first frame, and as the fallback if video can't load at all. File
+          sound on afterwards. No `poster` image on purpose — an earlier
+          version showed the old static logo for the instant before the
+          video had enough data to paint its first frame, which read as a
+          flash of stale branding right before the video kicked in. The
+          page's own bg-[#F5F5F3] shows for that instant instead. File
           lives at public/login-bg.mp4, which Next.js serves from the site
           root as "/login-bg.mp4" (NOT "/assets/..." — only the public/
           folder is web-servable; assets/ is a source-only folder outside
@@ -65,7 +67,6 @@ export default function LoginPage() {
       <video
         ref={videoRef}
         src="/login-bg.mp4"
-        poster="/logo.png"
         autoPlay
         muted
         playsInline
