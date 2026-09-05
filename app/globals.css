@@ -59,7 +59,7 @@ body {
    background image (see components/AppBackground.tsx) shows through,
    softened, behind every card. */
 .card {
-  @apply rounded-2xl border border-brand-border bg-brand-surface/55 p-6 shadow-card backdrop-blur-xl;
+  @apply rounded-2xl border border-brand-border bg-brand-surface/45 p-6 shadow-card backdrop-blur-xl;
 }
 
 /* Scroll/navigation fade-in (see components/ScrollReveal.tsx). Cards start
