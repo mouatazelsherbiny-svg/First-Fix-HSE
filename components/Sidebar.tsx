@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -208,6 +209,14 @@ export default function Sidebar() {
       count: checklistSubmissions.filter((s) => s.projectName === user?.project).length,
     },
   ];
+
+  // Admin-only: link to the pending-signups / user approval page (see
+  // app/user-management/page.tsx). Hidden entirely for regular employees
+  // rather than shown-but-blocked, since a nav item for a page you can't
+  // use is just clutter.
+  if (user?.role === "admin") {
+    links.push({ href: "/user-management", label: t.nav.userManagement, icon: Users });
+  }
 
   const hsePassportGroup: NavGroupItem = {
     label: t.nav.hsePassport,

@@ -17,9 +17,18 @@ interface AuthUser {
   employeeCode: string;
   project: string;
   email: string;
+  role: string;
   /** Real profile photo URL, once uploads are wired up. Undefined today —
    *  components should fall back to an initials avatar (see components/Avatar). */
   avatarUrl?: string;
+}
+
+export interface SignUpInput {
+  fullName: string;
+  employeeCode: string;
+  project: string;
+  email: string;
+  password: string;
 }
 
 interface AuthContextValue {
@@ -28,39 +37,64 @@ interface AuthContextValue {
   login: (
     email: string,
     password: string
-  ) => Promise<{ ok: boolean; error?: string }>;
+  ) => Promise<{ ok: boolean; error?: string; pending?: boolean }>;
+  signUp: (input: SignUpInput) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+interface ProfileRow {
+  full_name: string | null;
+  employee_code: string | null;
+  project: string | null;
+  avatar_url: string | null;
+  role: string | null;
+  is_approved: boolean | null;
+}
+
 /** Loads the profiles row created by the on_auth_user_created DB trigger.
  *  Falls back to bare session info if the row hasn't landed (or never will)
- *  so a missing profile can't crash the whole app. */
-async function loadProfile(userId: string, email: string): Promise<AuthUser> {
+ *  so a missing profile can't crash the whole app. Returns `isApproved`
+ *  separately so callers can decide whether to actually let the visitor
+ *  into the app (see login() below) — self-registered accounts (see
+ *  app/signup/page.tsx) start out with is_approved = false until an admin
+ *  approves them (see app/admin/users/page.tsx). */
+async function loadProfile(
+  userId: string,
+  email: string
+): Promise<{ user: AuthUser; isApproved: boolean }> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("full_name, employee_code, project, avatar_url")
+    .select("full_name, employee_code, project, avatar_url, role, is_approved")
     .eq("id", userId)
-    .single();
+    .single<ProfileRow>();
 
   if (error || !data) {
     return {
-      id: userId,
-      name: email,
-      employeeCode: "",
-      project: "KSP",
-      email,
+      user: {
+        id: userId,
+        name: email,
+        employeeCode: "",
+        project: "KSP",
+        email,
+        role: "employee",
+      },
+      isApproved: true,
     };
   }
 
   return {
-    id: userId,
-    name: data.full_name || email,
-    employeeCode: data.employee_code || "",
-    project: data.project || "KSP",
-    email,
-    avatarUrl: data.avatar_url || undefined,
+    user: {
+      id: userId,
+      name: data.full_name || email,
+      employeeCode: data.employee_code || "",
+      project: data.project || "KSP",
+      email,
+      role: data.role || "employee",
+      avatarUrl: data.avatar_url || undefined,
+    },
+    isApproved: data.is_approved !== false,
   };
 }
 
@@ -73,11 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const profile = await loadProfile(
+        const { user: profile, isApproved } = await loadProfile(
           session.user.id,
           session.user.email ?? ""
         );
-        if (active) setUser(profile);
+        // A pending account shouldn't silently ride an existing session —
+        // sign it back out so the login page can show the pending message.
+        if (!isApproved) {
+          await supabase.auth.signOut();
+          if (active) setUser(null);
+        } else if (active) {
+          setUser(profile);
+        }
       }
       if (active) setIsLoading(false);
     });
@@ -86,11 +127,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (_event, session) => {
         if (!active) return;
         if (session?.user) {
-          const profile = await loadProfile(
+          const { user: profile, isApproved } = await loadProfile(
             session.user.id,
             session.user.email ?? ""
           );
-          if (active) setUser(profile);
+          if (isApproved) {
+            if (active) setUser(profile);
+          }
         } else {
           setUser(null);
         }
@@ -115,8 +158,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error || !data.user) {
           return { ok: false, error: error?.message };
         }
-        const profile = await loadProfile(data.user.id, data.user.email ?? email);
+        const { user: profile, isApproved } = await loadProfile(
+          data.user.id,
+          data.user.email ?? email
+        );
+        if (!isApproved) {
+          // Valid credentials, but an admin hasn't approved this account
+          // yet — don't let them into the app, and don't leave a signed-in
+          // session sitting around either.
+          await supabase.auth.signOut();
+          return { ok: false, pending: true };
+        }
         setUser(profile);
+        return { ok: true };
+      },
+      signUp: async ({ fullName, employeeCode, project, email, password }) => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              employee_code: employeeCode,
+              project,
+              // Read by the handle_new_user DB trigger — marks this
+              // profile as pending admin approval instead of the default
+              // "approved" state used for accounts created any other way
+              // (e.g. directly in the Supabase dashboard).
+              self_registered: "true",
+            },
+          },
+        });
+        if (error || !data.user) {
+          return { ok: false, error: error?.message };
+        }
+        // Self-registered accounts are pending — make sure no session
+        // carries over from the sign-up call itself.
+        await supabase.auth.signOut();
         return { ok: true };
       },
       logout: () => {

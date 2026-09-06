@@ -23,7 +23,35 @@ export interface TranslationShape {
     rememberMe: string;
     forgot: string;
     error: string;
+    errorPending: string;
     footer: string;
+    noAccount: string;
+    signUpLink: string;
+  };
+  signup: {
+    title: string;
+    subtitle: string;
+    fullName: string;
+    fullNamePlaceholder: string;
+    employeeCode: string;
+    employeeCodePlaceholder: string;
+    project: string;
+    projectPlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    password: string;
+    passwordPlaceholder: string;
+    confirmPassword: string;
+    confirmPasswordPlaceholder: string;
+    submit: string;
+    submitting: string;
+    haveAccount: string;
+    loginLink: string;
+    errorMismatch: string;
+    errorGeneric: string;
+    successTitle: string;
+    successMessage: string;
+    backToLogin: string;
   };
   nav: {
     dashboard: string;
@@ -45,6 +73,25 @@ export interface TranslationShape {
     myChecklist: string;
     logout: string;
     hello: string;
+    userManagement: string;
+  };
+  userManagement: {
+    title: string;
+    subtitle: string;
+    pendingSection: string;
+    noPending: string;
+    colName: string;
+    colEmail: string;
+    colEmployeeCode: string;
+    colProject: string;
+    colRequestedAt: string;
+    colActions: string;
+    approve: string;
+    approving: string;
+    reject: string;
+    rejecting: string;
+    accessDenied: string;
+    allApprovedSection: string;
   };
   form: {
     title: string;
@@ -450,7 +497,35 @@ export const translations: Record<Locale, TranslationShape> = {
       rememberMe: "Remember me",
       forgot: "Forgot password?",
       error: "Please enter a valid email and password.",
+      errorPending: "Your account is still awaiting admin approval.",
       footer: "Protect People. Protect Projects. Protect Future.",
+      noAccount: "New here?",
+      signUpLink: "Create an account",
+    },
+    signup: {
+      title: "Create your account",
+      subtitle: "Sign up to request access to First Fix HSE",
+      fullName: "Full name",
+      fullNamePlaceholder: "Your full name",
+      employeeCode: "Employee code",
+      employeeCodePlaceholder: "e.g. FF-1024",
+      project: "Project",
+      projectPlaceholder: "Select your project",
+      email: "Email",
+      emailPlaceholder: "name@company.com",
+      password: "Password",
+      passwordPlaceholder: "Create a password",
+      confirmPassword: "Confirm password",
+      confirmPasswordPlaceholder: "Re-enter your password",
+      submit: "Create Account",
+      submitting: "Creating account...",
+      haveAccount: "Already have an account?",
+      loginLink: "Log in",
+      errorMismatch: "Passwords do not match.",
+      errorGeneric: "Couldn't create your account. Please try again.",
+      successTitle: "Request submitted",
+      successMessage: "Your account has been created and is now awaiting admin approval. You'll be able to log in once an admin approves it.",
+      backToLogin: "Back to login",
     },
     nav: {
       dashboard: "Dashboard",
@@ -472,6 +547,25 @@ export const translations: Record<Locale, TranslationShape> = {
       myChecklist: "My Checklist",
       logout: "Log Out",
       hello: "Hello",
+      userManagement: "User Management",
+    },
+    userManagement: {
+      title: "User Management",
+      subtitle: "Approve new sign-ups and manage access.",
+      pendingSection: "Pending Approval",
+      noPending: "No accounts waiting for approval.",
+      colName: "Name",
+      colEmail: "Email",
+      colEmployeeCode: "Employee Code",
+      colProject: "Project",
+      colRequestedAt: "Requested",
+      colActions: "Actions",
+      approve: "Approve",
+      approving: "Approving...",
+      reject: "Reject",
+      rejecting: "Rejecting...",
+      accessDenied: "You don't have access to this page.",
+      allApprovedSection: "Approved Users",
     },
     form: {
       title: "New Observation",
@@ -875,7 +969,35 @@ export const translations: Record<Locale, TranslationShape> = {
       rememberMe: "تذكرني",
       forgot: "نسيت كلمة المرور؟",
       error: "من فضلك أدخل بريد إلكتروني وكلمة مرور صحيحين.",
+      errorPending: "حسابك لسه مستني موافقة الأدمن.",
       footer: "نحمي الأفراد. نحمي المشاريع. نحمي المستقبل.",
+      noAccount: "لسه معملتش حساب؟",
+      signUpLink: "أنشئ حساب جديد",
+    },
+    signup: {
+      title: "إنشاء حساب جديد",
+      subtitle: "اطلب صلاحية الدخول على First Fix HSE",
+      fullName: "الاسم بالكامل",
+      fullNamePlaceholder: "اكتب اسمك بالكامل",
+      employeeCode: "الرقم الوظيفي",
+      employeeCodePlaceholder: "مثال: FF-1024",
+      project: "المشروع",
+      projectPlaceholder: "اختر مشروعك",
+      email: "البريد الإلكتروني",
+      emailPlaceholder: "name@company.com",
+      password: "كلمة المرور",
+      passwordPlaceholder: "اختر كلمة مرور",
+      confirmPassword: "تأكيد كلمة المرور",
+      confirmPasswordPlaceholder: "أعد كتابة كلمة المرور",
+      submit: "إنشاء الحساب",
+      submitting: "جارٍ إنشاء الحساب...",
+      haveAccount: "عندك حساب بالفعل؟",
+      loginLink: "سجّل الدخول",
+      errorMismatch: "كلمتا المرور غير متطابقتين.",
+      errorGeneric: "تعذّر إنشاء حسابك، من فضلك حاول تاني.",
+      successTitle: "تم إرسال الطلب",
+      successMessage: "تم إنشاء حسابك وهو الآن في انتظار موافقة الأدمن. هتقدر تسجّل دخولك بمجرد ما الأدمن يوافق عليه.",
+      backToLogin: "الرجوع لتسجيل الدخول",
     },
     nav: {
       dashboard: "الرئيسية",
@@ -897,6 +1019,25 @@ export const translations: Record<Locale, TranslationShape> = {
       myChecklist: "قوائم فحصي",
       logout: "تسجيل الخروج",
       hello: "أهلاً",
+      userManagement: "إدارة المستخدمين",
+    },
+    userManagement: {
+      title: "إدارة المستخدمين",
+      subtitle: "وافق على طلبات التسجيل الجديدة وتحكم في صلاحيات الدخول.",
+      pendingSection: "في انتظار الموافقة",
+      noPending: "مفيش حسابات مستنية موافقة.",
+      colName: "الاسم",
+      colEmail: "البريد الإلكتروني",
+      colEmployeeCode: "الرقم الوظيفي",
+      colProject: "المشروع",
+      colRequestedAt: "تاريخ الطلب",
+      colActions: "إجراءات",
+      approve: "موافقة",
+      approving: "جارٍ الموافقة...",
+      reject: "رفض",
+      rejecting: "جارٍ الرفض...",
+      accessDenied: "معندكش صلاحية الدخول على الصفحة دي.",
+      allApprovedSection: "المستخدمين المفعّلين",
     },
     form: {
       title: "ملاحظة جديدة",

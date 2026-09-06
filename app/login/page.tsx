@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -43,7 +44,7 @@ export default function LoginPage() {
     const result = await login(email, password);
     setSubmitting(false);
     if (!result.ok) {
-      setError(t.login.error);
+      setError(result.pending ? t.login.errorPending : t.login.error);
       return;
     }
     router.push("/dashboard");
@@ -179,6 +180,13 @@ export default function LoginPage() {
               {submitting ? t.login.submitting : t.login.submit}
             </button>
           </form>
+
+          <p className="mt-4 text-center text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+            {t.login.noAccount}{" "}
+            <Link href="/signup" className="font-semibold text-white underline hover:no-underline">
+              {t.login.signUpLink}
+            </Link>
+          </p>
 
           <p className="mt-6 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
             {t.login.footer}
