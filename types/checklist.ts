@@ -2,6 +2,9 @@ export type PointValue = "N/A" | "0" | "1" | "2";
 
 export const POINT_VALUES: PointValue[] = ["N/A", "0", "1", "2"];
 
+// Options allowed for the "Total Points Possible" selector — always N/A, 0, or 2.
+export const POSSIBLE_POINT_VALUES: PointValue[] = ["N/A", "0", "2"];
+
 export interface ChecklistQuestion {
   id: string;
   text: string;

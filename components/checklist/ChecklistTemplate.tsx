@@ -11,6 +11,7 @@ import {
   ChecklistTemplate as ChecklistTemplateData,
   PointValue,
   POINT_VALUES,
+  POSSIBLE_POINT_VALUES,
 } from "@/types/checklist";
 
 interface GeneralInfo {
@@ -57,14 +58,14 @@ export default function ChecklistTemplate({
     () =>
       Object.fromEntries(
         template.sections.flatMap((s) =>
-          s.questions.map((q) => [q.id, q.defaultPossible])
+          s.questions.map((q) => [q.id, "2" as PointValue])
         )
       )
   );
 
   const [scoredMap, setScoredMap] = useState<Record<string, PointValue>>(() =>
     Object.fromEntries(
-      template.sections.flatMap((s) => s.questions.map((q) => [q.id, "N/A"]))
+      template.sections.flatMap((s) => s.questions.map((q) => [q.id, "0" as PointValue]))
     )
   );
 
@@ -299,7 +300,7 @@ export default function ChecklistTemplate({
                         }
                         className="input-field !py-2 text-center"
                       >
-                        {POINT_VALUES.map((v) => (
+                        {POSSIBLE_POINT_VALUES.map((v) => (
                           <option key={v} value={v}>
                             {v}
                           </option>
