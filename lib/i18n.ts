@@ -92,6 +92,9 @@ export interface TranslationShape {
     rejecting: string;
     accessDenied: string;
     allApprovedSection: string;
+    confirmRevoke: string;
+    revoke: string;
+    revoking: string;
   };
   form: {
     title: string;
@@ -566,6 +569,9 @@ export const translations: Record<Locale, TranslationShape> = {
       rejecting: "Rejecting...",
       accessDenied: "You don't have access to this page.",
       allApprovedSection: "Approved Users",
+      confirmRevoke: "Are you sure you want to revoke access for this user?",
+      revoke: "Revoke",
+      revoking: "Revoking...",
     },
     form: {
       title: "New Observation",
@@ -1038,6 +1044,9 @@ export const translations: Record<Locale, TranslationShape> = {
       rejecting: "جارٍ الرفض...",
       accessDenied: "معندكش صلاحية الدخول على الصفحة دي.",
       allApprovedSection: "المستخدمين المفعّلين",
+      confirmRevoke: "متأكد إنك عايز تلغي صلاحية الدخول للمستخدم ده؟",
+      revoke: "إلغاء الصلاحية",
+      revoking: "جارٍ الإلغاء...",
     },
     form: {
       title: "ملاحظة جديدة",

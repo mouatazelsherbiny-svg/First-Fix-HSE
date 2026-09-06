@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -55,6 +55,22 @@ function UserManagementView() {
   const handleApprove = async (id: string) => {
     setBusyId(id);
     await supabase.from("profiles").update({ is_approved: true }).eq("id", id);
+    await loadProfiles();
+    setBusyId(null);
+  };
+
+  // Pulls a previously-approved account's access back to pending. This
+  // reuses the same is_approved flag the sign-up flow starts everyone at
+  // false with — there's no separate "banned" state, just approved/not.
+  // The affected person is signed out automatically: see the
+  // onAuthStateChange handler in context/AuthContext.tsx, which re-checks
+  // is_approved on every token refresh (not just at login) and signs the
+  // session out the moment it sees false, so this also ends an already
+  // logged-in session, not only a future login attempt.
+  const handleRevoke = async (id: string, name: string) => {
+    if (!window.confirm(`${t.userManagement.confirmRevoke} (${name || id})`)) return;
+    setBusyId(id);
+    await supabase.from("profiles").update({ is_approved: false }).eq("id", id);
     await loadProfiles();
     setBusyId(null);
   };
@@ -152,6 +168,7 @@ function UserManagementView() {
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmail}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmployeeCode}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colProject}</th>
+                <th className="px-4 py-3 text-end">{t.userManagement.colActions}</th>
               </tr>
             </thead>
             <tbody>
@@ -171,6 +188,19 @@ function UserManagementView() {
                   <td className="px-4 py-3 text-brand-grayDark">{p.email || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">{p.employee_code || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">{p.project || "—"}</td>
+                  <td className="px-4 py-3 text-end">
+                    {p.id !== user?.id && (
+                      <button
+                        type="button"
+                        onClick={() => handleRevoke(p.id, p.full_name)}
+                        disabled={busyId === p.id}
+                        className="btn-secondary !border-red-500/30 !px-3 !py-1.5 !text-red-400 text-xs hover:!bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <XCircle className="me-1.5 h-3.5 w-3.5" />
+                        {busyId === p.id ? t.userManagement.revoking : t.userManagement.revoke}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

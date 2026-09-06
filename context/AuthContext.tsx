@@ -133,6 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           );
           if (isApproved) {
             if (active) setUser(profile);
+          } else {
+            // Access was revoked (or never approved) since this session
+            // started — this fires on every automatic token refresh too
+            // (roughly hourly), not just at login, so a revoked admin can
+            // actually kick an active session out, not just block the
+            // next login attempt.
+            await supabase.auth.signOut();
+            if (active) setUser(null);
           }
         } else {
           setUser(null);
