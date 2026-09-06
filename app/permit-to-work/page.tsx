@@ -40,9 +40,14 @@ function PermitList() {
           <h1 className="text-2xl font-bold text-brand-black">{t.ptw.listTitle}</h1>
           <p className="mt-1 text-sm text-brand-gray">{t.ptw.listSubtitle}</p>
         </div>
-        <Link href="/permit-to-work/new" className="btn-primary">
-          {t.ptw.newBtn}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/permit-to-work/my-permits" className="btn-secondary">
+            {t.nav.myPermits}
+          </Link>
+          <Link href="/permit-to-work/new" className="btn-primary">
+            {t.ptw.newBtn}
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4">

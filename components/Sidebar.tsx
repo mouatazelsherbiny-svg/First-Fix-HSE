@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
-  PlusCircle,
   GraduationCap,
   BarChart3,
   ShieldCheck,
@@ -174,7 +173,8 @@ export default function Sidebar() {
       icon: ClipboardList,
       count: observations.length,
     },
-    { href: "/observations/new", label: t.nav.newObservation, icon: PlusCircle },
+    // "New Observation" no longer gets its own nav item — the My
+    // Observations page has an in-page "+ New Observation" button instead.
     // Points at the Toolbox Talk list page (not the create form) — a
     // persistent nav item pointing straight at a "new" form is unusual,
     // and the list page is the natural home for a running count.
@@ -196,27 +196,26 @@ export default function Sidebar() {
       icon: ClipboardCheck,
       count: permits.length,
     },
-    {
-      href: "/permit-to-work/my-permits",
-      label: t.nav.myPermits,
-      icon: ClipboardCheck,
-      count: permits.filter((p) => p.projectName === user?.project).length,
-    },
-    {
-      href: "/my-checklists",
-      label: t.nav.myChecklist,
-      icon: CalendarCheck,
-      count: checklistSubmissions.filter((s) => s.projectName === user?.project).length,
-    },
+    // "My Permits" no longer gets its own nav item — the Permit to Work
+    // page has in-page "My Permits" / "+ New Permit" buttons instead.
   ];
+
+  // Rendered on its own, right under the Monthly Checklists group.
+  const myChecklistLink: NavLinkItem = {
+    href: "/my-checklists",
+    label: t.nav.myChecklist,
+    icon: CalendarCheck,
+    count: checklistSubmissions.filter((s) => s.projectName === user?.project).length,
+  };
 
   // Admin-only: link to the pending-signups / user approval page (see
   // app/user-management/page.tsx). Hidden entirely for regular employees
   // rather than shown-but-blocked, since a nav item for a page you can't
-  // use is just clutter.
-  if (user?.role === "admin") {
-    links.push({ href: "/user-management", label: t.nav.userManagement, icon: Users });
-  }
+  // use is just clutter. Rendered last, after every other nav item.
+  const userManagementLink: NavLinkItem | null =
+    user?.role === "admin"
+      ? { href: "/user-management", label: t.nav.userManagement, icon: Users }
+      : null;
 
   const hsePassportGroup: NavGroupItem = {
     label: t.nav.hsePassport,
@@ -305,6 +304,13 @@ export default function Sidebar() {
           ))}
           <PillGroup {...hsePassportGroup} />
           <PillGroup {...checklistsGroup} />
+          <PillLink {...myChecklistLink} active={pathname === myChecklistLink.href} />
+          {userManagementLink && (
+            <PillLink
+              {...userManagementLink}
+              active={pathname === userManagementLink.href}
+            />
+          )}
         </nav>
 
         <div className="shrink-0 space-y-3 border-t border-brand-border px-4 py-4">

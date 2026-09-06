@@ -83,6 +83,13 @@ function MyPermitsList() {
 
   return (
     <div>
+      <Link
+        href="/permit-to-work"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"
+      >
+        &larr; {t.ptw.back}
+      </Link>
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-black">{t.ptw.myPermitsTitle}</h1>
