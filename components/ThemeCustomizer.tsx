@@ -33,7 +33,7 @@ export default function ThemeCustomizer() {
         onClick={() => setOpen(true)}
         aria-label={t.appearance.openLabel}
         title={t.appearance.openLabel}
-        className="fixed left-3 top-1/2 z-[110] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-brand-border bg-brand-surface text-brand-orange shadow-cardHover transition hover:scale-105 hover:bg-brand-orangeLight"
+        className="fixed bottom-5 left-3 z-[110] flex h-11 w-11 items-center justify-center rounded-full border border-brand-border bg-brand-surface text-brand-orange shadow-cardHover transition hover:scale-105 hover:bg-brand-orangeLight lg:bottom-40"
       >
         <Palette className="h-5 w-5" />
       </button>

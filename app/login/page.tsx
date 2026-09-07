@@ -70,7 +70,7 @@ export default function LoginPage() {
       className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-center bg-fixed"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(20, 22, 26, 0.45), rgba(20, 22, 26, 0.45)), url('/brand/first-fix-bg.jpg')",
+          "linear-gradient(rgba(20, 22, 26, 0.45), rgba(20, 22, 26, 0.45)), url('/brand/first-fix-login-bg.png')",
       }}
     >
       {/* Pinned to the true top-right screen corner via physical `right`/

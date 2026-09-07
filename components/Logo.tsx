@@ -18,8 +18,13 @@ export default function Logo({
         priority
       />
       {showText && (
-        <span className="text-lg font-bold text-brand-black">
-          First Fix <span className="text-brand-orange">HSE</span>
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate text-base font-extrabold uppercase tracking-wide text-brand-black">
+            First Fix <span className="text-brand-orange">HSE</span>
+          </span>
+          <span className="block truncate text-[10px] font-semibold uppercase tracking-wider text-brand-gray">
+            Department
+          </span>
         </span>
       )}
     </div>
