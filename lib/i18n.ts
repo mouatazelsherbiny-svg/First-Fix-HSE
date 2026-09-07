@@ -11,6 +11,7 @@ export interface TranslationShape {
     exportWord: string;
     exporting: string;
     close: string;
+    comingSoon: string;
   };
   login: {
     title: string;
@@ -97,6 +98,11 @@ export interface TranslationShape {
     logout: string;
     hello: string;
     userManagement: string;
+    incidents: string;
+    injury: string;
+    reports: string;
+    pmv: string;
+    summaryPerformanceReport: string;
   };
   userManagement: {
     title: string;
@@ -188,6 +194,14 @@ export interface TranslationShape {
     title: string;
     colorTheme: string;
     morphismStyle: string;
+  };
+  reports: {
+    subtitle: string;
+    tabDaily: string;
+    tabWeekly: string;
+    tabMonthly: string;
+    monthlyIntro: string;
+    viewMyChecklist: string;
   };
   checklist: {
     generalInfo: string;
@@ -521,6 +535,7 @@ export const translations: Record<Locale, TranslationShape> = {
       exportWord: "Export to Word",
       exporting: "Exporting...",
       close: "Close",
+      comingSoon: "This page is under construction — check back soon.",
     },
     login: {
       title: "Welcome back",
@@ -594,12 +609,12 @@ export const translations: Record<Locale, TranslationShape> = {
       fireChecklist: "Fire Assessment Checklist",
       shChecklist: "Health & Safety Checklist",
       tcChecklist: "T&C and Energization Checklist",
-      toolboxTalk: "Toolbox Talk & Training",
+      toolboxTalk: "Toolbox Talk",
       hsePassport: "HSE Passport",
       disciplinaryAction: "Disciplinary Action",
       ppe: "PPE",
       training: "Training",
-      weeklyKpi: "Weekly KPI",
+      weeklyKpi: "KPI's",
       monthlyChecklists: "Monthly Checklists",
       permitToWork: "Permit to Work",
       myPermits: "My Permits",
@@ -607,6 +622,11 @@ export const translations: Record<Locale, TranslationShape> = {
       logout: "Log Out",
       hello: "Hello",
       userManagement: "User Management",
+      incidents: "Incidents",
+      injury: "Injury",
+      reports: "Reports",
+      pmv: "PMV",
+      summaryPerformanceReport: "Summary Performance Report",
     },
     userManagement: {
       title: "User Management",
@@ -698,6 +718,14 @@ export const translations: Record<Locale, TranslationShape> = {
       title: "Appearance",
       colorTheme: "Color Theme",
       morphismStyle: "Card Style",
+    },
+    reports: {
+      subtitle: "Daily, weekly, and monthly HSE reporting in one place.",
+      tabDaily: "Daily",
+      tabWeekly: "Weekly",
+      tabMonthly: "Monthly",
+      monthlyIntro: "Monthly checklists",
+      viewMyChecklist: "View My Checklist submissions",
     },
     checklist: {
       generalInfo: "General Information",
@@ -1029,6 +1057,7 @@ export const translations: Record<Locale, TranslationShape> = {
       exportWord: "تصدير إلى وورد",
       exporting: "جارٍ التصدير...",
       close: "إغلاق",
+      comingSoon: "الصفحة دي لسه تحت الإنشاء — تابعنا قريب.",
     },
     login: {
       title: "أهلاً بعودتك",
@@ -1102,12 +1131,12 @@ export const translations: Record<Locale, TranslationShape> = {
       fireChecklist: "قائمة فحص السلامة من الحريق",
       shChecklist: "قائمة الصحة والسلامة المهنية",
       tcChecklist: "قائمة فحص التشغيل والطاقة (T&C)",
-      toolboxTalk: "التدريب والتوعية اليومية (Toolbox Talk)",
+      toolboxTalk: "توعية العمل (Toolbox Talk)",
       hsePassport: "جواز السلامة (HSE Passport)",
       disciplinaryAction: "الإجراءات التأديبية",
       ppe: "معدات الوقاية الشخصية",
       training: "التدريب",
-      weeklyKpi: "مؤشرات الأداء الأسبوعية",
+      weeklyKpi: "مؤشرات الأداء (KPI's)",
       monthlyChecklists: "القوائم الشهرية",
       permitToWork: "تصريح العمل",
       myPermits: "تصاريحي",
@@ -1115,6 +1144,11 @@ export const translations: Record<Locale, TranslationShape> = {
       logout: "تسجيل الخروج",
       hello: "أهلاً",
       userManagement: "إدارة المستخدمين",
+      incidents: "الحوادث (Incidents)",
+      injury: "الإصابات (Injury)",
+      reports: "التقارير (Reports)",
+      pmv: "PMV",
+      summaryPerformanceReport: "تقرير الأداء الإجمالي",
     },
     userManagement: {
       title: "إدارة المستخدمين",
@@ -1206,6 +1240,14 @@ export const translations: Record<Locale, TranslationShape> = {
       title: "المظهر",
       colorTheme: "لون الثيم",
       morphismStyle: "نمط الكروت",
+    },
+    reports: {
+      subtitle: "تقارير السلامة اليومية والأسبوعية والشهرية في مكان واحد.",
+      tabDaily: "يومي",
+      tabWeekly: "أسبوعي",
+      tabMonthly: "شهري",
+      monthlyIntro: "القوائم الشهرية",
+      viewMyChecklist: "عرض القوائم اللي تم إرسالها (My Checklist)",
     },
     checklist: {
       generalInfo: "معلومات عامة",

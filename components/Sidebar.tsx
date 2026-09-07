@@ -6,10 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
+  AlertTriangle,
+  HeartPulse,
+  FileText,
+  Footprints,
+  FileSpreadsheet,
   GraduationCap,
   BarChart3,
   ShieldCheck,
-  CalendarCheck,
   ClipboardCheck,
   ChevronDown,
   Menu,
@@ -23,7 +27,6 @@ import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { usePermits } from "@/context/PermitContext";
-import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import Logo from "./Logo";
 import LanguageToggle from "./LanguageToggle";
@@ -39,10 +42,18 @@ interface NavLinkItem {
 interface NavGroupItem {
   label: string;
   icon: LucideIcon;
-  basePath: string;
+  /** One or more route prefixes that count as "inside this group" for the
+   *  active/auto-expand highlight. An array is needed when a group's
+   *  children don't share a single common prefix (e.g. HSE Passport's
+   *  Disciplinary + PPE children live under two different sub-paths, and
+   *  Training's two children — /toolbox-talk and /hse-passport/training —
+   *  don't share a prefix at all). */
+  basePath: string | string[];
   count?: number;
   children: { href: string; label: string }[];
 }
+
+type NavEntry = ({ kind: "link" } & NavLinkItem) | ({ kind: "group" } & NavGroupItem);
 
 /** Pill row shared shell: icon badge + label + optional count badge,
  *  filled/tinted teal when the item (or its group) is the active route. */
@@ -90,7 +101,8 @@ function PillLink({ href, label, icon: Icon, count, active }: NavLinkItem & { ac
 
 function PillGroup({ label, icon: Icon, basePath, count, children }: NavGroupItem) {
   const pathname = usePathname();
-  const active = pathname.startsWith(basePath);
+  const basePaths = Array.isArray(basePath) ? basePath : [basePath];
+  const active = basePaths.some((bp) => pathname.startsWith(bp));
   const [open, setOpen] = useState(active);
 
   // Auto-expand whenever navigation lands inside this group; the user can
@@ -157,56 +169,12 @@ export default function Sidebar() {
   const { records: toolboxRecords } = useToolboxTalk();
   const { records: kpiRecords } = useWeeklyKpi();
   const { permits } = usePermits();
-  const { submissions: checklistSubmissions } = useChecklistSubmissions();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
 
   // Close the mobile drawer automatically after any navigation.
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  const links: NavLinkItem[] = [
-    { href: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
-    {
-      href: "/observations",
-      label: t.nav.myObservations,
-      icon: ClipboardList,
-      count: observations.length,
-    },
-    // "New Observation" no longer gets its own nav item — the My
-    // Observations page has an in-page "+ New Observation" button instead.
-    // Points at the Toolbox Talk list page (not the create form) — a
-    // persistent nav item pointing straight at a "new" form is unusual,
-    // and the list page is the natural home for a running count.
-    {
-      href: "/toolbox-talk",
-      label: t.nav.toolboxTalk,
-      icon: GraduationCap,
-      count: toolboxRecords.length,
-    },
-    {
-      href: "/weekly-kpi",
-      label: t.nav.weeklyKpi,
-      icon: BarChart3,
-      count: kpiRecords.length,
-    },
-    {
-      href: "/permit-to-work",
-      label: t.nav.permitToWork,
-      icon: ClipboardCheck,
-      count: permits.length,
-    },
-    // "My Permits" no longer gets its own nav item — the Permit to Work
-    // page has in-page "My Permits" / "+ New Permit" buttons instead.
-  ];
-
-  // Rendered on its own, right under the Monthly Checklists group.
-  const myChecklistLink: NavLinkItem = {
-    href: "/my-checklists",
-    label: t.nav.myChecklist,
-    icon: CalendarCheck,
-    count: checklistSubmissions.filter((s) => s.projectName === user?.project).length,
-  };
 
   // Admin-only: link to the pending-signups / user approval page (see
   // app/user-management/page.tsx). Hidden entirely for regular employees
@@ -217,32 +185,71 @@ export default function Sidebar() {
       ? { href: "/user-management", label: t.nav.userManagement, icon: Users }
       : null;
 
-  const hsePassportGroup: NavGroupItem = {
-    label: t.nav.hsePassport,
-    icon: ShieldCheck,
-    basePath: "/hse-passport",
-    // Combined count across all three sub-records — a single summary
-    // badge on the parent reads cleaner than three near-duplicate badges.
-    count: disciplinaryRecords.length + ppeRecords.length + trainingRecords.length,
-    children: [
-      { href: "/hse-passport/disciplinary", label: t.nav.disciplinaryAction },
-      { href: "/hse-passport/ppe", label: t.nav.ppe },
-      { href: "/hse-passport/training", label: t.nav.training },
-    ],
-  };
-
-  const checklistsGroup: NavGroupItem = {
-    label: t.nav.monthlyChecklists,
-    icon: CalendarCheck,
-    basePath: "/checklists",
-    count: checklistSubmissions.length,
-    children: [
-      { href: "/checklists/environmental", label: t.nav.envChecklist },
-      { href: "/checklists/fire-assessment", label: t.nav.fireChecklist },
-      { href: "/checklists/safety-health", label: t.nav.shChecklist },
-      { href: "/checklists/tc-energization", label: t.nav.tcChecklist },
-    ],
-  };
+  // Requested order: Dashboard, Observations, Incidents, Injury, Reports,
+  // KPI's, PMV, Permit to Work, HSE Passport, Training, Summary
+  // Performance Report. Incidents/Injury/PMV/Summary Performance Report
+  // are new placeholder pages (content to follow); Reports absorbs the
+  // former "Monthly Checklists" group + "My Checklist" link as its Monthly
+  // tab; Training absorbs the former standalone Toolbox Talk link
+  // alongside HSE Passport's Training sub-page (both pages unchanged,
+  // just regrouped under one entry point); KPI's is the former Weekly KPI
+  // page, relabeled.
+  const navEntries: NavEntry[] = [
+    { kind: "link", href: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
+    {
+      kind: "link",
+      href: "/observations",
+      label: t.nav.myObservations,
+      icon: ClipboardList,
+      count: observations.length,
+    },
+    { kind: "link", href: "/incidents", label: t.nav.incidents, icon: AlertTriangle },
+    { kind: "link", href: "/injury", label: t.nav.injury, icon: HeartPulse },
+    { kind: "link", href: "/reports", label: t.nav.reports, icon: FileText },
+    {
+      kind: "link",
+      href: "/weekly-kpi",
+      label: t.nav.weeklyKpi,
+      icon: BarChart3,
+      count: kpiRecords.length,
+    },
+    { kind: "link", href: "/pmv", label: t.nav.pmv, icon: Footprints },
+    {
+      kind: "link",
+      href: "/permit-to-work",
+      label: t.nav.permitToWork,
+      icon: ClipboardCheck,
+      count: permits.length,
+    },
+    {
+      kind: "group",
+      label: t.nav.hsePassport,
+      icon: ShieldCheck,
+      basePath: ["/hse-passport/disciplinary", "/hse-passport/ppe"],
+      count: disciplinaryRecords.length + ppeRecords.length,
+      children: [
+        { href: "/hse-passport/disciplinary", label: t.nav.disciplinaryAction },
+        { href: "/hse-passport/ppe", label: t.nav.ppe },
+      ],
+    },
+    {
+      kind: "group",
+      label: t.nav.training,
+      icon: GraduationCap,
+      basePath: ["/toolbox-talk", "/hse-passport/training"],
+      count: toolboxRecords.length + trainingRecords.length,
+      children: [
+        { href: "/toolbox-talk", label: t.nav.toolboxTalk },
+        { href: "/hse-passport/training", label: t.nav.training },
+      ],
+    },
+    {
+      kind: "link",
+      href: "/summary-performance-report",
+      label: t.nav.summaryPerformanceReport,
+      icon: FileSpreadsheet,
+    },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -299,12 +306,13 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
-          {links.map((link) => (
-            <PillLink key={link.href} {...link} active={pathname === link.href} />
-          ))}
-          <PillGroup {...hsePassportGroup} />
-          <PillGroup {...checklistsGroup} />
-          <PillLink {...myChecklistLink} active={pathname === myChecklistLink.href} />
+          {navEntries.map((entry) =>
+            entry.kind === "link" ? (
+              <PillLink key={entry.href} {...entry} active={pathname === entry.href} />
+            ) : (
+              <PillGroup key={Array.isArray(entry.basePath) ? entry.basePath[0] : entry.basePath} {...entry} />
+            )
+          )}
           {userManagementLink && (
             <PillLink
               {...userManagementLink}
