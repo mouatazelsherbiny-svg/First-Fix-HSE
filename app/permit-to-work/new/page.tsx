@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ImageUpload from "@/components/ImageUpload";
 import FileUpload from "@/components/FileUpload";
 import SignaturePad from "@/components/SignaturePad";
+import EmployeeTextAutocomplete from "@/components/EmployeeTextAutocomplete";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
@@ -287,12 +288,10 @@ function NewPermitForm() {
 
           <div>
             <label className="label-field">{t.ptw.receiver}</label>
-            <input
-              type="text"
+            <EmployeeTextAutocomplete
               value={receiver}
-              onChange={(e) => setReceiver(e.target.value)}
+              onChange={setReceiver}
               placeholder={t.ptw.receiverPlaceholder}
-              className="input-field"
             />
           </div>
 
@@ -309,12 +308,10 @@ function NewPermitForm() {
 
           <div>
             <label className="label-field">{t.ptw.supervisorForeman}</label>
-            <input
-              type="text"
+            <EmployeeTextAutocomplete
               value={supervisorForeman}
-              onChange={(e) => setSupervisorForeman(e.target.value)}
+              onChange={setSupervisorForeman}
               placeholder={t.ptw.supervisorForemanPlaceholder}
-              className="input-field"
             />
           </div>
 

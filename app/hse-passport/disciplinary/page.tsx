@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpFromLine,
@@ -20,6 +20,7 @@ import FileUpload from "@/components/FileUpload";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
+import { searchEmployees } from "@/lib/employeeDirectory";
 import {
   EmployeeRecord,
   PROJECTS,
@@ -67,13 +68,28 @@ function DisciplinaryActionContent() {
     [employees]
   );
 
-  const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return employees.filter(
-      (e) => e.name.toLowerCase().includes(q) || e.employeeId.toLowerCase().includes(q)
-    ).slice(0, 8);
-  }, [query, employees]);
+  // Debounced, server-side search — the employees table holds the
+  // company's full real roster (thousands of rows), so this never filters
+  // the (possibly incomplete, see `employees` above) in-memory list, it
+  // always queries Postgres directly for whatever's been typed so far.
+  const [matches, setMatches] = useState<EmployeeRecord[]>([]);
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setMatches([]);
+      return;
+    }
+    let active = true;
+    const timer = setTimeout(() => {
+      searchEmployees(q).then((results) => {
+        if (active) setMatches(results);
+      });
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [query]);
 
   const scopeEmployees = useMemo(() => {
     if (selectedEmployee) return [selectedEmployee];

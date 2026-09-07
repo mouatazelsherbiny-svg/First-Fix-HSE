@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { useHsePassport } from "@/context/HsePassportContext";
+import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
 
 interface EmployeeSearchProps {
@@ -15,17 +15,35 @@ export default function EmployeeSearch({
   onSelect,
 }: EmployeeSearchProps) {
   const { t } = useLanguage();
-  const { employees } = useHsePassport();
   const [query, setQuery] = useState("");
+  const [matches, setMatches] = useState<EmployeeRecord[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return employees.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        e.employeeId.toLowerCase().includes(q)
-    ).slice(0, 8);
+  // Debounced, server-side search — the employees table holds the
+  // company's full real roster (thousands of rows), so this never loads
+  // the whole list into the browser, just the up-to-8 best matches for
+  // whatever's been typed so far.
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setMatches([]);
+      setIsSearching(false);
+      return;
+    }
+    let active = true;
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      searchEmployees(q).then((results) => {
+        if (active) {
+          setMatches(results);
+          setIsSearching(false);
+        }
+      });
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [query]);
 
   if (selected) {
@@ -74,7 +92,9 @@ export default function EmployeeSearch({
 
       {query.trim() && (
         <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-brand-border">
-          {matches.length === 0 ? (
+          {isSearching ? (
+            <p className="px-4 py-3 text-sm text-brand-gray">{t.common.loading}</p>
+          ) : matches.length === 0 ? (
             <p className="px-4 py-3 text-sm text-brand-gray">{t.hse.noMatches}</p>
           ) : (
             matches.map((e) => (
