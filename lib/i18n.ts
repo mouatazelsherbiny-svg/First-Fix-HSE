@@ -28,6 +28,28 @@ export interface TranslationShape {
     footer: string;
     noAccount: string;
     signUpLink: string;
+    forgotTitle: string;
+    forgotSubtitle: string;
+    forgotSubmit: string;
+    forgotSubmitting: string;
+    forgotSuccess: string;
+    forgotError: string;
+    backToLogin: string;
+  };
+  resetPassword: {
+    title: string;
+    subtitle: string;
+    newPassword: string;
+    newPasswordPlaceholder: string;
+    confirmPassword: string;
+    confirmPasswordPlaceholder: string;
+    submit: string;
+    submitting: string;
+    success: string;
+    goToLogin: string;
+    errorMismatch: string;
+    errorGeneric: string;
+    errorSession: string;
   };
   signup: {
     title: string;
@@ -96,6 +118,10 @@ export interface TranslationShape {
     confirmRevoke: string;
     revoke: string;
     revoking: string;
+    deleteAccount: string;
+    deleting: string;
+    confirmDelete: string;
+    deleteError: string;
   };
   form: {
     title: string;
@@ -512,6 +538,28 @@ export const translations: Record<Locale, TranslationShape> = {
       footer: "Protect People. Protect Projects. Protect Future.",
       noAccount: "New here?",
       signUpLink: "Create an account",
+      forgotTitle: "Reset your password",
+      forgotSubtitle: "Enter your account email and we'll send you a reset link.",
+      forgotSubmit: "Send reset link",
+      forgotSubmitting: "Sending...",
+      forgotSuccess: "If an account exists for that email, a reset link is on its way. Check your inbox.",
+      forgotError: "Couldn't send the reset link. Please try again.",
+      backToLogin: "Back to login",
+    },
+    resetPassword: {
+      title: "Set a new password",
+      subtitle: "Choose a new password for your account.",
+      newPassword: "New password",
+      newPasswordPlaceholder: "Enter a new password",
+      confirmPassword: "Confirm new password",
+      confirmPasswordPlaceholder: "Re-enter the new password",
+      submit: "Update password",
+      submitting: "Updating...",
+      success: "Your password has been updated successfully.",
+      goToLogin: "Go to login",
+      errorMismatch: "Passwords don't match.",
+      errorGeneric: "Couldn't update your password. Please request a new reset link.",
+      errorSession: "This reset link is invalid or has expired. Please request a new one.",
     },
     signup: {
       title: "Create your account",
@@ -580,6 +628,10 @@ export const translations: Record<Locale, TranslationShape> = {
       confirmRevoke: "Are you sure you want to revoke access for this user?",
       revoke: "Revoke",
       revoking: "Revoking...",
+      deleteAccount: "Delete Account",
+      deleting: "Deleting...",
+      confirmDelete: "This permanently deletes this user's account and login — this cannot be undone. Are you sure?",
+      deleteError: "Couldn't delete this account. Please try again.",
     },
     form: {
       title: "New Observation",
@@ -994,6 +1046,28 @@ export const translations: Record<Locale, TranslationShape> = {
       footer: "نحمي الأفراد. نحمي المشاريع. نحمي المستقبل.",
       noAccount: "لسه معملتش حساب؟",
       signUpLink: "أنشئ حساب جديد",
+      forgotTitle: "استعادة كلمة المرور",
+      forgotSubtitle: "أدخل البريد الإلكتروني بتاع حسابك وهنبعتلك رابط لإعادة تعيين كلمة المرور.",
+      forgotSubmit: "إرسال رابط إعادة التعيين",
+      forgotSubmitting: "جارٍ الإرسال...",
+      forgotSuccess: "لو فيه حساب مرتبط بالبريد ده، هيوصلك رابط إعادة التعيين. راجع بريدك الإلكتروني.",
+      forgotError: "تعذر إرسال رابط إعادة التعيين. حاول مرة أخرى.",
+      backToLogin: "الرجوع لتسجيل الدخول",
+    },
+    resetPassword: {
+      title: "تعيين كلمة مرور جديدة",
+      subtitle: "اختر كلمة مرور جديدة لحسابك.",
+      newPassword: "كلمة المرور الجديدة",
+      newPasswordPlaceholder: "أدخل كلمة مرور جديدة",
+      confirmPassword: "تأكيد كلمة المرور الجديدة",
+      confirmPasswordPlaceholder: "أعد إدخال كلمة المرور الجديدة",
+      submit: "تحديث كلمة المرور",
+      submitting: "جارٍ التحديث...",
+      success: "تم تحديث كلمة المرور بنجاح.",
+      goToLogin: "الذهاب لتسجيل الدخول",
+      errorMismatch: "كلمتا المرور غير متطابقتين.",
+      errorGeneric: "تعذر تحديث كلمة المرور. من فضلك اطلب رابط إعادة تعيين جديد.",
+      errorSession: "رابط إعادة التعيين ده غير صالح أو انتهت صلاحيته. من فضلك اطلب رابط جديد.",
     },
     signup: {
       title: "إنشاء حساب جديد",
@@ -1062,6 +1136,10 @@ export const translations: Record<Locale, TranslationShape> = {
       confirmRevoke: "متأكد إنك عايز تلغي صلاحية الدخول للمستخدم ده؟",
       revoke: "إلغاء الصلاحية",
       revoking: "جارٍ الإلغاء...",
+      deleteAccount: "حذف الحساب نهائيًا",
+      deleting: "جارٍ الحذف...",
+      confirmDelete: "هيتم حذف حساب المستخدم ده وبيانات الدخول بتاعته نهائيًا — الإجراء ده مش ممكن التراجع عنه. متأكد؟",
+      deleteError: "تعذر حذف الحساب. حاول مرة أخرى.",
     },
     form: {
       title: "ملاحظة جديدة",

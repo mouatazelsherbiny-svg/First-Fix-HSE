@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Trash2, XCircle } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -71,6 +71,29 @@ function UserManagementView() {
     if (!window.confirm(`${t.userManagement.confirmRevoke} (${name || id})`)) return;
     setBusyId(id);
     await supabase.from("profiles").update({ is_approved: false }).eq("id", id);
+    await loadProfiles();
+    setBusyId(null);
+  };
+
+  // Permanently deletes the person's Supabase Auth account (not just their
+  // access) via the delete-user Edge Function, which holds the
+  // service-role key needed to call the Auth Admin API — the browser
+  // client never has that key. The function re-checks server-side that the
+  // caller is an admin before doing anything. Their past
+  // observations/permits/etc. are preserved but unattributed (see the
+  // created_by_fks_set_null_on_user_delete migration); only their login
+  // and profile row are removed.
+  const handleDeleteAccount = async (id: string, name: string) => {
+    if (!window.confirm(`${t.userManagement.confirmDelete} (${name || id})`)) return;
+    setBusyId(id);
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { userId: id },
+    });
+    if (error) {
+      window.alert(t.userManagement.deleteError);
+      setBusyId(null);
+      return;
+    }
     await loadProfiles();
     setBusyId(null);
   };
@@ -190,15 +213,26 @@ function UserManagementView() {
                   <td className="px-4 py-3 text-brand-grayDark">{p.project || "—"}</td>
                   <td className="px-4 py-3 text-end">
                     {p.id !== user?.id && (
-                      <button
-                        type="button"
-                        onClick={() => handleRevoke(p.id, p.full_name)}
-                        disabled={busyId === p.id}
-                        className="btn-secondary !border-red-500/30 !px-3 !py-1.5 !text-red-400 text-xs hover:!bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <XCircle className="me-1.5 h-3.5 w-3.5" />
-                        {busyId === p.id ? t.userManagement.revoking : t.userManagement.revoke}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRevoke(p.id, p.full_name)}
+                          disabled={busyId === p.id}
+                          className="btn-secondary !border-red-500/30 !px-3 !py-1.5 !text-red-400 text-xs hover:!bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <XCircle className="me-1.5 h-3.5 w-3.5" />
+                          {busyId === p.id ? t.userManagement.revoking : t.userManagement.revoke}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAccount(p.id, p.full_name)}
+                          disabled={busyId === p.id}
+                          className="btn-secondary !border-red-500/50 !bg-red-500/10 !px-3 !py-1.5 !text-red-400 text-xs hover:!bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Trash2 className="me-1.5 h-3.5 w-3.5" />
+                          {busyId === p.id ? t.userManagement.deleting : t.userManagement.deleteAccount}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

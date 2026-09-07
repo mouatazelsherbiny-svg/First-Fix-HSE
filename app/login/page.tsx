@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { supabase } from "@/lib/supabaseClient";
 import LanguageToggle from "@/components/LanguageToggle";
 
 export default function LoginPage() {
@@ -18,18 +18,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Background video starts muted because browsers block autoplay-with-sound
-  // without a prior user gesture — this ref + state pair lets the visitor
-  // opt in to sound with one click via the speaker button below.
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoMuted, setVideoMuted] = useState(true);
-
-  const toggleVideoSound = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-    setVideoMuted(video.muted);
-  };
+  // "login" shows the normal sign-in form; "forgot" swaps it for the
+  // password-reset request form (see the Forgot password? button below).
+  const [mode, setMode] = useState<"login" | "forgot">("login");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotStatus, setForgotStatus] = useState<"idle" | "success" | "error">("idle");
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -50,38 +44,35 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
 
-  return (
-    <div className="relative min-h-screen w-full bg-[#F5F5F3]">
-      {/* Fixed, viewport-locked background video. Plays once (no loop) and
-          freezes on its last frame — deliberate, per request. Autoplay
-          requires muted + playsInline to work without a user gesture on
-          mobile browsers; the speaker button below lets the visitor turn
-          sound on afterwards. No `poster` image on purpose — an earlier
-          version showed the old static logo for the instant before the
-          video had enough data to paint its first frame, which read as a
-          flash of stale branding right before the video kicked in. The
-          page's own bg-[#F5F5F3] shows for that instant instead. File
-          lives at public/login-bg.mp4, which Next.js serves from the site
-          root as "/login-bg.mp4" (NOT "/assets/..." — only the public/
-          folder is web-servable; assets/ is a source-only folder outside
-          the build's static output). */}
-      <video
-        ref={videoRef}
-        src="/login-bg.mp4"
-        autoPlay
-        muted
-        playsInline
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          objectFit: "cover",
-          zIndex: 0,
-        }}
-      />
+  // Sends a Supabase password-recovery email; the link in that email lands
+  // on /reset-password (see app/reset-password/page.tsx), where the person
+  // sets their new password. Requires /reset-password to be added to the
+  // project's Supabase Auth "Redirect URLs" allow-list in the dashboard.
+  const handleForgotSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setForgotSubmitting(true);
+    setForgotStatus("idle");
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotSubmitting(false);
+    setForgotStatus(resetError ? "error" : "success");
+  };
 
+  const backToLogin = () => {
+    setMode("login");
+    setForgotStatus("idle");
+    setForgotEmail("");
+  };
+
+  return (
+    <div
+      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-center bg-fixed"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(20, 22, 26, 0.45), rgba(20, 22, 26, 0.45)), url('/brand/first-fix-bg.jpg')",
+      }}
+    >
       {/* Pinned to the true top-right screen corner via physical `right`/
           `top` (not the logical `end-*` utilities), so it stays put on the
           right no matter the page's text direction (English or Arabic). */}
@@ -89,108 +80,151 @@ export default function LoginPage() {
         <LanguageToggle className="bg-white/85 backdrop-blur-sm" />
       </div>
 
-      {/* Sound toggle for the background video — opposite corner (physical
-          left) from the language toggle, same glass styling. Stays put on
-          the left no matter the page's text direction. */}
-      <button
-        type="button"
-        onClick={toggleVideoSound}
-        aria-label={videoMuted ? "Unmute video" : "Mute video"}
-        className="fixed left-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-brand-grayDark shadow-sm backdrop-blur-sm transition hover:bg-white sm:left-6 sm:top-6"
-      >
-        {videoMuted ? (
-          <VolumeX className="h-4 w-4" strokeWidth={2} />
-        ) : (
-          <Volume2 className="h-4 w-4" strokeWidth={2} />
-        )}
-      </button>
-
       {/* Fields float directly on the photo — no card container. Pinned to
           the right side of the screen (physical `right`, not logical) and
           the lower third, well clear of the logo/headline on the left. */}
       <div className="absolute right-4 bottom-[9vh] z-10 w-[calc(100%-2rem)] max-w-sm sm:right-10 sm:bottom-[12vh] md:right-16 lg:right-24">
         <div className="max-sm:rounded-2xl max-sm:bg-black/30 max-sm:p-5 max-sm:backdrop-blur-sm">
-          <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
-            {t.login.title}
-          </h1>
-          <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-            {t.login.subtitle}
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="label-field-glass">
-                {t.login.email}
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t.login.emailPlaceholder}
-                className="input-field-glass"
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="label-field-glass">
-                {t.login.password}
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t.login.passwordPlaceholder}
-                className="input-field-glass"
-                autoComplete="current-password"
-              />
-            </div>
-
-            {error && (
-              <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
-                {error}
+          {mode === "login" ? (
+            <>
+              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
+                {t.login.title}
+              </h1>
+              <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                {t.login.subtitle}
               </p>
-            )}
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-white/70 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
-                />
-                {t.login.rememberMe}
-              </label>
-              <button
-                type="button"
-                className="font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)] hover:text-white hover:underline"
-              >
-                {t.login.forgot}
-              </button>
-            </div>
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <div>
+                  <label htmlFor="email" className="label-field-glass">
+                    {t.login.email}
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.login.emailPlaceholder}
+                    className="input-field-glass"
+                    autoComplete="email"
+                  />
+                </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="btn-primary w-full"
-            >
-              {submitting ? t.login.submitting : t.login.submit}
-            </button>
-          </form>
+                <div>
+                  <label htmlFor="password" className="label-field-glass">
+                    {t.login.password}
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t.login.passwordPlaceholder}
+                    className="input-field-glass"
+                    autoComplete="current-password"
+                  />
+                </div>
 
-          <p className="mt-4 text-center text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-            {t.login.noAccount}{" "}
-            <Link href="/signup" className="font-semibold text-white underline hover:no-underline">
-              {t.login.signUpLink}
-            </Link>
-          </p>
+                {error && (
+                  <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
+                    {error}
+                  </p>
+                )}
 
-          <p className="mt-6 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-            {t.login.footer}
-          </p>
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2 text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-white/70 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
+                    />
+                    {t.login.rememberMe}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMode("forgot")}
+                    className="font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)] hover:text-white hover:underline"
+                  >
+                    {t.login.forgot}
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-primary w-full"
+                >
+                  {submitting ? t.login.submitting : t.login.submit}
+                </button>
+              </form>
+
+              <p className="mt-4 text-center text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                {t.login.noAccount}{" "}
+                <Link href="/signup" className="font-semibold text-white underline hover:no-underline">
+                  {t.login.signUpLink}
+                </Link>
+              </p>
+
+              <p className="mt-6 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                {t.login.footer}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
+                {t.login.forgotTitle}
+              </h1>
+              <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                {t.login.forgotSubtitle}
+              </p>
+
+              <form onSubmit={handleForgotSubmit} className="mt-6 space-y-4">
+                <div>
+                  <label htmlFor="forgot-email" className="label-field-glass">
+                    {t.login.email}
+                  </label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder={t.login.emailPlaceholder}
+                    className="input-field-glass"
+                    autoComplete="email"
+                  />
+                </div>
+
+                {forgotStatus === "success" && (
+                  <p className="rounded-lg bg-green-600/90 px-3 py-2 text-xs font-medium text-white shadow">
+                    {t.login.forgotSuccess}
+                  </p>
+                )}
+                {forgotStatus === "error" && (
+                  <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
+                    {t.login.forgotError}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={forgotSubmitting}
+                  className="btn-primary w-full"
+                >
+                  {forgotSubmitting ? t.login.forgotSubmitting : t.login.forgotSubmit}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={backToLogin}
+                  className="w-full text-center text-sm font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)] hover:text-white hover:underline"
+                >
+                  {t.login.backToLogin}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
