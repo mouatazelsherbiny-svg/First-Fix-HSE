@@ -46,6 +46,8 @@ function ObservationsList() {
           { header: t.form.observationDetails, key: "details", width: 40 },
           { header: t.form.inspectedBy, key: "inspectedBy" },
           { header: t.list.col.date, key: "date" },
+          { header: t.form.observationPhoto, key: "observationPhotos", type: "image" as const, width: 20 },
+          { header: t.form.closeOutPhoto, key: "closeOutPhotos", type: "image" as const, width: 20 },
         ],
         rows: observations.map((o) => ({
           reportNumber: o.reportNumber,
@@ -63,6 +65,8 @@ function ObservationsList() {
             locale === "ar" ? "ar-EG" : "en-US",
             { year: "numeric", month: "short", day: "numeric" }
           ),
+          observationPhotos: o.observationPhotos,
+          closeOutPhotos: o.closeOutPhotos,
         })),
       },
     ],

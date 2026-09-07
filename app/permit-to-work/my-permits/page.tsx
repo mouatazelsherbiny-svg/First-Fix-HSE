@@ -60,6 +60,8 @@ function MyPermitsList() {
           { header: t.ptw.col.permitStatus, key: "permitStatus" },
           { header: t.ptw.issuerBy, key: "issuerBy" },
           { header: t.ptw.receiver, key: "receiver" },
+          { header: t.ptw.permitPhoto, key: "permitPhotos", type: "image" as const, width: 20 },
+          { header: t.ptw.closeOutPhoto, key: "closeOutPhotos", type: "image" as const, width: 20 },
         ],
         rows: projectPermits.map((p) => ({
           permitNumber: p.permitNumber,
@@ -75,6 +77,8 @@ function MyPermitsList() {
           permitStatus: getPermitProgress(p),
           issuerBy: p.requestedBy,
           receiver: p.receiver,
+          permitPhotos: p.permitPhotos,
+          closeOutPhotos: p.closeOutPhotos,
         })),
       },
     ],
