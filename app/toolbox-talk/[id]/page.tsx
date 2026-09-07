@@ -38,7 +38,7 @@ function ToolboxTalkDetail() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <Link
         href="/toolbox-talk"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"

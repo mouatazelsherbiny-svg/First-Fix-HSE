@@ -58,7 +58,7 @@ function NewWeeklyKpiForm() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-brand-black">
           {t.weeklyKpi.formTitle}

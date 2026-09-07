@@ -71,7 +71,7 @@ function NewToolboxTalkForm() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-brand-black">
           {t.toolbox.formTitle}

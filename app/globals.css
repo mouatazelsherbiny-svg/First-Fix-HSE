@@ -11,6 +11,51 @@
      photo background of its own instead of a flat color.)
      Dark charcoal + safety-orange theme — a dark, low-glare canvas. */
   --background-app: #1F2226;
+
+  /* ---- Brand color tokens (Appearance → Color theme) ----
+     Every value is "R G B" (space-separated, no rgb() wrapper) so
+     tailwind.config.ts can compose it as `rgb(var(--x) / <alpha-value>)`
+     and keep supporting opacity modifiers like `bg-brand-surface/40`.
+     Only the three accent tokens (orange / orangeDark / orangeLight)
+     change per theme below — the neutral charcoal/text/border tokens stay
+     identical across themes so the app's overall look stays cohesive. */
+  --brand-orange-rgb: 232 89 12; /* primary accent — buttons, active nav, focus rings, links */
+  --brand-orange-dark-rgb: 194 74 9; /* accent hover/darker shade */
+  --brand-orange-light-rgb: 58 36 22; /* accent tint — icon-chip bg, subtle highlight */
+  --brand-gray-rgb: 139 146 160; /* muted/tertiary text — placeholders, hints, meta text */
+  --brand-gray-dark-rgb: 199 203 209; /* secondary text — field labels, sub-text */
+  --brand-gray-light-rgb: 52 57 64; /* elevated/hover surface — chip/hover bg, table header bg */
+  --brand-black-rgb: 243 244 246; /* primary text — headings/body copy (near-white, not pure white) */
+  --brand-surface-rgb: 41 45 50; /* card/surface background */
+  --brand-border-rgb: 62 67 75; /* shared border color */
+  --brand-gold-rgb: 201 162 39; /* secondary accent — used sparingly, constant across themes */
+  --brand-on-accent-rgb: 255 255 255; /* text/icon color on top of a solid accent fill */
+}
+
+/* ---- Color themes ----
+   Selecting a theme in the Appearance panel sets `data-theme` on <html>
+   (see context/ThemeSettingsContext.tsx); each block below re-points only
+   the three accent tokens. "orange" is the original/default look and
+   doesn't need its own block since :root already holds those values. */
+:root[data-theme="blue"] {
+  --brand-orange-rgb: 37 99 235;
+  --brand-orange-dark-rgb: 29 78 216;
+  --brand-orange-light-rgb: 27 36 54;
+}
+:root[data-theme="green"] {
+  --brand-orange-rgb: 22 163 74;
+  --brand-orange-dark-rgb: 21 128 61;
+  --brand-orange-light-rgb: 22 40 28;
+}
+:root[data-theme="red"] {
+  --brand-orange-rgb: 220 38 38;
+  --brand-orange-dark-rgb: 185 28 28;
+  --brand-orange-light-rgb: 58 27 27;
+}
+:root[data-theme="purple"] {
+  --brand-orange-rgb: 124 58 237;
+  --brand-orange-dark-rgb: 109 40 217;
+  --brand-orange-light-rgb: 39 28 58;
 }
 
 html,
@@ -87,6 +132,37 @@ body.app-bg-image {
    softened, behind every card. */
 .card {
   @apply rounded-2xl border border-brand-border bg-brand-surface/40 p-6 shadow-card backdrop-blur-xl;
+}
+
+/* ---- Morphism style (Appearance → Card style) ----
+   "Glass" is the default look defined by the utility classes above
+   (translucent surfaces + backdrop blur). "Solid" is an alternate,
+   higher-contrast look for people who find blur/translucency harder to
+   read: it strips the blur and forces every translucent surface fully
+   opaque. Applied while an authenticated app page is mounted (see
+   ProtectedRoute.tsx), never on the public login/signup screens.
+   Uses attribute-substring selectors ([class*="..."]) so it reaches every
+   `backdrop-blur-*` / translucent `bg-*/NN` utility class already used
+   anywhere in the app — including ones added later — without needing a
+   per-component edit. */
+html[data-morphism="solid"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-morphism="solid"] [class*="bg-brand-surface/"] {
+  background-color: rgb(var(--brand-surface-rgb)) !important;
+}
+html[data-morphism="solid"] [class*="bg-brand-grayLight/"] {
+  background-color: rgb(var(--brand-gray-light-rgb)) !important;
+}
+html[data-morphism="solid"] [class*="bg-brand-orangeLight/"] {
+  background-color: rgb(var(--brand-orange-light-rgb)) !important;
+}
+html[data-morphism="solid"] [class*="bg-white/"] {
+  background-color: #ffffff !important;
+}
+html[data-morphism="solid"] [class*="bg-black/"] {
+  background-color: #000000 !important;
 }
 
 /* Scroll/navigation fade-in (see components/ScrollReveal.tsx). Cards start

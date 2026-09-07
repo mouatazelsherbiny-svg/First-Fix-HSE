@@ -87,7 +87,7 @@ function WeeklyKpiDetail() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div>
       <Link
         href="/weekly-kpi"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"

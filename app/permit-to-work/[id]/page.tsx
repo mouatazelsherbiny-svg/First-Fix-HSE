@@ -111,7 +111,7 @@ function PermitDetail() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <Link
         href="/permit-to-work"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"

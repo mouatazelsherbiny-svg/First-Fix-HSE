@@ -10,6 +10,7 @@ export interface TranslationShape {
     exportExcel: string;
     exportWord: string;
     exporting: string;
+    close: string;
   };
   login: {
     title: string;
@@ -155,6 +156,12 @@ export interface TranslationShape {
   };
   lang: {
     switchTo: string;
+  };
+  appearance: {
+    openLabel: string;
+    title: string;
+    colorTheme: string;
+    morphismStyle: string;
   };
   checklist: {
     generalInfo: string;
@@ -487,6 +494,7 @@ export const translations: Record<Locale, TranslationShape> = {
       exportExcel: "Export to Excel",
       exportWord: "Export to Word",
       exporting: "Exporting...",
+      close: "Close",
     },
     login: {
       title: "Welcome back",
@@ -632,6 +640,12 @@ export const translations: Record<Locale, TranslationShape> = {
     },
     lang: {
       switchTo: "العربية",
+    },
+    appearance: {
+      openLabel: "Appearance settings",
+      title: "Appearance",
+      colorTheme: "Color Theme",
+      morphismStyle: "Card Style",
     },
     checklist: {
       generalInfo: "General Information",
@@ -962,6 +976,7 @@ export const translations: Record<Locale, TranslationShape> = {
       exportExcel: "تصدير إلى إكسل",
       exportWord: "تصدير إلى وورد",
       exporting: "جارٍ التصدير...",
+      close: "إغلاق",
     },
     login: {
       title: "أهلاً بعودتك",
@@ -1107,6 +1122,12 @@ export const translations: Record<Locale, TranslationShape> = {
     },
     lang: {
       switchTo: "English",
+    },
+    appearance: {
+      openLabel: "إعدادات المظهر",
+      title: "المظهر",
+      colorTheme: "لون الثيم",
+      morphismStyle: "نمط الكروت",
     },
     checklist: {
       generalInfo: "معلومات عامة",

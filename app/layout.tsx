@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeSettingsProvider } from "@/context/ThemeSettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ObservationsProvider } from "@/context/ObservationsContext";
 import { ToolboxTalkProvider } from "@/context/ToolboxTalkContext";
@@ -39,21 +40,23 @@ export default function RootLayout({
     <html lang="en" dir="ltr">
       <body className="bg-app-base font-sans antialiased">
         <PwaRegister />
-        <LanguageProvider>
-          <AuthProvider>
-            <ObservationsProvider>
-              <ToolboxTalkProvider>
-                <HsePassportProvider>
-                  <WeeklyKpiProvider>
-                    <PermitProvider>
-                      <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
-                    </PermitProvider>
-                  </WeeklyKpiProvider>
-                </HsePassportProvider>
-              </ToolboxTalkProvider>
-            </ObservationsProvider>
-          </AuthProvider>
-        </LanguageProvider>
+        <ThemeSettingsProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <ObservationsProvider>
+                <ToolboxTalkProvider>
+                  <HsePassportProvider>
+                    <WeeklyKpiProvider>
+                      <PermitProvider>
+                        <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
+                      </PermitProvider>
+                    </WeeklyKpiProvider>
+                  </HsePassportProvider>
+                </ToolboxTalkProvider>
+              </ObservationsProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeSettingsProvider>
       </body>
     </html>
   );
