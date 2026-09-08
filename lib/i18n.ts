@@ -432,6 +432,10 @@ export interface TranslationShape {
     observationsInspected: string;
     toolboxInductions: string;
     lsrViolations: string;
+    uploadPhoto: string;
+    changePhoto: string;
+    uploadingPhoto: string;
+    uploadPhotoError: string;
   };
   injury: {
     title: string;
@@ -1047,6 +1051,10 @@ export const translations: Record<Locale, TranslationShape> = {
       observationsInspected: "Observations Inspected",
       toolboxInductions: "Toolbox Talks Inducted",
       lsrViolations: "LSR Violations",
+      uploadPhoto: "Upload Photo",
+      changePhoto: "Change Photo",
+      uploadingPhoto: "Uploading...",
+      uploadPhotoError: "Couldn't upload the photo. Please try again.",
     },
     injury: {
       title: "Injury (FICC)",
@@ -1660,6 +1668,10 @@ export const translations: Record<Locale, TranslationShape> = {
       observationsInspected: "الملاحظات التي تم رصدها",
       toolboxInductions: "جلسات التوعية التي قادها",
       lsrViolations: "مخالفات LSR",
+      uploadPhoto: "رفع صورة",
+      changePhoto: "تغيير الصورة",
+      uploadingPhoto: "جارٍ الرفع...",
+      uploadPhotoError: "تعذر رفع الصورة. حاول مرة أخرى.",
     },
     injury: {
       title: "الإصابات (FICC)",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
@@ -8,6 +8,8 @@ import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 
 const normalizeName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
@@ -24,10 +26,15 @@ function SummaryPerformanceReport() {
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
   const { observations } = useObservations();
   const { records: toolboxRecords } = useToolboxTalk();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<EmployeeRecord | null>(null);
   const [results, setResults] = useState<EmployeeRecord[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // The employees table holds the company's full real roster (thousands of
   // rows) — always search it server-side (see lib/employeeDirectory.ts)
@@ -78,6 +85,28 @@ function SummaryPerformanceReport() {
       toolboxCount: toolboxInductions.length,
     };
   }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations, toolboxRecords]);
+
+  const handlePhotoChange = (files: FileList | null) => {
+    if (!files || files.length === 0 || !selected) return;
+    const file = files[0];
+    setPhotoError("");
+    setPhotoUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      const { error } = await supabase
+        .from("employees")
+        .update({ photo_url: dataUrl })
+        .eq("id", selected.id);
+      if (error) {
+        setPhotoError(t.summaryReport.uploadPhotoError);
+      } else {
+        setSelected({ ...selected, photoUrl: dataUrl });
+      }
+      setPhotoUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div>
@@ -142,7 +171,38 @@ function SummaryPerformanceReport() {
       {selected && stats && (
         <div className="space-y-6">
           <div className="card flex flex-col gap-6 sm:flex-row sm:items-start">
-            <PhotoThumb name={selected.name} src={selected.photoUrl} size={200} rounded="rounded-2xl" />
+            <div className="flex shrink-0 flex-col items-center gap-2">
+              <PhotoThumb name={selected.name} src={selected.photoUrl} size={200} rounded="rounded-2xl" />
+              {isAdmin && (
+                <>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      handlePhotoChange(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={photoUploading}
+                    className="btn-secondary w-full !py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {photoUploading
+                      ? t.summaryReport.uploadingPhoto
+                      : selected.photoUrl
+                        ? t.summaryReport.changePhoto
+                        : t.summaryReport.uploadPhoto}
+                  </button>
+                  {photoError && (
+                    <p className="text-xs font-medium text-red-400">{photoError}</p>
+                  )}
+                </>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <h2 className="text-2xl font-bold text-brand-black">{selected.name}</h2>
