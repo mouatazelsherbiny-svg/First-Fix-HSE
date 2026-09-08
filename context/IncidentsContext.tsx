@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { Incident } from "@/types/incident";
-import { supabase } from "@/lib/supabaseClient";
+import { fetchAllRows } from "@/lib/supabaseClient";
 
 interface IncidentsContextValue {
   incidents: Incident[];
@@ -61,14 +61,15 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from("incidents")
-      .select("*")
-      .order("incident_date", { ascending: false })
-      .then(({ data, error }) => {
+    fetchAllRows<any>("incidents", (q) =>
+      q.select("*").order("incident_date", { ascending: false })
+    )
+      .then((data) => {
         if (!active) return;
-        if (!error && data) setIncidents(data.map(mapRow));
-        setIsLoading(false);
+        setIncidents(data.map(mapRow));
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
       });
     return () => {
       active = false;
