@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { TrainingRecord } from "@/types/toolboxTalk";
-import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
 
 interface ToolboxTalkContextValue {
   records: TrainingRecord[];
@@ -49,14 +49,16 @@ export function ToolboxTalkProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from("toolbox_talk_records")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchAllRows<any>("toolbox_talk_records", (q) =>
+      q.select("*").order("created_at", { ascending: false })
+    )
+      .then((data) => {
         if (!active) return;
-        if (!error && data) setRecords(data.map(mapRow));
-        setIsLoading(false);
+        setRecords(data.map(mapRow));
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
       });
     return () => {
       active = false;

@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { Observation } from "@/types/observation";
-import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
 
 interface ObservationsContextValue {
   observations: Observation[];
@@ -52,14 +52,16 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from("observations")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchAllRows<any>("observations", (q) =>
+      q.select("*").order("created_at", { ascending: false })
+    )
+      .then((data) => {
         if (!active) return;
-        if (!error && data) setObservations(data.map(mapRow));
-        setIsLoading(false);
+        setObservations(data.map(mapRow));
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
       });
     return () => {
       active = false;

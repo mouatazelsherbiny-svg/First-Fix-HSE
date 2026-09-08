@@ -105,11 +105,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-center bg-fixed"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(20, 22, 26, 0.45), rgba(20, 22, 26, 0.45)), url('/brand/first-fix-login-bg.png')",
-      }}
+      className="relative min-h-screen w-full bg-[#1F2226]"
     >
       <div className="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
         <LanguageToggle className="bg-white/85 backdrop-blur-sm" />
