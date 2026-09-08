@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
@@ -16,10 +16,13 @@ export default function MyObservationsPage() {
   );
 }
 
+const PAGE_SIZE = 100;
+
 function ObservationsList() {
   const { t, locale } = useLanguage();
   const { observations, isLoading } = useObservations();
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -31,6 +34,17 @@ function ObservationsList() {
         o.observationType.toLowerCase().includes(q)
     );
   }, [observations, query]);
+
+  // Keep the rendered table light — page the (already client-filtered)
+  // results instead of rendering all matches at once.
+  useEffect(() => {
+    setPage(0);
+  }, [query]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pageStart = currentPage * PAGE_SIZE;
+  const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
   const exportSheets = useMemo(
     () => [
@@ -125,7 +139,7 @@ function ObservationsList() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((o) => (
+              {pageItems.map((o) => (
                 <tr
                   key={o.id}
                   className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
@@ -169,6 +183,33 @@ function ObservationsList() {
               ))}
             </tbody>
           </table>
+          {totalPages > 1 && (
+            <div className="flex flex-col gap-3 border-t border-brand-border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-brand-gray">
+                {t.common.pageOf
+                  .replace("{current}", String(currentPage + 1))
+                  .replace("{total}", String(totalPages))}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={currentPage === 0}
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {t.common.previous}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={currentPage >= totalPages - 1}
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {t.common.next}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

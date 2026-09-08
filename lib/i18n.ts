@@ -12,6 +12,9 @@ export interface TranslationShape {
     exporting: string;
     close: string;
     comingSoon: string;
+    previous: string;
+    next: string;
+    pageOf: string;
   };
   login: {
     title: string;
@@ -613,6 +616,9 @@ export const translations: Record<Locale, TranslationShape> = {
       exporting: "Exporting...",
       close: "Close",
       comingSoon: "This page is under construction — check back soon.",
+      previous: "Previous",
+      next: "Next",
+      pageOf: "Page {current} of {total}",
     },
     login: {
       title: "Welcome back",
@@ -1212,6 +1218,9 @@ export const translations: Record<Locale, TranslationShape> = {
       exporting: "جارٍ التصدير...",
       close: "إغلاق",
       comingSoon: "الصفحة دي لسه تحت الإنشاء — تابعنا قريب.",
+      previous: "السابق",
+      next: "التالي",
+      pageOf: "صفحة {current} من {total}",
     },
     login: {
       title: "أهلاً بعودتك",
