@@ -1,18 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
-import { useAuth } from "@/context/AuthContext";
-import { useEditRequests } from "@/context/EditRequestsContext";
-import { PROJECTS } from "@/lib/mockData";
-import {
-  WEEKLY_KPI_NUMERIC_FIELDS,
-  WeeklyKpiNumericField,
-} from "@/types/weeklyKpi";
+import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
 
 export default function WeeklyKpiDetailPage() {
   return (
@@ -25,42 +18,9 @@ export default function WeeklyKpiDetailPage() {
 function WeeklyKpiDetail() {
   const { t, locale } = useLanguage();
   const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const { user } = useAuth();
-  const { getById, updateRecord } = useWeeklyKpi();
-  const { submitRequest } = useEditRequests();
-  const isAdmin = user?.role === "admin";
+  const { getById } = useWeeklyKpi();
 
   const record = getById(params.id);
-
-  const [projectName, setProjectName] = useState("");
-  const [date, setDate] = useState("");
-  const [values, setValues] = useState<Record<WeeklyKpiNumericField, number>>(
-    () =>
-      Object.fromEntries(
-        WEEKLY_KPI_NUMERIC_FIELDS.map((f) => [f.key, 0])
-      ) as Record<WeeklyKpiNumericField, number>
-  );
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
-
-  const [requestOpen, setRequestOpen] = useState(false);
-  const [requestNotes, setRequestNotes] = useState("");
-  const [requestSubmitting, setRequestSubmitting] = useState(false);
-  const [requestDone, setRequestDone] = useState(false);
-  const [requestError, setRequestError] = useState("");
-
-  useEffect(() => {
-    if (record) {
-      setProjectName(record.projectName);
-      setDate(record.date);
-      setValues(
-        Object.fromEntries(
-          WEEKLY_KPI_NUMERIC_FIELDS.map((f) => [f.key, record[f.key]])
-        ) as Record<WeeklyKpiNumericField, number>
-      );
-    }
-  }, [record]);
 
   if (!record) {
     return (
@@ -72,47 +32,6 @@ function WeeklyKpiDetail() {
       </div>
     );
   }
-
-  const updateValue = (key: WeeklyKpiNumericField, raw: string) => {
-    setValues((prev) => ({ ...prev, [key]: raw === "" ? 0 : Number(raw) }));
-  };
-
-  const handleSave = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      await updateRecord(record.id, { projectName, date, ...values });
-      setSaved(true);
-      setTimeout(() => {
-        setSaved(false);
-        router.push("/dashboard");
-      }, 1200);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.common.genericError);
-    }
-  };
-
-  const handleSubmitRequest = async (e: FormEvent) => {
-    e.preventDefault();
-    setRequestError("");
-    setRequestSubmitting(true);
-    try {
-      await submitRequest({
-        tableName: "weekly_kpi_records",
-        recordId: record.id,
-        recordLabel: `${record.projectName} — ${record.date}`,
-        requesterName: user?.name ?? "",
-        requesterProject: user?.project ?? "",
-        notes: requestNotes,
-      });
-      setRequestDone(true);
-      setRequestNotes("");
-    } catch (err) {
-      setRequestError(err instanceof Error ? err.message : t.common.genericError);
-    } finally {
-      setRequestSubmitting(false);
-    }
-  };
 
   const dateStr = new Date(record.createdAt).toLocaleDateString(
     locale === "ar" ? "ar-EG" : "en-US",
@@ -128,155 +47,46 @@ function WeeklyKpiDetail() {
         &larr; {t.weeklyKpi.back}
       </Link>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {t.weeklyKpi.detailTitle}
-        </h1>
-        <p className="mt-1 text-sm text-brand-gray">
-          {t.weeklyKpi.recordedOn} {dateStr}
-        </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-black">
+            {t.weeklyKpi.detailTitle}
+          </h1>
+          <p className="mt-1 text-sm text-brand-gray">
+            {t.weeklyKpi.recordedOn} {dateStr}
+          </p>
+        </div>
+        <Link href={`/weekly-kpi/${record.id}/edit`} className="btn-primary">
+          {t.weeklyKpi.edit}
+        </Link>
       </div>
 
-      {saved && (
-        <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">
-          {t.weeklyKpi.saved}
+      <div className="card space-y-6">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <p className="label-field">{t.weeklyKpi.projectName}</p>
+            <p className="text-lg font-semibold text-brand-black">{record.projectName}</p>
+          </div>
+          <div>
+            <p className="label-field">{t.weeklyKpi.date}</p>
+            <p className="text-lg font-semibold text-brand-black">
+              {new Date(record.date).toLocaleDateString(
+                locale === "ar" ? "ar-EG" : "en-US",
+                { year: "numeric", month: "long", day: "numeric" }
+              )}
+            </p>
+          </div>
         </div>
-      )}
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
-          {error}
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {WEEKLY_KPI_NUMERIC_FIELDS.map((f) => (
+            <div key={f.key}>
+              <p className="label-field">{f.label}</p>
+              <p className="text-lg font-semibold text-brand-black">{record[f.key]}</p>
+            </div>
+          ))}
         </div>
-      )}
-
-      {isAdmin ? (
-        <form onSubmit={handleSave} className="card space-y-6">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className="label-field">{t.weeklyKpi.projectName} *</label>
-              <select
-                required
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="input-field"
-              >
-                {PROJECTS.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label-field">{t.weeklyKpi.date} *</label>
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {WEEKLY_KPI_NUMERIC_FIELDS.map((f) => (
-              <div key={f.key}>
-                <label className="label-field">{f.label}</label>
-                <input
-                  type="number"
-                  value={values[f.key]}
-                  onChange={(e) => updateValue(f.key, e.target.value)}
-                  className="input-field"
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-end gap-3 border-t border-brand-border pt-5">
-            <button type="submit" className="btn-primary">
-              {t.weeklyKpi.save}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <>
-          <div className="card space-y-6">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <p className="label-field">{t.weeklyKpi.projectName}</p>
-                <p className="text-lg font-semibold text-brand-black">{record.projectName}</p>
-              </div>
-              <div>
-                <p className="label-field">{t.weeklyKpi.date}</p>
-                <p className="text-lg font-semibold text-brand-black">
-                  {new Date(record.date).toLocaleDateString(
-                    locale === "ar" ? "ar-EG" : "en-US",
-                    { year: "numeric", month: "long", day: "numeric" }
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {WEEKLY_KPI_NUMERIC_FIELDS.map((f) => (
-                <div key={f.key}>
-                  <p className="label-field">{f.label}</p>
-                  <p className="text-lg font-semibold text-brand-black">{record[f.key]}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card mt-5">
-            <p className="mb-4 text-sm text-brand-gray">{t.weeklyKpi.readOnlyNotice}</p>
-
-            {requestDone ? (
-              <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">
-                {t.weeklyKpi.requestEditSuccess}
-              </div>
-            ) : requestOpen ? (
-              <form onSubmit={handleSubmitRequest} className="space-y-4">
-                <div>
-                  <label className="label-field">{t.weeklyKpi.requestEditNotesLabel}</label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={requestNotes}
-                    onChange={(e) => setRequestNotes(e.target.value)}
-                    placeholder={t.weeklyKpi.requestEditNotesPlaceholder}
-                    className="input-field"
-                  />
-                </div>
-                {requestError && (
-                  <p className="text-sm font-medium text-red-400">{requestError}</p>
-                )}
-                <div className="flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRequestOpen(false)}
-                    className="btn-secondary"
-                  >
-                    {t.weeklyKpi.cancel}
-                  </button>
-                  <button type="submit" disabled={requestSubmitting} className="btn-primary">
-                    {requestSubmitting
-                      ? t.weeklyKpi.requestEditSubmitting
-                      : t.weeklyKpi.requestEditSubmit}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setRequestOpen(true)}
-                className="btn-primary"
-              >
-                {t.weeklyKpi.requestEdit}
-              </button>
-            )}
-          </div>
-        </>
-      )}
+      </div>
     </div>
   );
 }

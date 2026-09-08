@@ -63,7 +63,7 @@ function ObservationsList() {
           { header: t.form.observationPhoto, key: "observationPhotos", type: "image" as const, width: 20 },
           { header: t.form.closeOutPhoto, key: "closeOutPhotos", type: "image" as const, width: 20 },
         ],
-        rows: observations.map((o) => ({
+        rows: filtered.map((o) => ({
           reportNumber: o.reportNumber,
           project: o.projectName,
           type:
@@ -84,7 +84,7 @@ function ObservationsList() {
         })),
       },
     ],
-    [observations, t, locale]
+    [filtered, t, locale]
   );
 
   return (
@@ -95,7 +95,7 @@ function ObservationsList() {
           <p className="mt-1 text-sm text-brand-gray">{t.list.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={observations.length === 0} />
+          <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={filtered.length === 0} />
           <Link href="/observations/new" className="btn-primary">
             {t.list.newBtn}
           </Link>
@@ -172,12 +172,20 @@ function ObservationsList() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-end">
-                    <Link
-                      href={`/observations/${o.id}`}
-                      className="font-medium text-brand-orange hover:underline"
-                    >
-                      {t.list.view}
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/observations/${o.id}`}
+                        className="font-medium text-brand-orange hover:underline"
+                      >
+                        {t.list.view}
+                      </Link>
+                      <Link
+                        href={`/observations/${o.id}/edit`}
+                        className="font-medium text-brand-orange hover:underline"
+                      >
+                        {t.list.edit}
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

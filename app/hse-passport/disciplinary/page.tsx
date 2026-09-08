@@ -143,7 +143,7 @@ function DisciplinaryActionContent() {
           { header: t.hse.disciplinary.violationCategory, key: "violationCategory" },
           { header: t.hse.details, key: "details", width: 40 },
         ],
-        rows: disciplinaryRecords.map((r) => {
+        rows: (hasSelection ? scopedRecords : disciplinaryRecords).map((r) => {
           const emp = employees.find((e) => e.id === r.employeeId);
           return {
             employeeName: emp?.name ?? "—",
@@ -157,7 +157,7 @@ function DisciplinaryActionContent() {
         }),
       },
     ],
-    [disciplinaryRecords, employees, t]
+    [disciplinaryRecords, scopedRecords, hasSelection, employees, t]
   );
 
   return (
@@ -169,7 +169,7 @@ function DisciplinaryActionContent() {
         <ExportExcelButton
           filename={t.hse.disciplinary.title}
           sheets={exportSheets}
-          disabled={disciplinaryRecords.length === 0}
+          disabled={(hasSelection ? scopedRecords : disciplinaryRecords).length === 0}
         />
       </div>
 

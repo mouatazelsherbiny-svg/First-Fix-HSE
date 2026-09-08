@@ -50,7 +50,7 @@ function WeeklyKpiList() {
           { header: t.weeklyKpi.colDate, key: "date" },
           ...WEEKLY_KPI_NUMERIC_FIELDS.map((f) => ({ header: f.label, key: f.key })),
         ],
-        rows: records.map((r) => ({
+        rows: filtered.map((r) => ({
           project: r.projectName,
           date: new Date(r.date).toLocaleDateString(
             locale === "ar" ? "ar-EG" : "en-US",
@@ -60,7 +60,7 @@ function WeeklyKpiList() {
         })),
       },
     ],
-    [records, t, locale]
+    [filtered, t, locale]
   );
 
   return (
@@ -73,7 +73,7 @@ function WeeklyKpiList() {
           <p className="mt-1 text-sm text-brand-gray">{t.weeklyKpi.listSubtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={records.length === 0} />
+          <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={filtered.length === 0} />
           <Link href="/weekly-kpi/new" className="btn-primary">
             {t.weeklyKpi.newBtn}
           </Link>
@@ -139,12 +139,20 @@ function WeeklyKpiList() {
                     </td>
                   ))}
                   <td className="px-4 py-3 text-end sm:px-6">
-                    <Link
-                      href={`/weekly-kpi/${r.id}`}
-                      className="font-medium text-brand-orange hover:underline"
-                    >
-                      {t.weeklyKpi.view}
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/weekly-kpi/${r.id}`}
+                        className="font-medium text-brand-orange hover:underline"
+                      >
+                        {t.weeklyKpi.view}
+                      </Link>
+                      <Link
+                        href={`/weekly-kpi/${r.id}/edit`}
+                        className="font-medium text-brand-orange hover:underline"
+                      >
+                        {t.weeklyKpi.edit}
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

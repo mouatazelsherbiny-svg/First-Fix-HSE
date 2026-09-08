@@ -180,6 +180,7 @@ export interface TranslationShape {
       actions: string;
     };
     view: string;
+    edit: string;
     search: string;
   };
   detail: {
@@ -369,6 +370,7 @@ export interface TranslationShape {
     colDate: string;
     colActions: string;
     view: string;
+    edit: string;
     detailTitle: string;
     back: string;
     recordedOn: string;
@@ -783,7 +785,8 @@ export const translations: Record<Locale, TranslationShape> = {
         date: "Date",
         actions: "Actions",
       },
-      view: "View / Edit",
+      view: "View",
+      edit: "Edit",
       search: "Search by report number, project...",
     },
     detail: {
@@ -973,6 +976,7 @@ export const translations: Record<Locale, TranslationShape> = {
       colDate: "Date",
       colActions: "Actions",
       view: "View",
+      edit: "Edit",
       detailTitle: "Weekly KPI Record",
       back: "Back to Weekly KPI",
       recordedOn: "Recorded on",
@@ -1385,7 +1389,8 @@ export const translations: Record<Locale, TranslationShape> = {
         date: "التاريخ",
         actions: "إجراءات",
       },
-      view: "عرض / تعديل",
+      view: "عرض",
+      edit: "تعديل",
       search: "ابحث برقم التقرير أو المشروع...",
     },
     detail: {
@@ -1575,6 +1580,7 @@ export const translations: Record<Locale, TranslationShape> = {
       colDate: "التاريخ",
       colActions: "إجراءات",
       view: "عرض",
+      edit: "تعديل",
       detailTitle: "سجل مؤشرات الأداء الأسبوعية",
       back: "الرجوع إلى مؤشرات الأداء الأسبوعية",
       recordedOn: "تاريخ التسجيل",

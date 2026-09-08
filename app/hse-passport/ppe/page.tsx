@@ -57,7 +57,7 @@ function PpeContent() {
           { header: t.hse.ppe.condition, key: "condition" },
           { header: t.hse.ppe.remarks, key: "remarks", width: 30 },
         ],
-        rows: ppeRecords.map((r) => {
+        rows: (employee ? employeeRecords : ppeRecords).map((r) => {
           const emp = employees.find((e) => e.id === r.employeeId);
           return {
             employeeName: emp?.name ?? "—",
@@ -73,7 +73,7 @@ function PpeContent() {
         }),
       },
     ],
-    [ppeRecords, employees, t]
+    [ppeRecords, employeeRecords, employee, employees, t]
   );
 
   return (
@@ -83,7 +83,7 @@ function PpeContent() {
         <ExportExcelButton
           filename={t.hse.ppe.title}
           sheets={exportSheets}
-          disabled={ppeRecords.length === 0}
+          disabled={(employee ? employeeRecords : ppeRecords).length === 0}
         />
       </div>
 

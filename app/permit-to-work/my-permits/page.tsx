@@ -63,7 +63,7 @@ function MyPermitsList() {
           { header: t.ptw.permitPhoto, key: "permitPhotos", type: "image" as const, width: 20 },
           { header: t.ptw.closeOutPhoto, key: "closeOutPhotos", type: "image" as const, width: 20 },
         ],
-        rows: projectPermits.map((p) => ({
+        rows: filtered.map((p) => ({
           permitNumber: p.permitNumber,
           project: p.projectName,
           type: p.permitType === "Other" ? p.permitTypeOther || t.ptw.other : p.permitType,
@@ -82,7 +82,7 @@ function MyPermitsList() {
         })),
       },
     ],
-    [projectPermits, t]
+    [filtered, t]
   );
 
   return (
@@ -105,7 +105,7 @@ function MyPermitsList() {
           <ExportExcelButton
             filename={t.ptw.myPermitsTitle}
             sheets={exportSheets}
-            disabled={projectPermits.length === 0}
+            disabled={filtered.length === 0}
           />
           <Link href="/permit-to-work/new" className="btn-primary">
             {t.ptw.newBtn}

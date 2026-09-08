@@ -53,7 +53,7 @@ function TrainingContent() {
           { header: t.hse.training.status, key: "status" },
           { header: t.hse.training.hours, key: "hours" },
         ],
-        rows: trainingRecords.map((r) => {
+        rows: (employee ? records : trainingRecords).map((r) => {
           const emp = employees.find((e) => e.id === r.employeeId);
           return {
             employeeName: emp?.name ?? "—",
@@ -67,7 +67,7 @@ function TrainingContent() {
         }),
       },
     ],
-    [trainingRecords, employees, t]
+    [trainingRecords, records, employee, employees, t]
   );
 
   return (
@@ -77,7 +77,7 @@ function TrainingContent() {
         <ExportExcelButton
           filename={t.hse.training.title}
           sheets={exportSheets}
-          disabled={trainingRecords.length === 0}
+          disabled={(employee ? records : trainingRecords).length === 0}
         />
       </div>
 
