@@ -17,28 +17,43 @@ import {
   YAxis,
 } from "recharts";
 import Link from "next/link";
+import { Award, Flame, GraduationCap, HardHat, ShieldAlert, Trophy } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
-import { useHsePassport } from "@/context/HsePassportContext";
+import { useIncidents } from "@/context/IncidentsContext";
 import { usePermits } from "@/context/PermitContext";
-import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { useAuth } from "@/context/AuthContext";
 import { getStatusColorClasses, getChartColor } from "@/lib/statusColors";
 import { getPermitProgress } from "@/lib/permitProgress";
 import { CLASSIFICATIONS, RISK_RATINGS } from "@/lib/mockData";
 
-const CHECKLIST_PAGES = [
-  { key: "environmental", href: "/checklists/environmental" },
-  { key: "fireAssessment", href: "/checklists/fire-assessment" },
-  { key: "safetyHealth", href: "/checklists/safety-health" },
-  { key: "tcEnergization", href: "/checklists/tc-energization" },
-];
-
 const WEEKS_COUNT = 6;
+const LSR_VIOLATION_CATEGORY = "LSR Violation";
+
+// Groups `items` by a string key and sums `valueFn` (defaults to a plain
+// count) per group, returning the single highest group — used by the "Most
+// X by project" cards below. Rows with no project name are ignored.
+function topGroup<T>(
+  items: T[],
+  keyFn: (item: T) => string | null | undefined,
+  valueFn: (item: T) => number = () => 1
+): { key: string; value: number } | null {
+  const totals = new Map<string, number>();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!key) continue;
+    totals.set(key, (totals.get(key) ?? 0) + valueFn(item));
+  }
+  let best: { key: string; value: number } | null = null;
+  for (const [key, value] of totals) {
+    if (!best || value > best.value) best = { key, value };
+  }
+  return best;
+}
 
 export default function DashboardPage() {
   return (
@@ -56,72 +71,47 @@ function DashboardContent() {
   const { observations } = useObservations();
   const { records: toolboxRecords } = useToolboxTalk();
   const { records: kpiRecords } = useWeeklyKpi();
-  const { disciplinaryRecords, employees, ppeRecords, trainingRecords } = useHsePassport();
+  const { incidents } = useIncidents();
   const { permits } = usePermits();
-  const { submissions: checklistSubmissions } = useChecklistSubmissions();
 
   const projectObservations = useMemo(
     () => observations.filter((o) => o.projectName === project),
     [observations, project]
   );
 
-  const latestChecklistSubmissions = useMemo(() => {
-    const map: Record<string, string> = {};
-    checklistSubmissions
-      .filter((s) => s.projectName === project)
-      .forEach((s) => {
-        if (!map[s.templateKey]) map[s.templateKey] = s.inspectionDate || s.createdAt;
-      });
-    return map;
-  }, [checklistSubmissions, project]);
-  const openCount = projectObservations.filter((o) => o.status === "Open").length;
-  const closedCount = projectObservations.filter((o) => o.status === "Closed").length;
-
-  const projectToolbox = useMemo(
-    () => toolboxRecords.filter((r) => r.projectName === project),
-    [toolboxRecords, project]
-  );
-  const totalSessions = projectToolbox.reduce((a, r) => a + r.sessions, 0);
-  const totalAttendees = projectToolbox.reduce((a, r) => a + r.attendees, 0);
-  const totalTrainingManHours = projectToolbox.reduce(
-    (a, r) => a + r.trainingManHours,
-    0
-  );
-
-  const latestKpi = useMemo(() => {
-    const projectKpi = kpiRecords
-      .filter((r) => r.projectName === project)
-      .slice()
-      .sort((a, b) => b.date.localeCompare(a.date));
-    return projectKpi[0];
-  }, [kpiRecords, project]);
-
-  const projectEmployees = useMemo(
-    () => employees.filter((e) => e.project === project),
-    [employees, project]
-  );
-  const projectEmployeeIds = useMemo(
-    () => new Set(projectEmployees.map((e) => e.id)),
-    [projectEmployees]
-  );
-  const totalViolations = disciplinaryRecords.filter((r) =>
-    projectEmployeeIds.has(r.employeeId)
-  ).length;
-  const totalPpeRecords = ppeRecords.filter((r) =>
-    projectEmployeeIds.has(r.employeeId)
-  ).length;
-  const totalTrainingRecords = trainingRecords.filter((r) =>
-    projectEmployeeIds.has(r.employeeId)
-  ).length;
-
   const projectPermits = useMemo(
     () => permits.filter((p) => p.projectName === project),
     [permits, project]
   );
-  const activePermitsCount = projectPermits.filter((p) => p.status === "Active").length;
-  const pendingPermitsCount = projectPermits.filter(
-    (p) => p.status === "Pending Approval"
-  ).length;
+
+  // ---- Company-wide totals (all projects combined) ----
+  const totalSafeManhours = useMemo(
+    () => kpiRecords.reduce((sum, r) => sum + (r.totalSafeWorkHours || 0), 0),
+    [kpiRecords]
+  );
+  const totalTrainingHours = useMemo(
+    () => toolboxRecords.reduce((sum, r) => sum + (r.trainingManHours || 0), 0),
+    [toolboxRecords]
+  );
+  const lsrIncidents = useMemo(
+    () => incidents.filter((i) => i.incidentCategory === LSR_VIOLATION_CATEGORY),
+    [incidents]
+  );
+  const totalLsr = lsrIncidents.length;
+
+  // ---- Top project per metric (all projects combined) ----
+  const topObservationsProject = useMemo(
+    () => topGroup(observations, (o) => o.projectName),
+    [observations]
+  );
+  const topLsrProject = useMemo(
+    () => topGroup(lsrIncidents, (i) => i.projectName),
+    [lsrIncidents]
+  );
+  const topTrainingProject = useMemo(
+    () => topGroup(toolboxRecords, (r) => r.projectName, (r) => r.trainingManHours || 0),
+    [toolboxRecords]
+  );
 
   const trendData = useMemo(() => {
     const today = new Date();
@@ -237,216 +227,64 @@ function DashboardContent() {
           </h1>
         </div>
 
+        {/* Company-wide totals */}
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+          {t.dashboard.companyOverview}
+        </h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Observations */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.observations}
-          </h2>
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-3xl font-extrabold text-brand-black">
-                {projectObservations.length}
-              </p>
-              <p className="text-xs font-medium text-brand-gray">
-                {t.dashboard.totalObservations}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
-                  "Open"
-                )}`}
-              >
-                {t.dashboard.openLabel}: {openCount}
-              </span>
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
-                  "Closed"
-                )}`}
-              >
-                {t.dashboard.closedLabel}: {closedCount}
-              </span>
-            </div>
-          </div>
+          <TotalCard
+            icon={<HardHat className="h-5 w-5" />}
+            tone="orange"
+            label={t.dashboard.totalSafeManhours}
+            value={totalSafeManhours}
+            unit={t.dashboard.manhoursUnit}
+          />
+          <TotalCard
+            icon={<GraduationCap className="h-5 w-5" />}
+            tone="blue"
+            label={t.dashboard.totalTrainingHours}
+            value={totalTrainingHours}
+            unit={t.dashboard.hoursUnit}
+          />
+          <TotalCard
+            icon={<ShieldAlert className="h-5 w-5" />}
+            tone="red"
+            label={t.dashboard.totalLsrViolations}
+            value={totalLsr}
+            unit={t.dashboard.recordsUnit}
+          />
         </div>
 
-        {/* Toolbox Talk & Training */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.toolboxTalk}
-          </h2>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">{totalSessions}</p>
-              <p className="text-xs font-medium text-brand-gray">{t.dashboard.sessions}</p>
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">{totalAttendees}</p>
-              <p className="text-xs font-medium text-brand-gray">{t.dashboard.attendees}</p>
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">
-                {totalTrainingManHours}
-              </p>
-              <p className="text-xs font-medium text-brand-gray">{t.dashboard.manHours}</p>
-            </div>
-          </div>
+        {/* Top projects */}
+        <h2 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+          {t.dashboard.topProjectsTitle}
+        </h2>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <TopProjectCard
+            icon={<Trophy className="h-5 w-5" />}
+            tone="amber"
+            label={t.dashboard.mostObservationsByProject}
+            top={topObservationsProject}
+            unit={t.dashboard.observationsCount}
+            noDataText={t.dashboard.noDataYet}
+          />
+          <TopProjectCard
+            icon={<Flame className="h-5 w-5" />}
+            tone="redStrong"
+            label={t.dashboard.mostLsrByProject}
+            top={topLsrProject}
+            unit={t.dashboard.lsrCount}
+            noDataText={t.dashboard.noDataYet}
+          />
+          <TopProjectCard
+            icon={<Award className="h-5 w-5" />}
+            tone="green"
+            label={t.dashboard.mostTrainingByProject}
+            top={topTrainingProject}
+            unit={t.dashboard.trainingHoursCount}
+            noDataText={t.dashboard.noDataYet}
+          />
         </div>
-
-        {/* Weekly KPI */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.weeklyKpi}
-          </h2>
-          {latestKpi ? (
-            <>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p className="text-2xl font-extrabold text-brand-black">
-                    {latestKpi.totalManhours}
-                  </p>
-                  <p className="text-[11px] font-medium text-brand-gray">
-                    {t.dashboard.totalManhours}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-extrabold text-brand-black">
-                    {latestKpi.totalSafeWorkHours}
-                  </p>
-                  <p className="text-[11px] font-medium text-brand-gray">
-                    {t.dashboard.totalSafeWorkHours}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-extrabold text-brand-black">
-                    {latestKpi.nearMisses}
-                  </p>
-                  <p className="text-[11px] font-medium text-brand-gray">
-                    {t.dashboard.nearMisses}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-3 text-center text-xs text-brand-gray">
-                {t.dashboard.latestRecordFrom}{" "}
-                {new Date(latestKpi.date).toLocaleDateString(
-                  locale === "ar" ? "ar-EG" : "en-US",
-                  { year: "numeric", month: "short", day: "numeric" }
-                )}
-              </p>
-            </>
-          ) : (
-            <EmptyNote text={t.dashboard.noDataYet} />
-          )}
-        </div>
-
-        {/* Permit to Work */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.permitToWork}
-          </h2>
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-3xl font-extrabold text-brand-black">
-                {projectPermits.length}
-              </p>
-              <p className="text-xs font-medium text-brand-gray">
-                {t.dashboard.totalPermits}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
-                  "Active"
-                )}`}
-              >
-                {t.dashboard.activePermits}: {activePermitsCount}
-              </span>
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
-                  "Pending Approval"
-                )}`}
-              >
-                {t.dashboard.pendingApproval}: {pendingPermitsCount}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* FICC — not yet built as a feature in the app */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.ficc}
-          </h2>
-          <EmptyNote text={t.dashboard.noDataYet} />
-        </div>
-
-        {/* Monthly Checklists */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.monthlyChecklists}
-          </h2>
-          <ul className="space-y-2">
-            {CHECKLIST_PAGES.map((c) => {
-              const submittedOn = latestChecklistSubmissions[c.key];
-              return (
-                <li key={c.key}>
-                  <Link
-                    href={c.href}
-                    className="flex items-center justify-between text-sm transition hover:text-brand-orange"
-                  >
-                    <span className="font-medium text-brand-grayDark">
-                      {t.checklistNames[c.key as keyof typeof t.checklistNames]}
-                    </span>
-                    {submittedOn ? (
-                      <span className="text-xs font-semibold text-green-600">
-                        {t.dashboard.submittedOn} {submittedOn}
-                      </span>
-                    ) : (
-                      <span className="text-xs font-semibold text-brand-gray">
-                        {t.dashboard.notSubmittedYet}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        {/* HSE Passport */}
-        <div className="card">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-            {t.dashboard.hsePassport}
-          </h2>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">
-                {totalViolations}
-              </p>
-              <p className="text-[11px] font-medium text-brand-gray">
-                {t.dashboard.totalViolations}
-              </p>
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">
-                {totalPpeRecords}
-              </p>
-              <p className="text-[11px] font-medium text-brand-gray">
-                {t.nav.ppe}
-              </p>
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-brand-black">
-                {totalTrainingRecords}
-              </p>
-              <p className="text-[11px] font-medium text-brand-gray">
-                {t.nav.training}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Recent activity */}
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
@@ -746,6 +584,95 @@ function DashboardContent() {
           </ResponsiveContainer>
         </div>
       </div>
+      </div>
+    </div>
+  );
+}
+
+type CardTone = "orange" | "blue" | "red" | "amber" | "redStrong" | "green";
+
+const TONE_CLASSES: Record<CardTone, string> = {
+  orange: "bg-brand-orange/20 text-brand-orange",
+  blue: "bg-blue-500/20 text-blue-400",
+  red: "bg-red-500/20 text-red-400",
+  amber: "bg-amber-500/20 text-amber-400",
+  redStrong: "bg-red-500/40 text-red-300",
+  green: "bg-green-500/20 text-green-400",
+};
+
+function IconBadge({ icon, tone }: { icon: React.ReactNode; tone: CardTone }) {
+  return (
+    <div
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${TONE_CLASSES[tone]}`}
+    >
+      {icon}
+    </div>
+  );
+}
+
+function TotalCard({
+  icon,
+  tone,
+  label,
+  value,
+  unit,
+}: {
+  icon: React.ReactNode;
+  tone: CardTone;
+  label: string;
+  value: number;
+  unit: string;
+}) {
+  return (
+    <div className="card flex items-center gap-4">
+      <IconBadge icon={icon} tone={tone} />
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold uppercase tracking-wide text-brand-gray">
+          {label}
+        </p>
+        <p className="mt-1 text-2xl font-extrabold text-brand-black">
+          {value.toLocaleString()}{" "}
+          <span className="text-xs font-medium text-brand-gray">{unit}</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TopProjectCard({
+  icon,
+  tone,
+  label,
+  top,
+  unit,
+  noDataText,
+}: {
+  icon: React.ReactNode;
+  tone: CardTone;
+  label: string;
+  top: { key: string; value: number } | null;
+  unit: string;
+  noDataText: string;
+}) {
+  return (
+    <div className="card flex items-center gap-4">
+      <IconBadge icon={icon} tone={tone} />
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold uppercase tracking-wide text-brand-gray">
+          {label}
+        </p>
+        {top ? (
+          <>
+            <p className="mt-1 truncate text-xl font-extrabold text-brand-black">
+              {top.key}
+            </p>
+            <p className="text-xs font-medium text-brand-gray">
+              {top.value.toLocaleString()} {unit}
+            </p>
+          </>
+        ) : (
+          <p className="mt-1 text-sm font-medium text-brand-gray">{noDataText}</p>
+        )}
       </div>
     </div>
   );

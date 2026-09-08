@@ -509,6 +509,20 @@ export interface TranslationShape {
     permitStatusBreakdown: string;
     kpiTrendTitle: string;
     noPermitsYet: string;
+    companyOverview: string;
+    totalSafeManhours: string;
+    totalTrainingHours: string;
+    totalLsrViolations: string;
+    manhoursUnit: string;
+    hoursUnit: string;
+    recordsUnit: string;
+    topProjectsTitle: string;
+    mostObservationsByProject: string;
+    mostLsrByProject: string;
+    mostTrainingByProject: string;
+    observationsCount: string;
+    lsrCount: string;
+    trainingHoursCount: string;
   };
   topbar: {
     greetingMorning: string;
@@ -1033,6 +1047,20 @@ export const translations: Record<Locale, TranslationShape> = {
       permitStatusBreakdown: "Permit Status Breakdown",
       kpiTrendTitle: "Weekly KPI Trend — Total Manhours",
       noPermitsYet: "No permits yet",
+      companyOverview: "Company Overview — All Projects",
+      totalSafeManhours: "Total Safe Manhours",
+      totalTrainingHours: "Total Training Hours",
+      totalLsrViolations: "Total LSR Violations",
+      manhoursUnit: "man-hours",
+      hoursUnit: "hours",
+      recordsUnit: "records",
+      topProjectsTitle: "Top Projects",
+      mostObservationsByProject: "Most HSE Observations by Project",
+      mostLsrByProject: "Most LSR's by Project",
+      mostTrainingByProject: "Most HSE Training by Project",
+      observationsCount: "observations",
+      lsrCount: "LSR violations",
+      trainingHoursCount: "training hours",
     },
     topbar: {
       greetingMorning: "Good Morning",
@@ -1555,6 +1583,20 @@ export const translations: Record<Locale, TranslationShape> = {
       permitStatusBreakdown: "توزيع حالة التصاريح",
       kpiTrendTitle: "اتجاه مؤشرات الأداء الأسبوعية — إجمالي ساعات العمل",
       noPermitsYet: "لا توجد تصاريح بعد",
+      companyOverview: "نظرة عامة على الشركة — كل المشاريع",
+      totalSafeManhours: "إجمالي ساعات العمل الآمنة",
+      totalTrainingHours: "إجمالي ساعات التدريب",
+      totalLsrViolations: "إجمالي مخالفات LSR",
+      manhoursUnit: "ساعة عمل",
+      hoursUnit: "ساعة",
+      recordsUnit: "سجل",
+      topProjectsTitle: "أفضل المشاريع",
+      mostObservationsByProject: "الأكثر في ملاحظات السلامة حسب المشروع",
+      mostLsrByProject: "الأكثر في مخالفات LSR حسب المشروع",
+      mostTrainingByProject: "الأكثر في التدريب حسب المشروع",
+      observationsCount: "ملاحظة",
+      lsrCount: "مخالفة LSR",
+      trainingHoursCount: "ساعة تدريب",
     },
     topbar: {
       greetingMorning: "صباح الخير",
