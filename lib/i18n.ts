@@ -436,6 +436,10 @@ export interface TranslationShape {
     changePhoto: string;
     uploadingPhoto: string;
     uploadPhotoError: string;
+    editInfo: string;
+    saveInfo: string;
+    savingInfo: string;
+    editInfoError: string;
   };
   injury: {
     title: string;
@@ -1055,6 +1059,10 @@ export const translations: Record<Locale, TranslationShape> = {
       changePhoto: "Change Photo",
       uploadingPhoto: "Uploading...",
       uploadPhotoError: "Couldn't upload the photo. Please try again.",
+      editInfo: "Edit Info",
+      saveInfo: "Save",
+      savingInfo: "Saving...",
+      editInfoError: "Couldn't save these changes. Please try again.",
     },
     injury: {
       title: "Injury (FICC)",
@@ -1672,6 +1680,10 @@ export const translations: Record<Locale, TranslationShape> = {
       changePhoto: "تغيير الصورة",
       uploadingPhoto: "جارٍ الرفع...",
       uploadPhotoError: "تعذر رفع الصورة. حاول مرة أخرى.",
+      editInfo: "تعديل البيانات",
+      saveInfo: "حفظ",
+      savingInfo: "جارٍ الحفظ...",
+      editInfoError: "تعذر حفظ التعديلات. حاول مرة أخرى.",
     },
     injury: {
       title: "الإصابات (FICC)",

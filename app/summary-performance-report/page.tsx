@@ -36,6 +36,14 @@ function SummaryPerformanceReport() {
   const [photoError, setPhotoError] = useState("");
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  const [editOpen, setEditOpen] = useState(false);
+  const [editProject, setEditProject] = useState("");
+  const [editDepartment, setEditDepartment] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editJobGrade, setEditJobGrade] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+
   // The employees table holds the company's full real roster (thousands of
   // rows) — always search it server-side (see lib/employeeDirectory.ts)
   // rather than loading it all into the browser.
@@ -85,6 +93,45 @@ function SummaryPerformanceReport() {
       toolboxCount: toolboxInductions.length,
     };
   }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations, toolboxRecords]);
+
+  const openEdit = () => {
+    if (!selected) return;
+    setEditProject(selected.project);
+    setEditDepartment(selected.department);
+    setEditPhone(selected.phone);
+    setEditJobGrade(selected.jobGrade);
+    setEditError("");
+    setEditOpen(true);
+  };
+
+  const handleSaveInfo = async () => {
+    if (!selected) return;
+    setEditError("");
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("employees")
+      .update({
+        project: editProject,
+        department: editDepartment,
+        phone: editPhone,
+        job_grade: editJobGrade,
+      })
+      .eq("id", selected.id);
+    if (error) {
+      setEditError(t.summaryReport.editInfoError);
+      setEditSaving(false);
+      return;
+    }
+    setSelected({
+      ...selected,
+      project: editProject,
+      department: editDepartment,
+      phone: editPhone,
+      jobGrade: editJobGrade,
+    });
+    setEditSaving(false);
+    setEditOpen(false);
+  };
 
   const handlePhotoChange = (files: FileList | null) => {
     if (!files || files.length === 0 || !selected) return;
@@ -206,32 +253,105 @@ function SummaryPerformanceReport() {
             <div className="min-w-0 flex-1">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <h2 className="text-2xl font-bold text-brand-black">{selected.name}</h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelected(null);
-                    setQuery("");
-                  }}
-                  className="btn-secondary shrink-0"
-                >
-                  &times;
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  {isAdmin && !editOpen && (
+                    <button type="button" onClick={openEdit} className="btn-secondary">
+                      {t.summaryReport.editInfo}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(null);
+                      setQuery("");
+                      setEditOpen(false);
+                    }}
+                    className="btn-secondary shrink-0"
+                  >
+                    &times;
+                  </button>
+                </div>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InfoField label={t.summaryReport.employeeCode} value={selected.employeeId} />
-                <InfoField label={t.summaryReport.project} value={selected.project} />
-                <InfoField label={t.summaryReport.department} value={selected.department} />
-                <InfoField
-                  label={t.summaryReport.phone}
-                  value={selected.phone}
-                  placeholder={t.summaryReport.notProvided}
-                />
-                <InfoField
-                  label={t.summaryReport.jobGrade}
-                  value={selected.jobGrade}
-                  placeholder={t.summaryReport.notProvided}
-                />
-              </div>
+
+              {editOpen ? (
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="label-field">{t.summaryReport.project}</label>
+                      <input
+                        type="text"
+                        value={editProject}
+                        onChange={(e) => setEditProject(e.target.value)}
+                        className="input-field"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-field">{t.summaryReport.department}</label>
+                      <input
+                        type="text"
+                        value={editDepartment}
+                        onChange={(e) => setEditDepartment(e.target.value)}
+                        className="input-field"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-field">{t.summaryReport.phone}</label>
+                      <input
+                        type="text"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        className="input-field"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-field">{t.summaryReport.jobGrade}</label>
+                      <input
+                        type="text"
+                        value={editJobGrade}
+                        onChange={(e) => setEditJobGrade(e.target.value)}
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+                  {editError && (
+                    <p className="text-sm font-medium text-red-400">{editError}</p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSaveInfo}
+                      disabled={editSaving}
+                      className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {editSaving ? t.summaryReport.savingInfo : t.summaryReport.saveInfo}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditOpen(false)}
+                      disabled={editSaving}
+                      className="btn-secondary"
+                    >
+                      {t.weeklyKpi.cancel}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <InfoField label={t.summaryReport.employeeCode} value={selected.employeeId} />
+                  <InfoField label={t.summaryReport.project} value={selected.project} />
+                  <InfoField label={t.summaryReport.department} value={selected.department} />
+                  <InfoField
+                    label={t.summaryReport.phone}
+                    value={selected.phone}
+                    placeholder={t.summaryReport.notProvided}
+                  />
+                  <InfoField
+                    label={t.summaryReport.jobGrade}
+                    value={selected.jobGrade}
+                    placeholder={t.summaryReport.notProvided}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
