@@ -82,7 +82,7 @@ body {
    show through. */
 body.app-bg-image {
   background-image: linear-gradient(rgba(20, 22, 26, 0.4), rgba(20, 22, 26, 0.4)),
-    url("/brand/first-fix-bg.jpg");
+    url("/brand/first-fix-bg.jpg?v=2");
   background-size: cover, contain;
   background-position: center, center;
   background-attachment: fixed, fixed;
