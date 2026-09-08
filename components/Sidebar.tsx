@@ -93,7 +93,7 @@ function PillLink({ href, label, icon: Icon, count, active }: NavLinkItem & { ac
   return (
     <Link href={href} className={`${PILL_ROW} ${active ? PILL_ACTIVE : PILL_INACTIVE}`}>
       <IconBadge Icon={Icon} active={active} />
-      <span className="flex-1 truncate text-start">{label}</span>
+      <span className="flex-1 text-start leading-tight">{label}</span>
       <CountBadge count={count} active={active} />
     </Link>
   );
@@ -121,7 +121,7 @@ function PillGroup({ label, icon: Icon, basePath, count, children }: NavGroupIte
         className={`${PILL_ROW} ${active ? PILL_ACTIVE : PILL_INACTIVE}`}
       >
         <IconBadge Icon={Icon} active={active} />
-        <span className="flex-1 truncate text-start">{label}</span>
+        <span className="flex-1 text-start leading-tight">{label}</span>
         <CountBadge count={count} active={active} />
         <ChevronDown
           className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
@@ -183,6 +183,11 @@ export default function Sidebar() {
   const userManagementLink: NavLinkItem | null =
     user?.role === "admin"
       ? { href: "/user-management", label: t.nav.userManagement, icon: Users }
+      : null;
+
+  const editRequestsLink: NavLinkItem | null =
+    user?.role === "admin"
+      ? { href: "/edit-requests", label: t.nav.editRequests, icon: ClipboardCheck }
       : null;
 
   // Requested order: Dashboard, Observations, Incidents, Injury, Reports,
@@ -312,6 +317,12 @@ export default function Sidebar() {
             ) : (
               <PillGroup key={Array.isArray(entry.basePath) ? entry.basePath[0] : entry.basePath} {...entry} />
             )
+          )}
+          {editRequestsLink && (
+            <PillLink
+              {...editRequestsLink}
+              active={pathname === editRequestsLink.href}
+            />
           )}
           {userManagementLink && (
             <PillLink

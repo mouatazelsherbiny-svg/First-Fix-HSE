@@ -27,6 +27,20 @@ function WeeklyKpiList() {
     return records.filter((r) => r.projectName.toLowerCase().includes(q));
   }, [records, query]);
 
+  // Totals across whatever rows are currently visible (all records, or just
+  // the matching project once the user searches) — recomputes automatically
+  // since it's derived straight from `filtered`.
+  const totals = useMemo(
+    () =>
+      Object.fromEntries(
+        WEEKLY_KPI_NUMERIC_FIELDS.map((f) => [
+          f.key,
+          filtered.reduce((sum, r) => sum + (r[f.key] || 0), 0),
+        ])
+      ) as Record<(typeof WEEKLY_KPI_NUMERIC_FIELDS)[number]["key"], number>,
+    [filtered]
+  );
+
   const exportSheets = useMemo(
     () => [
       {
@@ -135,6 +149,20 @@ function WeeklyKpiList() {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-brand-border bg-brand-grayLight/40 font-bold">
+                <td className="sticky start-0 z-10 bg-brand-grayLight/40 px-4 py-3 text-brand-black sm:px-6">
+                  {t.weeklyKpi.totalsRow}
+                </td>
+                <td className="px-4 py-3 sm:px-6" />
+                {WEEKLY_KPI_NUMERIC_FIELDS.map((f) => (
+                  <td key={f.key} className="px-4 py-3 text-brand-black sm:px-6">
+                    {totals[f.key].toLocaleString()}
+                  </td>
+                ))}
+                <td className="px-4 py-3 sm:px-6" />
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}

@@ -43,6 +43,9 @@ function mapEmployee(row: any): EmployeeRecord {
     employeeId: row.employee_code,
     project: row.project,
     department: row.department,
+    phone: row.phone ?? "",
+    jobGrade: row.job_grade ?? "",
+    photoUrl: row.photo_url ?? "",
   };
 }
 

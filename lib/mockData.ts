@@ -146,6 +146,9 @@ export interface EmployeeRecord {
   employeeId: string;
   project: string;
   department: string;
+  phone: string;
+  jobGrade: string;
+  photoUrl: string;
 }
 
 export const LIFE_SAVING_RULES = [

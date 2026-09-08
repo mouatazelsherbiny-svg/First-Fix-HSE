@@ -8,6 +8,7 @@ import { ToolboxTalkProvider } from "@/context/ToolboxTalkContext";
 import { HsePassportProvider } from "@/context/HsePassportContext";
 import { WeeklyKpiProvider } from "@/context/WeeklyKpiContext";
 import { IncidentsProvider } from "@/context/IncidentsContext";
+import { EditRequestsProvider } from "@/context/EditRequestsContext";
 import { PermitProvider } from "@/context/PermitContext";
 import { ChecklistSubmissionProvider } from "@/context/ChecklistSubmissionContext";
 import PwaRegister from "@/components/PwaRegister";
@@ -49,9 +50,11 @@ export default function RootLayout({
                   <HsePassportProvider>
                     <WeeklyKpiProvider>
                       <IncidentsProvider>
-                        <PermitProvider>
-                          <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
-                        </PermitProvider>
+                        <EditRequestsProvider>
+                          <PermitProvider>
+                            <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
+                          </PermitProvider>
+                        </EditRequestsProvider>
                       </IncidentsProvider>
                     </WeeklyKpiProvider>
                   </HsePassportProvider>

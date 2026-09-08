@@ -103,6 +103,7 @@ export interface TranslationShape {
     reports: string;
     pmv: string;
     summaryPerformanceReport: string;
+    editRequests: string;
   };
   userManagement: {
     title: string;
@@ -370,6 +371,65 @@ export interface TranslationShape {
     recordedOn: string;
     save: string;
     saved: string;
+    totalsRow: string;
+    readOnlyNotice: string;
+    requestEdit: string;
+    requestEditTitle: string;
+    requestEditNotesLabel: string;
+    requestEditNotesPlaceholder: string;
+    requestEditSubmit: string;
+    requestEditSubmitting: string;
+    requestEditSuccess: string;
+    requestEditError: string;
+  };
+  editRequests: {
+    title: string;
+    subtitle: string;
+    colRecord: string;
+    colRequester: string;
+    colProject: string;
+    colNotes: string;
+    colStatus: string;
+    colDate: string;
+    approve: string;
+    reject: string;
+    empty: string;
+    statusPending: string;
+    statusApproved: string;
+    statusRejected: string;
+  };
+  summaryReport: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    noSelection: string;
+    noResults: string;
+    employeeCode: string;
+    project: string;
+    department: string;
+    phone: string;
+    jobGrade: string;
+    notProvided: string;
+    statsTitle: string;
+    disciplinaryTotal: string;
+    ppeTotal: string;
+    trainingTotal: string;
+    trainingHoursTotal: string;
+  };
+  injury: {
+    title: string;
+    subtitle: string;
+    bodyMapTitle: string;
+    bodyMapEmpty: string;
+    listTitle: string;
+    colDate: string;
+    colProject: string;
+    colClassification: string;
+    colBodyPart: string;
+    colStatus: string;
+    colDescription: string;
+    empty: string;
+    unspecifiedBodyPart: string;
   };
   ptw: {
     formTitle: string;
@@ -641,6 +701,7 @@ export const translations: Record<Locale, TranslationShape> = {
       reports: "Reports",
       pmv: "PMV",
       summaryPerformanceReport: "Summary Performance Report",
+      editRequests: "Edit Requests",
     },
     userManagement: {
       title: "User Management",
@@ -902,12 +963,71 @@ export const translations: Record<Locale, TranslationShape> = {
       colProject: "Project",
       colDate: "Date",
       colActions: "Actions",
-      view: "View / Edit",
+      view: "View",
       detailTitle: "Weekly KPI Record",
       back: "Back to Weekly KPI",
       recordedOn: "Recorded on",
       save: "Save Changes",
       saved: "Changes saved successfully!",
+      totalsRow: "Total (filtered)",
+      readOnlyNotice: "This record is read-only. If you need a change made, submit an edit request below and an admin will review it.",
+      requestEdit: "Request Edit",
+      requestEditTitle: "Request an edit",
+      requestEditNotesLabel: "What would you like changed, and why?",
+      requestEditNotesPlaceholder: "Describe the change you need...",
+      requestEditSubmit: "Submit Request",
+      requestEditSubmitting: "Submitting...",
+      requestEditSuccess: "Your edit request has been submitted. An admin will review it.",
+      requestEditError: "Couldn't submit your request. Please try again.",
+    },
+    editRequests: {
+      title: "Edit Requests",
+      subtitle: "Edit requests submitted by employees, awaiting admin review.",
+      colRecord: "Record",
+      colRequester: "Requested By",
+      colProject: "Project",
+      colNotes: "Notes",
+      colStatus: "Status",
+      colDate: "Date",
+      approve: "Approve",
+      reject: "Reject",
+      empty: "No edit requests yet.",
+      statusPending: "Pending",
+      statusApproved: "Approved",
+      statusRejected: "Rejected",
+    },
+    summaryReport: {
+      title: "Summary Performance Report",
+      subtitle: "Search for an employee to view their full HSE performance report.",
+      searchPlaceholder: "Search by name or employee code...",
+      noSelection: "Search for an employee above to see their report.",
+      noResults: "No employees found.",
+      employeeCode: "Employee Code",
+      project: "Project",
+      department: "Department",
+      phone: "Phone",
+      jobGrade: "Job Grade",
+      notProvided: "Not provided yet",
+      statsTitle: "Overall Performance",
+      disciplinaryTotal: "Disciplinary Records",
+      ppeTotal: "PPE Records",
+      trainingTotal: "Training Courses",
+      trainingHoursTotal: "Total Training Hours",
+    },
+    injury: {
+      title: "Injury (FICC)",
+      subtitle: "Injury records from the FICC log, with a body-part breakdown.",
+      bodyMapTitle: "Injuries by Body Part",
+      bodyMapEmpty: "No body-part data to show yet.",
+      listTitle: "Injury Records",
+      colDate: "Date",
+      colProject: "Project",
+      colClassification: "Classification",
+      colBodyPart: "Body Part",
+      colStatus: "Status",
+      colDescription: "Description",
+      empty: "No injury records yet.",
+      unspecifiedBodyPart: "Not specified",
     },
     ptw: {
       formTitle: "New Permit to Work",
@@ -1177,6 +1297,7 @@ export const translations: Record<Locale, TranslationShape> = {
       reports: "التقارير (Reports)",
       pmv: "PMV",
       summaryPerformanceReport: "تقرير الأداء الإجمالي",
+      editRequests: "طلبات التعديل",
     },
     userManagement: {
       title: "إدارة المستخدمين",
@@ -1438,12 +1559,71 @@ export const translations: Record<Locale, TranslationShape> = {
       colProject: "المشروع",
       colDate: "التاريخ",
       colActions: "إجراءات",
-      view: "عرض / تعديل",
+      view: "عرض",
       detailTitle: "سجل مؤشرات الأداء الأسبوعية",
       back: "الرجوع إلى مؤشرات الأداء الأسبوعية",
       recordedOn: "تاريخ التسجيل",
       save: "حفظ التغييرات",
       saved: "تم حفظ التغييرات بنجاح!",
+      totalsRow: "الإجمالي (حسب البحث)",
+      readOnlyNotice: "هذا السجل للعرض فقط. لو محتاج تعديل، ابعت طلب تعديل بالأسفل وهيتم مراجعته من الأدمن.",
+      requestEdit: "طلب تعديل",
+      requestEditTitle: "طلب تعديل السجل",
+      requestEditNotesLabel: "عايز تعدل إيه، وليه؟",
+      requestEditNotesPlaceholder: "اشرح التعديل المطلوب...",
+      requestEditSubmit: "إرسال الطلب",
+      requestEditSubmitting: "جاري الإرسال...",
+      requestEditSuccess: "تم إرسال طلب التعديل بنجاح. هيتم مراجعته من الأدمن.",
+      requestEditError: "تعذر إرسال الطلب. حاول مرة أخرى.",
+    },
+    editRequests: {
+      title: "طلبات التعديل",
+      subtitle: "طلبات التعديل المرسلة من الموظفين، بانتظار مراجعة الأدمن.",
+      colRecord: "السجل",
+      colRequester: "مقدّم الطلب",
+      colProject: "المشروع",
+      colNotes: "الملاحظات",
+      colStatus: "الحالة",
+      colDate: "التاريخ",
+      approve: "موافقة",
+      reject: "رفض",
+      empty: "لا توجد طلبات تعديل بعد.",
+      statusPending: "قيد الانتظار",
+      statusApproved: "تمت الموافقة",
+      statusRejected: "مرفوض",
+    },
+    summaryReport: {
+      title: "تقرير الأداء الإجمالي",
+      subtitle: "ابحث عن موظف لعرض تقرير أدائه الكامل في السلامة والصحة المهنية.",
+      searchPlaceholder: "ابحث بالاسم أو الرقم الوظيفي...",
+      noSelection: "ابحث عن موظف بالأعلى لعرض تقريره.",
+      noResults: "لا يوجد موظفين مطابقين.",
+      employeeCode: "الرقم الوظيفي",
+      project: "المشروع",
+      department: "القسم",
+      phone: "رقم الهاتف",
+      jobGrade: "الدرجة الوظيفية",
+      notProvided: "لم تُضاف بعد",
+      statsTitle: "الأداء الإجمالي",
+      disciplinaryTotal: "الإجراءات التأديبية",
+      ppeTotal: "سجلات معدات الوقاية",
+      trainingTotal: "الدورات التدريبية",
+      trainingHoursTotal: "إجمالي ساعات التدريب",
+    },
+    injury: {
+      title: "الإصابات (FICC)",
+      subtitle: "سجلات الإصابات من ملف FICC، مع توزيع حسب منطقة الإصابة في الجسم.",
+      bodyMapTitle: "الإصابات حسب منطقة الجسم",
+      bodyMapEmpty: "لا توجد بيانات كافية لعرض توزيع الإصابات بعد.",
+      listTitle: "سجلات الإصابات",
+      colDate: "التاريخ",
+      colProject: "المشروع",
+      colClassification: "التصنيف",
+      colBodyPart: "منطقة الإصابة",
+      colStatus: "الحالة",
+      colDescription: "الوصف",
+      empty: "لا توجد سجلات إصابات بعد.",
+      unspecifiedBodyPart: "غير محدد",
     },
     ptw: {
       formTitle: "طلب تصريح عمل جديد",
