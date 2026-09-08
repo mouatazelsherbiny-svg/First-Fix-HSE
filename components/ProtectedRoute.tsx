@@ -24,6 +24,21 @@ export default function ProtectedRoute({
     }
   }, [isLoading, user, router]);
 
+  // The "First Fix" brand background photo (glassmorphism look, behind the
+  // translucent cards/sidebar/topbar) is applied as a plain CSS background
+  // directly on <body> (see the `.app-bg-image` rule in globals.css) rather
+  // than as a separately positioned element — simpler and avoids the
+  // layout/stacking edge cases a `position: fixed` element can hit. Add the
+  // class only while a protected page is actually mounted, and always
+  // clean it up, so the plain flat --background-app color (also set on
+  // html/body) is what shows on public pages like /login.
+  useEffect(() => {
+    document.body.classList.add("app-bg-image");
+    return () => {
+      document.body.classList.remove("app-bg-image");
+    };
+  }, []);
+
   // The glass/solid "morphism" style (see globals.css and ThemeCustomizer)
   // is only ever applied while an authenticated app page is mounted, so
   // this in-app appearance setting never touches the public login/signup
