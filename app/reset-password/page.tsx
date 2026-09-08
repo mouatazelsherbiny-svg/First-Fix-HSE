@@ -36,6 +36,29 @@ export default function ResetPasswordPage() {
       }
     };
 
+    const markInvalid = () => {
+      if (!settled) {
+        settled = true;
+        setStatus("invalid");
+      }
+    };
+
+    // Supabase redirects here with `#error=...&error_code=otp_expired&...`
+    // (in the URL hash) when the recovery link itself was already invalid
+    // or expired — no PASSWORD_RECOVERY event ever fires in that case, so
+    // check for this up front instead of waiting out the full timeout
+    // below (which otherwise leaves the person staring at a loading
+    // spinner for 5 seconds before telling them what already happened).
+    const hash = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const hashParams = new URLSearchParams(hash);
+    const searchParams = new URLSearchParams(window.location.search);
+    if (hashParams.get("error") || searchParams.get("error")) {
+      markInvalid();
+      return;
+    }
+
     const { data: subscription } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         markReady();
@@ -51,10 +74,7 @@ export default function ResetPasswordPage() {
     // The recovery link is invalid/expired if no session shows up at all —
     // give it a few seconds before giving up.
     const timeout = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        setStatus("invalid");
-      }
+      markInvalid();
     }, 5000);
 
     return () => {
