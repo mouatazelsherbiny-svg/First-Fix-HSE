@@ -415,6 +415,9 @@ export interface TranslationShape {
     ppeTotal: string;
     trainingTotal: string;
     trainingHoursTotal: string;
+    observationsInspected: string;
+    toolboxInductions: string;
+    lsrViolations: string;
   };
   injury: {
     title: string;
@@ -1013,6 +1016,9 @@ export const translations: Record<Locale, TranslationShape> = {
       ppeTotal: "PPE Records",
       trainingTotal: "Training Courses",
       trainingHoursTotal: "Total Training Hours",
+      observationsInspected: "Observations Inspected",
+      toolboxInductions: "Toolbox Talks Inducted",
+      lsrViolations: "LSR Violations",
     },
     injury: {
       title: "Injury (FICC)",
@@ -1609,6 +1615,9 @@ export const translations: Record<Locale, TranslationShape> = {
       ppeTotal: "سجلات معدات الوقاية",
       trainingTotal: "الدورات التدريبية",
       trainingHoursTotal: "إجمالي ساعات التدريب",
+      observationsInspected: "الملاحظات التي تم رصدها",
+      toolboxInductions: "جلسات التوعية التي قادها",
+      lsrViolations: "مخالفات LSR",
     },
     injury: {
       title: "الإصابات (FICC)",

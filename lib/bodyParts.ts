@@ -2,12 +2,15 @@
  * Normalizes the free-text "Body Part" values coming from the FICC/Incidents
  * import (e.g. "right-hand middle finger", "Left forearm", "forehead") into
  * a small fixed set of body regions, each with a representative spot on the
- * simple front-view body diagram used on the Injury page.
+ * body diagram (public/brand/body-diagram.png) used on the Injury page.
  *
- * This is intentionally coarse (not anatomically precise) — the goal is a
- * useful at-a-glance heat map, not a medical illustration. Order matters:
- * more specific keywords are checked before broader ones (e.g. "forearm"
- * before "arm", "finger"/"hand" before nothing else conflicts).
+ * Coordinates are fractions (0-1) of the diagram image's width/height, so
+ * they can be used directly as CSS `left`/`top` percentages regardless of
+ * how large the image is rendered. This is intentionally coarse (not
+ * anatomically precise) — the goal is a useful at-a-glance heat map, not a
+ * medical illustration. Order matters in the keyword rules below: more
+ * specific keywords are checked before broader ones (e.g. "forearm" before
+ * "arm").
  */
 export interface BodyRegion {
   id: string;
@@ -17,24 +20,24 @@ export interface BodyRegion {
 }
 
 export const BODY_REGIONS: BodyRegion[] = [
-  { id: "head", label: { en: "Head", ar: "الرأس" }, x: 100, y: 28 },
-  { id: "face", label: { en: "Face / Eye", ar: "الوجه / العين" }, x: 100, y: 46 },
-  { id: "neck", label: { en: "Neck", ar: "الرقبة" }, x: 100, y: 62 },
-  { id: "shoulder", label: { en: "Shoulder", ar: "الكتف" }, x: 100, y: 82 },
-  { id: "chest", label: { en: "Chest", ar: "الصدر" }, x: 100, y: 108 },
-  { id: "back", label: { en: "Back", ar: "الظهر" }, x: 168, y: 108 },
-  { id: "arm", label: { en: "Arm", ar: "الذراع" }, x: 52, y: 128 },
-  { id: "elbow", label: { en: "Elbow", ar: "الكوع" }, x: 46, y: 162 },
-  { id: "forearm", label: { en: "Forearm", ar: "الساعد" }, x: 42, y: 188 },
-  { id: "wrist", label: { en: "Wrist", ar: "الرسغ" }, x: 40, y: 210 },
-  { id: "hand", label: { en: "Hand", ar: "اليد" }, x: 38, y: 228 },
-  { id: "finger", label: { en: "Finger", ar: "الإصبع" }, x: 36, y: 244 },
-  { id: "torso", label: { en: "Torso / Abdomen", ar: "الجذع / البطن" }, x: 100, y: 138 },
-  { id: "hip", label: { en: "Hip", ar: "الورك" }, x: 100, y: 205 },
-  { id: "leg", label: { en: "Leg / Thigh", ar: "الرجل / الفخذ" }, x: 100, y: 255 },
-  { id: "knee", label: { en: "Knee", ar: "الركبة" }, x: 100, y: 295 },
-  { id: "shin", label: { en: "Shin", ar: "الساق" }, x: 100, y: 330 },
-  { id: "foot", label: { en: "Foot", ar: "القدم" }, x: 100, y: 385 },
+  { id: "head", label: { en: "Head", ar: "الرأس" }, x: 0.49, y: 0.04 },
+  { id: "face", label: { en: "Face / Eye", ar: "الوجه / العين" }, x: 0.49, y: 0.075 },
+  { id: "neck", label: { en: "Neck", ar: "الرقبة" }, x: 0.49, y: 0.115 },
+  { id: "shoulder", label: { en: "Shoulder", ar: "الكتف" }, x: 0.665, y: 0.145 },
+  { id: "chest", label: { en: "Chest", ar: "الصدر" }, x: 0.49, y: 0.2 },
+  { id: "back", label: { en: "Back", ar: "الظهر" }, x: 0.87, y: 0.2 },
+  { id: "arm", label: { en: "Arm", ar: "الذراع" }, x: 0.705, y: 0.27 },
+  { id: "elbow", label: { en: "Elbow", ar: "الكوع" }, x: 0.745, y: 0.32 },
+  { id: "forearm", label: { en: "Forearm", ar: "الساعد" }, x: 0.81, y: 0.37 },
+  { id: "wrist", label: { en: "Wrist", ar: "الرسغ" }, x: 0.86, y: 0.415 },
+  { id: "hand", label: { en: "Hand", ar: "اليد" }, x: 0.88, y: 0.45 },
+  { id: "finger", label: { en: "Finger", ar: "الإصبع" }, x: 0.885, y: 0.47 },
+  { id: "torso", label: { en: "Torso / Abdomen", ar: "الجذع / البطن" }, x: 0.49, y: 0.32 },
+  { id: "hip", label: { en: "Hip", ar: "الورك" }, x: 0.49, y: 0.42 },
+  { id: "leg", label: { en: "Leg / Thigh", ar: "الرجل / الفخذ" }, x: 0.575, y: 0.53 },
+  { id: "knee", label: { en: "Knee", ar: "الركبة" }, x: 0.585, y: 0.63 },
+  { id: "shin", label: { en: "Shin", ar: "الساق" }, x: 0.585, y: 0.75 },
+  { id: "foot", label: { en: "Foot", ar: "القدم" }, x: 0.6, y: 0.875 },
   { id: "other", label: { en: "Other / Multiple", ar: "أخرى / متعددة" }, x: 0, y: 0 },
 ];
 

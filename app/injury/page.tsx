@@ -77,51 +77,37 @@ function InjuryList() {
               <p className="text-sm font-medium text-brand-gray">{t.injury.bodyMapEmpty}</p>
             ) : (
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                <svg viewBox="0 0 200 420" className="h-[420px] w-auto shrink-0 mx-auto">
-                  {/* Simple front-view body silhouette — not anatomically
-                      precise, just a visual anchor for the region dots. */}
-                  <g fill="none" stroke="#8B92A0" strokeWidth={2} opacity={0.5}>
-                    <circle cx="100" cy="30" r="20" />
-                    <path d="M70 55 L130 55 L140 130 L60 130 Z" />
-                    <path d="M65 90 L30 160 L38 170 L70 115" />
-                    <path d="M135 90 L170 160 L162 170 L130 115" />
-                    <path d="M70 130 L65 260 L95 260 L98 140" />
-                    <path d="M130 130 L135 260 L105 260 L102 140" />
-                    <path d="M65 260 L60 385 L85 385 L90 265" />
-                    <path d="M135 260 L140 385 L115 385 L110 265" />
-                  </g>
+                <div className="relative mx-auto h-[480px] w-[320px] shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/brand/body-diagram.png"
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
                   {diagramRegions.map((region) => {
                     const count = regionCounts.get(region.id) ?? 0;
                     if (count === 0) return null;
-                    const radius = 6 + (count / maxCount) * 14;
-                    const opacity = 0.35 + (count / maxCount) * 0.55;
+                    const size = 20 + (count / maxCount) * 26;
+                    const opacity = 0.45 + (count / maxCount) * 0.5;
                     return (
-                      <g key={region.id}>
-                        <circle
-                          cx={region.x}
-                          cy={region.y}
-                          r={radius}
-                          fill="#E8590C"
-                          opacity={opacity}
-                        />
-                        <title>
-                          {region.label[locale === "ar" ? "ar" : "en"]}: {count}
-                        </title>
-                        <text
-                          x={region.x}
-                          y={region.y}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fontSize={10}
-                          fontWeight={700}
-                          fill="#fff"
-                        >
-                          {count}
-                        </text>
-                      </g>
+                      <div
+                        key={region.id}
+                        title={`${region.label[locale === "ar" ? "ar" : "en"]}: ${count}`}
+                        className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full font-bold text-white"
+                        style={{
+                          left: `${region.x * 100}%`,
+                          top: `${region.y * 100}%`,
+                          width: size,
+                          height: size,
+                          fontSize: 11,
+                          backgroundColor: `rgba(232, 89, 12, ${opacity})`,
+                        }}
+                      >
+                        {count}
+                      </div>
                     );
                   })}
-                </svg>
+                </div>
 
                 <ul className="flex-1 space-y-2">
                   {diagramRegions

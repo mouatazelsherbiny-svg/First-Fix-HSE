@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Avatar from "@/components/Avatar";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
+import { useObservations } from "@/context/ObservationsContext";
+import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
+
+const normalizeName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
 export default function SummaryPerformanceReportPage() {
   return (
@@ -19,6 +22,8 @@ export default function SummaryPerformanceReportPage() {
 function SummaryPerformanceReport() {
   const { t } = useLanguage();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
+  const { observations } = useObservations();
+  const { records: toolboxRecords } = useToolboxTalk();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<EmployeeRecord | null>(null);
   const [results, setResults] = useState<EmployeeRecord[]>([]);
@@ -55,13 +60,24 @@ function SummaryPerformanceReport() {
     const ppe = ppeRecords.filter((r) => r.employeeId === selected.id);
     const training = trainingRecords.filter((r) => r.employeeId === selected.id);
     const trainingHours = training.reduce((sum, r) => sum + (r.hours || 0), 0);
+    const lsr = disciplinary.filter((r) => r.type === "LSR");
+    const observationsInspected = observations.filter(
+      (o) => o.inspectedBy === selected.employeeId
+    );
+    const normalizedName = normalizeName(selected.name);
+    const toolboxInductions = toolboxRecords.filter(
+      (r) => normalizeName(r.inductedBy) === normalizedName
+    );
     return {
       disciplinaryCount: disciplinary.length,
       ppeCount: ppe.length,
       trainingCount: training.length,
       trainingHours,
+      lsrCount: lsr.length,
+      observationsCount: observationsInspected.length,
+      toolboxCount: toolboxInductions.length,
     };
-  }, [selected, disciplinaryRecords, ppeRecords, trainingRecords]);
+  }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations, toolboxRecords]);
 
   return (
     <div>
@@ -100,7 +116,7 @@ function SummaryPerformanceReport() {
                     onClick={() => setSelected(e)}
                     className="flex w-full items-center gap-3 px-4 py-3 text-start transition hover:bg-brand-grayLight/30"
                   >
-                    <Avatar name={e.name} src={e.photoUrl || undefined} size={32} />
+                    <PhotoThumb name={e.name} src={e.photoUrl} size={32} />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-brand-black">
                         {e.name}
@@ -124,41 +140,38 @@ function SummaryPerformanceReport() {
       )}
 
       {selected && stats && (
-        <div className="space-y-5">
-          <div className="card flex flex-wrap items-center gap-5">
-            <Avatar name={selected.name} src={selected.photoUrl || undefined} size={72} />
+        <div className="space-y-6">
+          <div className="card flex flex-col gap-6 sm:flex-row sm:items-start">
+            <PhotoThumb name={selected.name} src={selected.photoUrl} size={200} rounded="rounded-2xl" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-bold text-brand-black">{selected.name}</h2>
-              <p className="text-sm text-brand-gray">
-                {selected.project} · {selected.department}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelected(null);
-                setQuery("");
-              }}
-              className="btn-secondary"
-            >
-              &times;
-            </button>
-          </div>
-
-          <div className="card">
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <InfoField label={t.summaryReport.employeeCode} value={selected.employeeId} />
-              <InfoField label={t.summaryReport.project} value={selected.project} />
-              <InfoField
-                label={t.summaryReport.phone}
-                value={selected.phone}
-                placeholder={t.summaryReport.notProvided}
-              />
-              <InfoField
-                label={t.summaryReport.jobGrade}
-                value={selected.jobGrade}
-                placeholder={t.summaryReport.notProvided}
-              />
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <h2 className="text-2xl font-bold text-brand-black">{selected.name}</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelected(null);
+                    setQuery("");
+                  }}
+                  className="btn-secondary shrink-0"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoField label={t.summaryReport.employeeCode} value={selected.employeeId} />
+                <InfoField label={t.summaryReport.project} value={selected.project} />
+                <InfoField label={t.summaryReport.department} value={selected.department} />
+                <InfoField
+                  label={t.summaryReport.phone}
+                  value={selected.phone}
+                  placeholder={t.summaryReport.notProvided}
+                />
+                <InfoField
+                  label={t.summaryReport.jobGrade}
+                  value={selected.jobGrade}
+                  placeholder={t.summaryReport.notProvided}
+                />
+              </div>
             </div>
           </div>
 
@@ -167,7 +180,10 @@ function SummaryPerformanceReport() {
               {t.summaryReport.statsTitle}
             </h3>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label={t.summaryReport.observationsInspected} value={stats.observationsCount} />
+              <StatCard label={t.summaryReport.lsrViolations} value={stats.lsrCount} />
               <StatCard label={t.summaryReport.disciplinaryTotal} value={stats.disciplinaryCount} />
+              <StatCard label={t.summaryReport.toolboxInductions} value={stats.toolboxCount} />
               <StatCard label={t.summaryReport.ppeTotal} value={stats.ppeCount} />
               <StatCard label={t.summaryReport.trainingTotal} value={stats.trainingCount} />
               <StatCard label={t.summaryReport.trainingHoursTotal} value={stats.trainingHours} />
@@ -175,6 +191,40 @@ function SummaryPerformanceReport() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function PhotoThumb({
+  name,
+  src,
+  size,
+  rounded = "rounded-full",
+}: {
+  name: string;
+  src: string;
+  size: number;
+  rounded?: string;
+}) {
+  const initial = name.trim().charAt(0).toUpperCase() || "?";
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={name}
+        style={{ width: size, height: size }}
+        className={`shrink-0 object-cover ${rounded}`}
+      />
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size }}
+      title={name}
+      className={`flex shrink-0 items-center justify-center bg-brand-orange font-bold text-brand-onAccent ${rounded}`}
+    >
+      <span style={{ fontSize: size * 0.4 }}>{initial}</span>
     </div>
   );
 }
