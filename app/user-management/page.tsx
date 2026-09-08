@@ -83,6 +83,21 @@ function UserManagementView() {
   // observations/permits/etc. are preserved but unattributed (see the
   // created_by_fks_set_null_on_user_delete migration); only their login
   // and profile row are removed.
+  const handleSetRole = async (id: string, name: string, nextRole: "admin" | "employee") => {
+    const confirmMsg =
+      nextRole === "admin" ? t.userManagement.confirmMakeAdmin : t.userManagement.confirmMakeEmployee;
+    if (!window.confirm(`${confirmMsg} (${name || id})`)) return;
+    setBusyId(id);
+    const { error } = await supabase.from("profiles").update({ role: nextRole }).eq("id", id);
+    if (error) {
+      window.alert(t.userManagement.roleUpdateError);
+      setBusyId(null);
+      return;
+    }
+    await loadProfiles();
+    setBusyId(null);
+  };
+
   const handleDeleteAccount = async (id: string, name: string) => {
     if (!window.confirm(`${t.userManagement.confirmDelete} (${name || id})`)) return;
     setBusyId(id);
@@ -191,6 +206,7 @@ function UserManagementView() {
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmail}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmployeeCode}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colProject}</th>
+                <th className="px-4 py-3 text-start">{t.userManagement.colRole}</th>
                 <th className="px-4 py-3 text-end">{t.userManagement.colActions}</th>
               </tr>
             </thead>
@@ -211,9 +227,26 @@ function UserManagementView() {
                   <td className="px-4 py-3 text-brand-grayDark">{p.email || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">{p.employee_code || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">{p.project || "—"}</td>
+                  <td className="px-4 py-3 text-brand-grayDark">
+                    {p.role === "admin" ? t.userManagement.roleAdmin : t.userManagement.roleEmployee}
+                  </td>
                   <td className="px-4 py-3 text-end">
                     {p.id !== user?.id && (
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSetRole(p.id, p.full_name, p.role === "admin" ? "employee" : "admin")
+                          }
+                          disabled={busyId === p.id}
+                          className="btn-secondary !px-3 !py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {busyId === p.id
+                            ? t.userManagement.updatingRole
+                            : p.role === "admin"
+                              ? t.userManagement.makeEmployee
+                              : t.userManagement.makeAdmin}
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleRevoke(p.id, p.full_name)}

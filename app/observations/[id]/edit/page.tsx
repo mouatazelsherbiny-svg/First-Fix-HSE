@@ -1,14 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ImageUpload from "@/components/ImageUpload";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
-import { useAuth } from "@/context/AuthContext";
-import { useEditRequests } from "@/context/EditRequestsContext";
 import { STATUSES } from "@/lib/mockData";
 import { ObservationStatus } from "@/types/observation";
 
@@ -24,10 +22,7 @@ function ObservationEdit() {
   const { t } = useLanguage();
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
   const { getById, updateObservation } = useObservations();
-  const { submitRequest } = useEditRequests();
-  const isAdmin = user?.role === "admin";
 
   const observation = getById(params.id);
 
@@ -36,11 +31,6 @@ function ObservationEdit() {
   const [closeOutPhotos, setCloseOutPhotos] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-
-  const [requestNotes, setRequestNotes] = useState("");
-  const [requestSubmitting, setRequestSubmitting] = useState(false);
-  const [requestDone, setRequestDone] = useState(false);
-  const [requestError, setRequestError] = useState("");
 
   useEffect(() => {
     if (observation) {
@@ -79,28 +69,6 @@ function ObservationEdit() {
     }
   };
 
-  const handleSubmitRequest = async (e: FormEvent) => {
-    e.preventDefault();
-    setRequestError("");
-    setRequestSubmitting(true);
-    try {
-      await submitRequest({
-        tableName: "observations",
-        recordId: observation.id,
-        recordLabel: `#${observation.reportNumber} — ${observation.projectName}`,
-        requesterName: user?.name ?? "",
-        requesterProject: user?.project ?? "",
-        notes: requestNotes,
-      });
-      setRequestDone(true);
-      setRequestNotes("");
-    } catch (err) {
-      setRequestError(err instanceof Error ? err.message : t.weeklyKpi.requestEditError);
-    } finally {
-      setRequestSubmitting(false);
-    }
-  };
-
   return (
     <div>
       <Link
@@ -128,88 +96,49 @@ function ObservationEdit() {
         </div>
       )}
 
-      {isAdmin ? (
-        <div className="card space-y-5">
-          <h2 className="text-base font-semibold text-brand-black">
-            {t.detail.updateStatus}
-          </h2>
+      <div className="card space-y-5">
+        <h2 className="text-base font-semibold text-brand-black">
+          {t.detail.updateStatus}
+        </h2>
 
-          <div className="max-w-xs">
-            <label className="label-field">{t.form.status}</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as ObservationStatus)}
-              className="input-field"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="max-w-xs">
+          <label className="label-field">{t.form.status}</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as ObservationStatus)}
+            className="input-field"
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div>
-            <label className="label-field">{t.form.closeOutDetails}</label>
-            <textarea
-              rows={3}
-              value={closeOutDetails}
-              onChange={(e) => setCloseOutDetails(e.target.value)}
-              placeholder={t.form.closeOutDetailsPlaceholder}
-              className="input-field resize-none"
-            />
-          </div>
-
-          <ImageUpload
-            label={t.form.closeOutPhoto}
-            images={closeOutPhotos}
-            onChange={setCloseOutPhotos}
+        <div>
+          <label className="label-field">{t.form.closeOutDetails}</label>
+          <textarea
+            rows={3}
+            value={closeOutDetails}
+            onChange={(e) => setCloseOutDetails(e.target.value)}
+            placeholder={t.form.closeOutDetailsPlaceholder}
+            className="input-field resize-none"
           />
-
-          <div className="flex justify-end border-t border-brand-border pt-5">
-            <button onClick={handleSave} className="btn-primary">
-              {t.detail.save}
-            </button>
-          </div>
         </div>
-      ) : (
-        <div className="card space-y-5">
-          <h2 className="text-base font-semibold text-brand-black">
-            {t.weeklyKpi.requestEditTitle}
-          </h2>
-          <p className="text-sm text-brand-gray">{t.weeklyKpi.readOnlyNotice}</p>
 
-          {requestDone ? (
-            <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">
-              {t.weeklyKpi.requestEditSuccess}
-            </div>
-          ) : (
-            <form onSubmit={handleSubmitRequest} className="space-y-4">
-              <div>
-                <label className="label-field">{t.weeklyKpi.requestEditNotesLabel}</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={requestNotes}
-                  onChange={(e) => setRequestNotes(e.target.value)}
-                  placeholder={t.weeklyKpi.requestEditNotesPlaceholder}
-                  className="input-field"
-                />
-              </div>
-              {requestError && (
-                <p className="text-sm font-medium text-red-400">{requestError}</p>
-              )}
-              <div className="flex items-center justify-end gap-3">
-                <button type="submit" disabled={requestSubmitting} className="btn-primary">
-                  {requestSubmitting
-                    ? t.weeklyKpi.requestEditSubmitting
-                    : t.weeklyKpi.requestEditSubmit}
-                </button>
-              </div>
-            </form>
-          )}
+        <ImageUpload
+          label={t.form.closeOutPhoto}
+          images={closeOutPhotos}
+          onChange={setCloseOutPhotos}
+        />
+
+        <div className="flex justify-end border-t border-brand-border pt-5">
+          <button onClick={handleSave} className="btn-primary">
+            {t.detail.save}
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -132,6 +132,15 @@ export interface TranslationShape {
     deleting: string;
     confirmDelete: string;
     deleteError: string;
+    colRole: string;
+    roleAdmin: string;
+    roleEmployee: string;
+    makeAdmin: string;
+    makeEmployee: string;
+    updatingRole: string;
+    confirmMakeAdmin: string;
+    confirmMakeEmployee: string;
+    roleUpdateError: string;
   };
   form: {
     title: string;
@@ -738,6 +747,15 @@ export const translations: Record<Locale, TranslationShape> = {
       deleting: "Deleting...",
       confirmDelete: "This permanently deletes this user's account and login — this cannot be undone. Are you sure?",
       deleteError: "Couldn't delete this account. Please try again.",
+      colRole: "Role",
+      roleAdmin: "Admin",
+      roleEmployee: "Employee",
+      makeAdmin: "Make Admin",
+      makeEmployee: "Make Employee",
+      updatingRole: "Updating...",
+      confirmMakeAdmin: "Give this user admin access?",
+      confirmMakeEmployee: "Remove admin access from this user?",
+      roleUpdateError: "Couldn't update this user's role. Please try again.",
     },
     form: {
       title: "New Observation",
@@ -1342,6 +1360,15 @@ export const translations: Record<Locale, TranslationShape> = {
       deleting: "جارٍ الحذف...",
       confirmDelete: "هيتم حذف حساب المستخدم ده وبيانات الدخول بتاعته نهائيًا — الإجراء ده مش ممكن التراجع عنه. متأكد؟",
       deleteError: "تعذر حذف الحساب. حاول مرة أخرى.",
+      colRole: "الصلاحية",
+      roleAdmin: "أدمن",
+      roleEmployee: "موظف",
+      makeAdmin: "خليه أدمن",
+      makeEmployee: "خليه موظف",
+      updatingRole: "جارٍ التحديث...",
+      confirmMakeAdmin: "عايز تدي المستخدم ده صلاحية أدمن؟",
+      confirmMakeEmployee: "عايز تشيل صلاحية الأدمن من المستخدم ده؟",
+      roleUpdateError: "تعذر تحديث صلاحية المستخدم. حاول مرة أخرى.",
     },
     form: {
       title: "ملاحظة جديدة",
