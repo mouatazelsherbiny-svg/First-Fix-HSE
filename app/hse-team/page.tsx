@@ -105,16 +105,42 @@ function PersonCard({
 }
 
 function RegionGroup({ name, people }: { name: string; people: OrgPerson[] }) {
+  // Regions with an explicit `col` on their people (currently just Riyadh)
+  // render as two side-by-side columns, in the same left/right reading
+  // order as the source org chart; everyone else stacks in one column.
+  const hasColumns = people.some((p) => p.col === 2);
+  const col1 = people.filter((p) => p.col !== 2);
+  const col2 = people.filter((p) => p.col === 2);
+
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="w-full max-w-[16.5rem] rounded bg-brand-orange px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-brand-onAccent">
+      <div
+        className={`rounded bg-brand-orange px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-brand-onAccent ${
+          hasColumns ? "w-full" : "w-full max-w-[16.5rem]"
+        }`}
+      >
         {name}
       </div>
-      <div className="flex flex-col gap-4">
-        {people.map((person) => (
-          <PersonCard key={person.id} person={person} />
-        ))}
-      </div>
+      {hasColumns ? (
+        <div className="flex items-start gap-4">
+          <div className="flex flex-col gap-4">
+            {col1.map((person) => (
+              <PersonCard key={person.id} person={person} />
+            ))}
+          </div>
+          <div className="flex flex-col gap-4">
+            {col2.map((person) => (
+              <PersonCard key={person.id} person={person} />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {people.map((person) => (
+            <PersonCard key={person.id} person={person} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
