@@ -16,7 +16,7 @@ export interface ProjectLocation {
 
 export const PROJECT_LOCATIONS: ProjectLocation[] = [
   { project: "KSP", lat: 24.7255, lng: 46.652 }, // King Salman Park, Riyadh
-  { project: "CEER", lat: 22.4667, lng: 39.0833 }, // King Abdullah Economic City area
+  { project: "CEER", lat: 22.484688, lng: 39.153438 }, // Real coordinates (Google Plus Code F5M3+V9, Industrial Valley, KAEC)
   { project: "ADF", lat: 24.7136, lng: 46.6753 }, // Riyadh
   { project: "MISK", lat: 24.7255, lng: 46.6357 }, // MISK (ILMI), Riyadh
   { project: "RCRC", lat: 24.6408, lng: 46.7728 }, // Riyadh
@@ -29,7 +29,7 @@ export const PROJECT_LOCATIONS: ProjectLocation[] = [
   { project: "NURSERY", lat: 25.51, lng: 36.9 }, // Amaala / Red Sea coast
   { project: "WELLNESS", lat: 25.505, lng: 36.91 }, // Amaala / Red Sea coast
   { project: "ROSEWOOD", lat: 25.515, lng: 36.895 }, // Rosewood Amaala
-  { project: "Al-Arab Hospital", lat: 21.5433, lng: 39.1728 }, // Jeddah
+  { project: "Al-Arab Hospital", lat: 21.715338, lng: 39.100141 }, // Real coordinates (Google Plus Code P482+43J, Abhur Al Junoobiyah, Jeddah)
   { project: "Al-Madinah", lat: 24.4672, lng: 39.6111 }, // Madinah
   { project: "Oceanarium", lat: 21.5, lng: 39.15 }, // Jeddah Central Development
   { project: "Al-Qiddya Hotels", lat: 24.6167, lng: 46.1667 }, // Qiddiya, Riyadh region

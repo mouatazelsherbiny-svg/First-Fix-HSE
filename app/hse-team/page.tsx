@@ -20,6 +20,21 @@ export default function HseTeamPage() {
   );
 }
 
+/** Left-to-right display order for the regional groups at the bottom of the
+ *  tree. Any group not listed here falls back to the end, in data order. */
+const REGION_ORDER = ["Shura Island", "Amaala Projects", "Riyadh", "Jeddah / Makkah", "Madinah"];
+
+function sortGroups(names: string[]): string[] {
+  return [...names].sort((a, b) => {
+    const ia = REGION_ORDER.indexOf(a);
+    const ib = REGION_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+
 /** Vertical connector stub: a short line dropping from a parent node down
  *  to the horizontal bar of its children row. */
 function Stub() {
@@ -50,11 +65,13 @@ function PersonCard({
   expandable,
   expanded,
   onToggle,
+  onHoverOpen,
 }: {
   person: OrgPerson;
   expandable?: boolean;
   expanded?: boolean;
   onToggle?: () => void;
+  onHoverOpen?: () => void;
 }) {
   const { t } = useLanguage();
 
@@ -63,6 +80,8 @@ function PersonCard({
       role={expandable ? "button" : undefined}
       tabIndex={expandable ? 0 : undefined}
       onClick={expandable ? onToggle : undefined}
+      onMouseEnter={expandable ? onHoverOpen : undefined}
+      onFocus={expandable ? onHoverOpen : undefined}
       onKeyDown={
         expandable
           ? (e) => {
@@ -151,10 +170,11 @@ function HseTeamTree() {
   const [regionalOpen, setRegionalOpen] = useState(false);
 
   const ungrouped = REGIONAL_TEAM.filter((p) => !p.group);
-  const groupNames: string[] = [];
+  const groupNamesRaw: string[] = [];
   REGIONAL_TEAM.forEach((p) => {
-    if (p.group && !groupNames.includes(p.group)) groupNames.push(p.group);
+    if (p.group && !groupNamesRaw.includes(p.group)) groupNamesRaw.push(p.group);
   });
+  const groupNames = sortGroups(groupNamesRaw);
 
   return (
     <div>
@@ -164,12 +184,19 @@ function HseTeamTree() {
       </div>
 
       <div className="overflow-x-auto pb-4">
-        <div className="flex min-w-fit flex-col items-center gap-0">
+        <div
+          className="flex min-w-fit flex-col items-center gap-0"
+          onMouseLeave={() => {
+            setDirectorOpen(false);
+            setRegionalOpen(false);
+          }}
+        >
           <PersonCard
             person={HSE_DIRECTOR}
             expandable
             expanded={directorOpen}
             onToggle={() => setDirectorOpen((v) => !v)}
+            onHoverOpen={() => setDirectorOpen(true)}
           />
 
           {directorOpen && (
@@ -182,6 +209,7 @@ function HseTeamTree() {
                     expandable
                     expanded={regionalOpen}
                     onToggle={() => setRegionalOpen((v) => !v)}
+                    onHoverOpen={() => setRegionalOpen(true)}
                   />
                 ) : (
                   <PersonCard key={person.id} person={person} />
