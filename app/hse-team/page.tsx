@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Avatar from "@/components/Avatar";
 import { useLanguage } from "@/context/LanguageContext";
 import {
   HSE_DIRECTOR,
@@ -21,6 +20,31 @@ export default function HseTeamPage() {
   );
 }
 
+/** Vertical connector stub: a short line dropping from a parent node down
+ *  to the horizontal bar of its children row. */
+function Stub() {
+  return <div className="h-6 w-0.5 shrink-0 bg-brand-border" />;
+}
+
+/** Wraps a row of child nodes with the classic org-chart connector: a
+ *  single trunk line down from the parent, a horizontal bar spanning the
+ *  row, and a stub dropping from that bar into each child. */
+function Branch({ children }: { children: ReactNode[] }) {
+  return (
+    <div className="flex flex-col items-center">
+      <Stub />
+      <div className="flex flex-nowrap justify-center gap-x-6 gap-y-6 border-t-2 border-brand-border pt-0">
+        {children.map((child, i) => (
+          <div key={i} className="flex flex-col items-center pt-0">
+            <Stub />
+            {child}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PersonCard({
   person,
   expandable,
@@ -33,36 +57,65 @@ function PersonCard({
   onToggle?: () => void;
 }) {
   const { t } = useLanguage();
-  const Wrapper = expandable ? "button" : "div";
 
   return (
-    <Wrapper
-      type={expandable ? "button" : undefined}
+    <div
+      role={expandable ? "button" : undefined}
+      tabIndex={expandable ? 0 : undefined}
       onClick={expandable ? onToggle : undefined}
-      aria-expanded={expandable ? expanded : undefined}
-      className={`card flex w-56 flex-col items-center gap-3 text-center transition ${
-        expandable ? "cursor-pointer hover:shadow-md hover:ring-1 hover:ring-brand-orange/40" : ""
+      onKeyDown={
+        expandable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") onToggle?.();
+            }
+          : undefined
+      }
+      className={`flex w-64 items-stretch overflow-hidden rounded-lg border border-brand-border bg-brand-surface shadow-sm transition ${
+        expandable ? "cursor-pointer hover:shadow-md hover:ring-1 hover:ring-brand-orange/50" : ""
       }`}
     >
-      <Avatar name={person.name} size={72} className="text-2xl" />
-      <div>
-        <p className="font-bold text-brand-black">{person.name}</p>
-        <p className="mt-0.5 text-sm font-medium text-brand-orange">{person.title}</p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={person.photoUrl}
+        alt={person.name}
+        className="h-auto w-20 shrink-0 object-cover"
+      />
+      <div className="flex min-w-0 flex-1 flex-col divide-y divide-brand-border">
+        <div className="bg-brand-grayLight/60 px-2.5 py-1.5">
+          <p className="truncate text-xs font-bold text-brand-grayDark">{person.title}</p>
+        </div>
+        <div className="px-2.5 py-1.5">
+          <p className="truncate text-sm font-bold text-brand-black">{person.name}</p>
+        </div>
         {person.phone && (
-          <p className="mt-1 text-xs text-brand-gray">
-            {t.hseTeam.phoneLabel}: {person.phone}
-          </p>
+          <div className="flex items-center justify-between px-2.5 py-1.5">
+            <p className="truncate text-xs text-brand-gray">{person.phone}</p>
+            {expandable && (
+              <ChevronDown
+                className={`h-3.5 w-3.5 shrink-0 text-brand-gray transition-transform duration-200 ${
+                  expanded ? "rotate-180" : ""
+                }`}
+              />
+            )}
+          </div>
         )}
       </div>
-      {expandable && (
-        <span className="flex items-center gap-1 text-xs font-semibold text-brand-gray">
-          {expanded ? t.hseTeam.collapse : t.hseTeam.clickToExpand}
-          <ChevronDown
-            className={`h-3.5 w-3.5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-          />
-        </span>
-      )}
-    </Wrapper>
+    </div>
+  );
+}
+
+function RegionGroup({ name, people }: { name: string; people: OrgPerson[] }) {
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-full max-w-[16.5rem] rounded bg-brand-orange px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-brand-onAccent">
+        {name}
+      </div>
+      <div className="flex flex-col gap-4">
+        {people.map((person) => (
+          <PersonCard key={person.id} person={person} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -71,9 +124,6 @@ function HseTeamTree() {
   const [directorOpen, setDirectorOpen] = useState(false);
   const [regionalOpen, setRegionalOpen] = useState(false);
 
-  // Group the regional team's cards under their region sub-headings, in
-  // first-appearance order, while the two ungrouped roles (Training
-  // Manager, Compliance Manager) render as plain cards above the groups.
   const ungrouped = REGIONAL_TEAM.filter((p) => !p.group);
   const groupNames: string[] = [];
   REGIONAL_TEAM.forEach((p) => {
@@ -87,18 +137,17 @@ function HseTeamTree() {
         <p className="mt-1 text-sm text-brand-gray">{t.hseTeam.subtitle}</p>
       </div>
 
-      <div className="flex flex-col items-center gap-8">
-        <PersonCard
-          person={HSE_DIRECTOR}
-          expandable
-          expanded={directorOpen}
-          onToggle={() => setDirectorOpen((v) => !v)}
-        />
+      <div className="overflow-x-auto pb-4">
+        <div className="flex min-w-fit flex-col items-center gap-0">
+          <PersonCard
+            person={HSE_DIRECTOR}
+            expandable
+            expanded={directorOpen}
+            onToggle={() => setDirectorOpen((v) => !v)}
+          />
 
-        {directorOpen && (
-          <>
-            <div className="h-6 w-px bg-brand-border" aria-hidden />
-            <div className="flex flex-wrap justify-center gap-6">
+          {directorOpen && (
+            <Branch>
               {DIRECTOR_REPORTS.map((person) =>
                 person.id === REGIONAL_HSEM_ID ? (
                   <PersonCard
@@ -112,37 +161,24 @@ function HseTeamTree() {
                   <PersonCard key={person.id} person={person} />
                 )
               )}
-            </div>
-          </>
-        )}
+            </Branch>
+          )}
 
-        {directorOpen && regionalOpen && (
-          <>
-            <div className="h-6 w-px bg-brand-border" aria-hidden />
-            <div className="flex w-full flex-col items-center gap-6">
-              {ungrouped.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-6">
-                  {ungrouped.map((person) => (
-                    <PersonCard key={person.id} person={person} />
-                  ))}
-                </div>
-              )}
-
-              {groupNames.map((group) => (
-                <div key={group} className="w-full">
-                  <h2 className="mb-3 text-center text-xs font-bold uppercase tracking-wide text-brand-gray">
-                    {group}
-                  </h2>
-                  <div className="flex flex-wrap justify-center gap-6">
-                    {REGIONAL_TEAM.filter((p) => p.group === group).map((person) => (
-                      <PersonCard key={person.id} person={person} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+          {directorOpen && regionalOpen && (
+            <Branch>
+              {[
+                ...ungrouped.map((person) => <PersonCard key={person.id} person={person} />),
+                ...groupNames.map((group) => (
+                  <RegionGroup
+                    key={group}
+                    name={group}
+                    people={REGIONAL_TEAM.filter((p) => p.group === group)}
+                  />
+                )),
+              ]}
+            </Branch>
+          )}
+        </div>
       </div>
     </div>
   );
