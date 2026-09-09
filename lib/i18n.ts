@@ -116,6 +116,19 @@ export interface TranslationShape {
     phoneLabel: string;
     collapse: string;
   };
+  incidentsOverview: {
+    subtitle: string;
+    firstAidCases: string;
+    medicalTreatmentCases: string;
+    restrictedWorkCases: string;
+    nearMisses: string;
+    totalRecordable: string;
+    lostTimeIncidents: string;
+    majorEnvironmentalIncidents: string;
+    dangerousOccurrence: string;
+    fatality: string;
+    propertyDamage: string;
+  };
   userManagement: {
     title: string;
     subtitle: string;
@@ -747,6 +760,19 @@ export const translations: Record<Locale, TranslationShape> = {
       phoneLabel: "Phone",
       collapse: "Hide team",
     },
+    incidentsOverview: {
+      subtitle: "Live totals pulled from Weekly KPI records.",
+      firstAidCases: "First Aid Cases",
+      medicalTreatmentCases: "Medical Treatment Cases",
+      restrictedWorkCases: "Restricted Work Cases",
+      nearMisses: "Near Misses",
+      totalRecordable: "Total Recordable",
+      lostTimeIncidents: "Lost Time Incidents",
+      majorEnvironmentalIncidents: "Major Environmental Incidents",
+      dangerousOccurrence: "Dangerous Occurrence",
+      fatality: "Fatality",
+      propertyDamage: "Property Damage",
+    },
     userManagement: {
       title: "User Management",
       subtitle: "Approve new sign-ups and manage access.",
@@ -1375,6 +1401,19 @@ export const translations: Record<Locale, TranslationShape> = {
       clickToExpand: "اضغط لعرض الفريق",
       phoneLabel: "الهاتف",
       collapse: "إخفاء الفريق",
+    },
+    incidentsOverview: {
+      subtitle: "الإجماليات محدثة تلقائيًا من سجلات مؤشرات الأداء الأسبوعية (Weekly KPI).",
+      firstAidCases: "حالات الإسعافات الأولية",
+      medicalTreatmentCases: "حالات العلاج الطبي",
+      restrictedWorkCases: "حالات العمل المقيد",
+      nearMisses: "حالات الوشك (Near Misses)",
+      totalRecordable: "إجمالي الحالات القابلة للتسجيل",
+      lostTimeIncidents: "حوادث فقدان وقت العمل",
+      majorEnvironmentalIncidents: "الحوادث البيئية الكبرى",
+      dangerousOccurrence: "الحالات الخطرة (Dangerous Occurrence)",
+      fatality: "الوفيات",
+      propertyDamage: "أضرار الممتلكات",
     },
     userManagement: {
       title: "إدارة المستخدمين",
