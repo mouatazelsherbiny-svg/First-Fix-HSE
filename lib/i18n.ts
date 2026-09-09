@@ -129,6 +129,15 @@ export interface TranslationShape {
     fatality: string;
     propertyDamage: string;
   };
+  landing: {
+    heroTagline: string;
+    heroSubtitle: string;
+    ctaLogin: string;
+    ctaSignup: string;
+    featuresTitle: string;
+    featuresSubtitle: string;
+    footerTagline: string;
+  };
   userManagement: {
     title: string;
     subtitle: string;
@@ -773,6 +782,15 @@ export const translations: Record<Locale, TranslationShape> = {
       fatality: "Fatality",
       propertyDamage: "Property Damage",
     },
+    landing: {
+      heroTagline: "Safety Today Secures Tomorrow",
+      heroSubtitle: "Building a Safe Culture. Every Day. Everywhere.",
+      ctaLogin: "Log In",
+      ctaSignup: "Create an Account",
+      featuresTitle: "Everything your HSE team needs, in one place",
+      featuresSubtitle: "Observations, incidents, permits, training and performance — tracked and reported from a single system.",
+      footerTagline: "Protect People. Protect Projects. Protect Future. — One Team. One Standard. Zero Harm.",
+    },
     userManagement: {
       title: "User Management",
       subtitle: "Approve new sign-ups and manage access.",
@@ -1414,6 +1432,15 @@ export const translations: Record<Locale, TranslationShape> = {
       dangerousOccurrence: "الحالات الخطرة (Dangerous Occurrence)",
       fatality: "الوفيات",
       propertyDamage: "أضرار الممتلكات",
+    },
+    landing: {
+      heroTagline: "السلامة اليوم تؤمّن الغد",
+      heroSubtitle: "نبني ثقافة سلامة آمنة. كل يوم. في كل مكان.",
+      ctaLogin: "تسجيل الدخول",
+      ctaSignup: "إنشاء حساب",
+      featuresTitle: "كل ما يحتاجه فريق السلامة لديك، في مكان واحد",
+      featuresSubtitle: "الملاحظات، الحوادث، تصاريح العمل، التدريب والأداء — يتم تتبعها والإبلاغ عنها من نظام واحد.",
+      footerTagline: "حماية الأفراد. حماية المشاريع. حماية المستقبل. — فريق واحد. معيار واحد. صفر إصابات.",
     },
     userManagement: {
       title: "إدارة المستخدمين",

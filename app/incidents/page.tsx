@@ -1,19 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  Bandage,
-  Stethoscope,
-  UserX,
-  TriangleAlert,
-  Target,
-  Flame,
-  Leaf,
-  Biohazard,
-  OctagonX,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+import { Wrench, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
@@ -26,37 +14,28 @@ export default function IncidentsPage() {
   );
 }
 
-type Tone = "amber" | "blue" | "sky" | "yellow" | "red" | "orange" | "green" | "purple" | "redStrong" | "gray";
-
-const TONE_CLASSES: Record<Tone, string> = {
-  amber: "bg-amber-500/20 text-amber-600",
-  blue: "bg-blue-500/20 text-blue-600",
-  sky: "bg-sky-500/20 text-sky-600",
-  yellow: "bg-yellow-500/20 text-yellow-600",
-  red: "bg-red-500/20 text-red-600",
-  orange: "bg-brand-orange/20 text-brand-orange",
-  green: "bg-green-500/20 text-green-600",
-  purple: "bg-purple-500/20 text-purple-600",
-  redStrong: "bg-red-500/30 text-red-700",
-  gray: "bg-brand-grayLight text-brand-gray",
-};
-
-function IconBadge({ icon: Icon, tone }: { icon: LucideIcon; tone: Tone }) {
-  return (
-    <div
-      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${TONE_CLASSES[tone]}`}
-    >
-      <Icon className="h-7 w-7" strokeWidth={1.75} />
-    </div>
-  );
-}
-
 interface Metric {
   key: string;
   label: string;
   value: number;
-  icon: LucideIcon;
-  tone: Tone;
+  /** Real icon image extracted from the reference design. */
+  image?: string;
+  /** Fallback lucide icon — used only where no source image exists
+   *  (Property Damage wasn't visible in the reference screenshot). */
+  fallbackIcon?: LucideIcon;
+}
+
+function MetricIcon({ metric }: { metric: Metric }) {
+  if (metric.image) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={metric.image} alt="" className="h-14 w-14 shrink-0 object-contain" />;
+  }
+  const Icon = metric.fallbackIcon!;
+  return (
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-grayLight text-brand-gray">
+      <Icon className="h-7 w-7" strokeWidth={1.75} />
+    </div>
+  );
 }
 
 function IncidentsOverview() {
@@ -98,16 +77,16 @@ function IncidentsOverview() {
     sums.medicalTreatmentCases + sums.restrictedWorkCases + sums.lostTimeIncidents + sums.fatality;
 
   const metrics: Metric[] = [
-    { key: "firstAid", label: t.incidentsOverview.firstAidCases, value: sums.firstAidCases, icon: Bandage, tone: "amber" },
-    { key: "medical", label: t.incidentsOverview.medicalTreatmentCases, value: sums.medicalTreatmentCases, icon: Stethoscope, tone: "blue" },
-    { key: "restricted", label: t.incidentsOverview.restrictedWorkCases, value: sums.restrictedWorkCases, icon: UserX, tone: "sky" },
-    { key: "nearMiss", label: t.incidentsOverview.nearMisses, value: sums.nearMisses, icon: TriangleAlert, tone: "yellow" },
-    { key: "totalRecordable", label: t.incidentsOverview.totalRecordable, value: totalRecordable, icon: Target, tone: "red" },
-    { key: "lostTime", label: t.incidentsOverview.lostTimeIncidents, value: sums.lostTimeIncidents, icon: Flame, tone: "orange" },
-    { key: "environmental", label: t.incidentsOverview.majorEnvironmentalIncidents, value: sums.environmentalIncident, icon: Leaf, tone: "green" },
-    { key: "dangerous", label: t.incidentsOverview.dangerousOccurrence, value: sums.dangerousOccurrence, icon: Biohazard, tone: "purple" },
-    { key: "fatality", label: t.incidentsOverview.fatality, value: sums.fatality, icon: OctagonX, tone: "redStrong" },
-    { key: "propertyDamage", label: t.incidentsOverview.propertyDamage, value: sums.propertyDamage, icon: Wrench, tone: "gray" },
+    { key: "firstAid", label: t.incidentsOverview.firstAidCases, value: sums.firstAidCases, image: "/brand/incidents/first-aid.png" },
+    { key: "medical", label: t.incidentsOverview.medicalTreatmentCases, value: sums.medicalTreatmentCases, image: "/brand/incidents/medical.png" },
+    { key: "restricted", label: t.incidentsOverview.restrictedWorkCases, value: sums.restrictedWorkCases, image: "/brand/incidents/restricted.png" },
+    { key: "nearMiss", label: t.incidentsOverview.nearMisses, value: sums.nearMisses, image: "/brand/incidents/near-miss.png" },
+    { key: "totalRecordable", label: t.incidentsOverview.totalRecordable, value: totalRecordable, image: "/brand/incidents/total-recordable.png" },
+    { key: "lostTime", label: t.incidentsOverview.lostTimeIncidents, value: sums.lostTimeIncidents, image: "/brand/incidents/lost-time.png" },
+    { key: "environmental", label: t.incidentsOverview.majorEnvironmentalIncidents, value: sums.environmentalIncident, image: "/brand/incidents/environmental.png" },
+    { key: "dangerous", label: t.incidentsOverview.dangerousOccurrence, value: sums.dangerousOccurrence, image: "/brand/incidents/dangerous.png" },
+    { key: "fatality", label: t.incidentsOverview.fatality, value: sums.fatality, image: "/brand/incidents/fatality.png" },
+    { key: "propertyDamage", label: t.incidentsOverview.propertyDamage, value: sums.propertyDamage, fallbackIcon: Wrench },
   ];
 
   return (
@@ -129,7 +108,7 @@ function IncidentsOverview() {
               className="card flex flex-col items-center gap-3 !p-7 text-center"
             >
               <div className="flex items-center gap-3">
-                <IconBadge icon={m.icon} tone={m.tone} />
+                <MetricIcon metric={m} />
                 <span className="text-4xl font-extrabold leading-none text-brand-black">
                   {m.value}
                 </span>

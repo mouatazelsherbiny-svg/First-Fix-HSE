@@ -67,8 +67,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: 'url("/brand/login-bg.png?v=1")' }}
+      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-bottom bg-no-repeat"
+      style={{ backgroundImage: 'url("/brand/login-bg.png?v=2")' }}
     >
       {/* Pinned to the true top-right screen corner via physical `right`/
           `top` (not the logical `end-*` utilities), so it stays put on the
@@ -80,7 +80,7 @@ export default function LoginPage() {
       {/* Fields float directly on the photo — no card container. Pinned to
           the right side of the screen (physical `right`, not logical) and
           the lower third, well clear of the logo/headline on the left. */}
-      <div className="absolute right-4 bottom-[9vh] z-10 w-[calc(100%-2rem)] max-w-sm sm:right-10 sm:bottom-[12vh] md:right-16 lg:right-24">
+      <div className="absolute right-4 bottom-[20vh] z-10 w-[calc(100%-2rem)] max-w-sm sm:right-10 sm:bottom-[22vh] md:right-16 lg:right-24">
         <div className="max-sm:rounded-2xl max-sm:bg-black/30 max-sm:p-5 max-sm:backdrop-blur-sm">
           {mode === "login" ? (
             <>
