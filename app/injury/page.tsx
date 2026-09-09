@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
-import { getStatusColorClasses } from "@/lib/statusColors";
 import { BODY_REGIONS, normalizeBodyPart } from "@/lib/bodyParts";
 
 export default function InjuryPage() {
@@ -77,10 +76,10 @@ function InjuryList() {
               <p className="text-sm font-medium text-brand-gray">{t.injury.bodyMapEmpty}</p>
             ) : (
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                <div className="relative mx-auto h-[480px] w-[320px] shrink-0">
+                <div className="relative mx-auto h-[760px] w-[393px] shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/brand/body-diagram.png"
+                    src="/brand/body-diagram-v2.png"
                     alt=""
                     className="h-full w-full object-contain"
                   />
@@ -109,31 +108,31 @@ function InjuryList() {
                   })}
                 </div>
 
-                <ul className="flex-1 space-y-2">
+                <div className="grid flex-1 grid-cols-2 gap-2 self-start sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
                   {diagramRegions
                     .map((r) => ({ region: r, count: regionCounts.get(r.id) ?? 0 }))
                     .filter((r) => r.count > 0)
                     .sort((a, b) => b.count - a.count)
                     .map(({ region, count }) => (
-                      <li
+                      <div
                         key={region.id}
-                        className="flex items-center justify-between rounded-lg bg-brand-grayLight/30 px-3 py-2 text-sm"
+                        className="flex flex-col items-center justify-center gap-1 rounded-lg bg-brand-grayLight/30 px-2 py-3 text-center"
                       >
-                        <span className="font-medium text-brand-grayDark">
+                        <span className="text-lg font-bold text-brand-black">{count}</span>
+                        <span className="text-xs font-medium text-brand-grayDark">
                           {region.label[locale === "ar" ? "ar" : "en"]}
                         </span>
-                        <span className="font-bold text-brand-black">{count}</span>
-                      </li>
+                      </div>
                     ))}
                   {otherCount > 0 && (
-                    <li className="flex items-center justify-between rounded-lg bg-brand-grayLight/30 px-3 py-2 text-sm">
-                      <span className="font-medium text-brand-grayDark">
+                    <div className="flex flex-col items-center justify-center gap-1 rounded-lg bg-brand-grayLight/30 px-2 py-3 text-center">
+                      <span className="text-lg font-bold text-brand-black">{otherCount}</span>
+                      <span className="text-xs font-medium text-brand-grayDark">
                         {locale === "ar" ? "أخرى / متعددة" : "Other / Multiple"}
                       </span>
-                      <span className="font-bold text-brand-black">{otherCount}</span>
-                    </li>
+                    </div>
                   )}
-                </ul>
+                </div>
               </div>
             )}
           </div>
@@ -153,7 +152,6 @@ function InjuryList() {
                       <th className="px-3 py-3 text-start">{t.injury.colProject}</th>
                       <th className="px-3 py-3 text-start">{t.injury.colClassification}</th>
                       <th className="px-3 py-3 text-start">{t.injury.colBodyPart}</th>
-                      <th className="px-3 py-3 text-start">{t.injury.colStatus}</th>
                       <th className="px-3 py-3 text-start">{t.injury.colDescription}</th>
                     </tr>
                   </thead>
@@ -179,19 +177,6 @@ function InjuryList() {
                         </td>
                         <td className="px-3 py-3 text-brand-grayDark">
                           {i.bodyPart || t.injury.unspecifiedBodyPart}
-                        </td>
-                        <td className="px-3 py-3">
-                          {i.iirStatus ? (
-                            <span
-                              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColorClasses(
-                                i.iirStatus
-                              )}`}
-                            >
-                              {i.iirStatus}
-                            </span>
-                          ) : (
-                            "—"
-                          )}
                         </td>
                         <td className="max-w-sm px-3 py-3 text-brand-grayDark">
                           {i.incidentDescription || "—"}

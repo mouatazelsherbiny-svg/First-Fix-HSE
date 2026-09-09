@@ -107,6 +107,14 @@ export interface TranslationShape {
     pmv: string;
     summaryPerformanceReport: string;
     editRequests: string;
+    hseTeam: string;
+  };
+  hseTeam: {
+    title: string;
+    subtitle: string;
+    clickToExpand: string;
+    phoneLabel: string;
+    collapse: string;
   };
   userManagement: {
     title: string;
@@ -730,6 +738,14 @@ export const translations: Record<Locale, TranslationShape> = {
       pmv: "PMV",
       summaryPerformanceReport: "Summary Performance Report",
       editRequests: "Edit Requests",
+      hseTeam: "HSE Team",
+    },
+    hseTeam: {
+      title: "HSE Team",
+      subtitle: "Our HSE organization — tap a card to see who reports to them.",
+      clickToExpand: "Tap to view team",
+      phoneLabel: "Phone",
+      collapse: "Hide team",
     },
     userManagement: {
       title: "User Management",
@@ -1351,6 +1367,14 @@ export const translations: Record<Locale, TranslationShape> = {
       pmv: "PMV",
       summaryPerformanceReport: "تقرير الأداء الإجمالي",
       editRequests: "طلبات التعديل",
+      hseTeam: "فريق السلامة (HSE Team)",
+    },
+    hseTeam: {
+      title: "فريق السلامة (HSE Team)",
+      subtitle: "الهيكل التنظيمي لفريق السلامة — اضغط على البطاقة لعرض الفريق التابع لها.",
+      clickToExpand: "اضغط لعرض الفريق",
+      phoneLabel: "الهاتف",
+      collapse: "إخفاء الفريق",
     },
     userManagement: {
       title: "إدارة المستخدمين",

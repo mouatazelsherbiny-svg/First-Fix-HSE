@@ -67,7 +67,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-[#1F2226]"
+      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url("/brand/login-bg.png?v=1")' }}
     >
       {/* Pinned to the true top-right screen corner via physical `right`/
           `top` (not the logical `end-*` utilities), so it stays put on the

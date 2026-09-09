@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Users,
+  Network,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -254,6 +255,7 @@ export default function Sidebar() {
       label: t.nav.summaryPerformanceReport,
       icon: FileSpreadsheet,
     },
+    { kind: "link", href: "/hse-team", label: t.nav.hseTeam, icon: Network },
   ];
 
   const handleLogout = () => {
