@@ -108,6 +108,7 @@ export interface TranslationShape {
     summaryPerformanceReport: string;
     editRequests: string;
     hseTeam: string;
+    projectMap: string;
   };
   hseTeam: {
     title: string;
@@ -128,6 +129,13 @@ export interface TranslationShape {
     dangerousOccurrence: string;
     fatality: string;
     propertyDamage: string;
+  };
+  projectMap: {
+    title: string;
+    subtitle: string;
+    listTitle: string;
+    permitCountLabel: string;
+    permitsWord: string;
   };
   landing: {
     heroTagline: string;
@@ -201,6 +209,7 @@ export interface TranslationShape {
     success: string;
     filesSelected: string;
     other: string;
+    maxFilesReached: string;
   };
   list: {
     title: string;
@@ -268,6 +277,8 @@ export interface TranslationShape {
     submitted: string;
     success: string;
     selectProjectAndDate: string;
+    photosTitle: string;
+    photosHint: string;
   };
   checklistNames: {
     environmental: string;
@@ -761,6 +772,7 @@ export const translations: Record<Locale, TranslationShape> = {
       summaryPerformanceReport: "Summary Performance Report",
       editRequests: "Edit Requests",
       hseTeam: "HSE Team",
+      projectMap: "Project Map",
     },
     hseTeam: {
       title: "HSE Team",
@@ -781,6 +793,13 @@ export const translations: Record<Locale, TranslationShape> = {
       dangerousOccurrence: "Dangerous Occurrence",
       fatality: "Fatality",
       propertyDamage: "Property Damage",
+    },
+    projectMap: {
+      title: "Project Map",
+      subtitle: "Project sites across Saudi Arabia — click or hover a pin to see its permit count. Locations are approximate for now and will be refined.",
+      listTitle: "Permits by Project",
+      permitCountLabel: "Permits",
+      permitsWord: "permits",
     },
     landing: {
       heroTagline: "Safety Today Secures Tomorrow",
@@ -853,6 +872,7 @@ export const translations: Record<Locale, TranslationShape> = {
       cancel: "Cancel",
       success: "Observation submitted successfully!",
       filesSelected: "file(s) selected",
+      maxFilesReached: "Maximum of {max} photos reached",
       other: "Other",
     },
     list: {
@@ -921,6 +941,8 @@ export const translations: Record<Locale, TranslationShape> = {
       submitted: "Submitted",
       success: "Checklist submitted successfully!",
       selectProjectAndDate: "Please select a project and an inspection date before submitting.",
+      photosTitle: "Site Photos",
+      photosHint: "Attach up to 20 photos from the inspection",
     },
     checklistNames: {
       environmental: "Environmental Checklist",
@@ -1412,6 +1434,7 @@ export const translations: Record<Locale, TranslationShape> = {
       summaryPerformanceReport: "تقرير الأداء الإجمالي",
       editRequests: "طلبات التعديل",
       hseTeam: "فريق السلامة (HSE Team)",
+      projectMap: "خريطة المشاريع",
     },
     hseTeam: {
       title: "فريق السلامة (HSE Team)",
@@ -1432,6 +1455,13 @@ export const translations: Record<Locale, TranslationShape> = {
       dangerousOccurrence: "الحالات الخطرة (Dangerous Occurrence)",
       fatality: "الوفيات",
       propertyDamage: "أضرار الممتلكات",
+    },
+    projectMap: {
+      title: "خريطة المشاريع",
+      subtitle: "مواقع المشاريع في المملكة العربية السعودية — اضغط أو مرّر فوق أي علامة لعرض عدد التصاريح الخاصة بها. المواقع الحالية تقريبية وسيتم تحديثها بإحداثيات دقيقة.",
+      listTitle: "التصاريح حسب المشروع",
+      permitCountLabel: "عدد التصاريح",
+      permitsWord: "تصريح",
     },
     landing: {
       heroTagline: "السلامة اليوم تؤمّن الغد",
@@ -1504,6 +1534,7 @@ export const translations: Record<Locale, TranslationShape> = {
       cancel: "إلغاء",
       success: "تم إرسال الملاحظة بنجاح!",
       filesSelected: "ملف(ات) تم اختيارها",
+      maxFilesReached: "تم الوصول للحد الأقصى ({max} صورة)",
       other: "أخرى",
     },
     list: {
@@ -1572,6 +1603,8 @@ export const translations: Record<Locale, TranslationShape> = {
       submitted: "تم الإرسال",
       success: "تم إرسال القائمة بنجاح!",
       selectProjectAndDate: "من فضلك اختر المشروع وتاريخ الفحص قبل الإرسال.",
+      photosTitle: "صور الموقع",
+      photosHint: "أرفق حتى 20 صورة من المعاينة",
     },
     checklistNames: {
       environmental: "القائمة البيئية",

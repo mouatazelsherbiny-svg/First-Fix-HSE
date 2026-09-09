@@ -21,5 +21,7 @@ export interface ChecklistSubmission {
   grandPossible: number;
   grandScored: number;
   grandPct: number;
+  /** Site photos attached to the submission (base64 data URLs), up to 20. */
+  photos: string[];
   createdAt: string;
 }

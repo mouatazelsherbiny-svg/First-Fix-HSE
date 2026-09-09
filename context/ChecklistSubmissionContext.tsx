@@ -40,6 +40,7 @@ function mapRow(row: any): ChecklistSubmission {
     grandPossible: Number(row.grand_possible) || 0,
     grandScored: Number(row.grand_scored) || 0,
     grandPct: Number(row.grand_pct) || 0,
+    photos: Array.isArray(row.photos) ? row.photos : [],
     createdAt: row.created_at,
   };
 }
@@ -90,6 +91,7 @@ export function ChecklistSubmissionProvider({
             grand_possible: s.grandPossible,
             grand_scored: s.grandScored,
             grand_pct: s.grandPct,
+            photos: s.photos,
             created_by,
           })
           .select()

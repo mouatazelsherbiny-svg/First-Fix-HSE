@@ -7,6 +7,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
 import { exportChecklistToWord } from "@/lib/exportChecklistWord";
 import { PROJECTS } from "@/lib/mockData";
+import ImageUpload from "@/components/ImageUpload";
+
+const MAX_CHECKLIST_PHOTOS = 20;
 import {
   ChecklistTemplate as ChecklistTemplateData,
   PointValue,
@@ -69,6 +72,8 @@ export default function ChecklistTemplate({
     )
   );
 
+  const [photos, setPhotos] = useState<string[]>([]);
+
   const updateGeneral = (field: keyof GeneralInfo, value: string) =>
     setGeneral((prev) => ({ ...prev, [field]: value }));
 
@@ -119,6 +124,7 @@ export default function ChecklistTemplate({
         grandPossible,
         grandScored,
         grandPct,
+        photos,
       });
       setSubmitSuccess(true);
       setTimeout(() => router.push("/dashboard"), 1200);
@@ -420,6 +426,17 @@ export default function ChecklistTemplate({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Site photos — attach up to 20 photos from the inspection */}
+      <div className="card mt-8">
+        <ImageUpload
+          label={t.checklist.photosTitle}
+          images={photos}
+          onChange={setPhotos}
+          maxImages={MAX_CHECKLIST_PHOTOS}
+        />
+        <p className="mt-2 text-xs text-brand-gray">{t.checklist.photosHint}</p>
       </div>
 
       {/* Submit */}

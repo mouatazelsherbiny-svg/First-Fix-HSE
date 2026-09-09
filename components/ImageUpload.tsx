@@ -7,15 +7,22 @@ interface ImageUploadProps {
   label: string;
   images: string[];
   onChange: (images: string[]) => void;
+  /** Optional cap on the total number of images. Extra files picked past
+   *  the cap are silently dropped, and the dropzone hides once it's hit. */
+  maxImages?: number;
 }
 
-export default function ImageUpload({ label, images, onChange }: ImageUploadProps) {
+export default function ImageUpload({ label, images, onChange, maxImages }: ImageUploadProps) {
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
+  const atLimit = maxImages !== undefined && images.length >= maxImages;
 
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const readers = Array.from(files).map(
+    const remaining = maxImages !== undefined ? Math.max(0, maxImages - images.length) : files.length;
+    const toRead = Array.from(files).slice(0, remaining);
+    if (toRead.length === 0) return;
+    const readers = toRead.map(
       (file) =>
         new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -33,44 +40,53 @@ export default function ImageUpload({ label, images, onChange }: ImageUploadProp
   return (
     <div>
       <label className="label-field">{label}</label>
-      <div
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          handleFiles(e.dataTransfer.files);
-        }}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-border bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="mb-2 h-7 w-7 text-brand-orange"
-        >
-          <path d="M12 16V4m0 0L7 9m5-5l5 5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M20 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <p className="text-xs font-medium text-brand-gray">{t.form.uploadHint}</p>
-        {images.length > 0 && (
-          <p className="mt-1 text-xs font-semibold text-brand-orange">
-            {images.length} {t.form.filesSelected}
+      {atLimit ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-border bg-brand-grayLight/50 px-4 py-6 text-center">
+          <p className="text-xs font-semibold text-brand-orange">
+            {t.form.maxFilesReached.replace("{max}", String(maxImages))}
           </p>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            handleFiles(e.target.files);
-            e.target.value = "";
+        </div>
+      ) : (
+        <div
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleFiles(e.dataTransfer.files);
           }}
-        />
-      </div>
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-border bg-brand-grayLight/50 px-4 py-6 text-center transition hover:border-brand-orange hover:bg-brand-orangeLight/40"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className="mb-2 h-7 w-7 text-brand-orange"
+          >
+            <path d="M12 16V4m0 0L7 9m5-5l5 5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M20 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <p className="text-xs font-medium text-brand-gray">{t.form.uploadHint}</p>
+          {images.length > 0 && (
+            <p className="mt-1 text-xs font-semibold text-brand-orange">
+              {images.length}
+              {maxImages !== undefined ? ` / ${maxImages}` : ""} {t.form.filesSelected}
+            </p>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              handleFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      )}
 
       {images.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
