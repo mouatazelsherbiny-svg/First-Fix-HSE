@@ -650,6 +650,47 @@ export interface TranslationShape {
     lsrCount: string;
     trainingHoursCount: string;
   };
+  pmv: {
+    title: string;
+    totalPmv: string;
+    vehiclesUnit: string;
+    machineryUnit: string;
+    equipmentUnit: string;
+    dueForInspection: string;
+    ofTotalPmv: string;
+    authorizedOperators: string;
+    ofTotalOperators: string;
+    expiringDocuments: string;
+    ofTotalDocuments: string;
+    byTypeTitle: string;
+    byTypeSubtitle: string;
+    available: string;
+    typeVehicles: string;
+    typeExcavators: string;
+    typeLoaders: string;
+    typeForklifts: string;
+    typeDumpTrucks: string;
+    typeGenerators: string;
+    typeOtherEquipment: string;
+    operatorsStatusTitle: string;
+    totalOperatorsLabel: string;
+    statusActive: string;
+    statusInactive: string;
+    statusSuspended: string;
+    statusOnLeave: string;
+    ctaBanner: string;
+    upcomingInspectionsTitle: string;
+    dueForInspectionSubtitle: string;
+    colPmvId: string;
+    colType: string;
+    colDescription: string;
+    colDueDate: string;
+    colStatus: string;
+    expiringDocumentsTitle: string;
+    colDocumentType: string;
+    colCount: string;
+    operatorsOverviewTitle: string;
+  };
   topbar: {
     greetingMorning: string;
     greetingAfternoon: string;
@@ -1314,6 +1355,47 @@ export const translations: Record<Locale, TranslationShape> = {
       lsrCount: "LSR violations",
       trainingHoursCount: "training hours",
     },
+    pmv: {
+      title: "PMV",
+      totalPmv: "Total PMV",
+      vehiclesUnit: "Vehicles",
+      machineryUnit: "Machinery",
+      equipmentUnit: "Equipment",
+      dueForInspection: "Due for Inspection",
+      ofTotalPmv: "of total PMV",
+      authorizedOperators: "Authorized Operators",
+      ofTotalOperators: "of total operators",
+      expiringDocuments: "Expiring Documents",
+      ofTotalDocuments: "of total documents",
+      byTypeTitle: "PMV by Type",
+      byTypeSubtitle: "Available / Total",
+      available: "Available",
+      typeVehicles: "Vehicles",
+      typeExcavators: "Excavators",
+      typeLoaders: "Loaders",
+      typeForklifts: "Forklifts",
+      typeDumpTrucks: "Dump Trucks",
+      typeGenerators: "Generators",
+      typeOtherEquipment: "Other Equipment",
+      operatorsStatusTitle: "Operators Status",
+      totalOperatorsLabel: "Total Operators",
+      statusActive: "Active",
+      statusInactive: "Inactive",
+      statusSuspended: "Suspended",
+      statusOnLeave: "On Leave",
+      ctaBanner: "Keep your operators certified and active for a safer and more efficient operation.",
+      upcomingInspectionsTitle: "Upcoming Inspections",
+      dueForInspectionSubtitle: "Due for Inspection",
+      colPmvId: "PMV ID",
+      colType: "Type",
+      colDescription: "Description",
+      colDueDate: "Due Date",
+      colStatus: "Status",
+      expiringDocumentsTitle: "Expiring Documents",
+      colDocumentType: "Document Type",
+      colCount: "Count",
+      operatorsOverviewTitle: "Operators Overview",
+    },
     topbar: {
       greetingMorning: "Good Morning",
       greetingAfternoon: "Good Afternoon",
@@ -1975,6 +2057,47 @@ export const translations: Record<Locale, TranslationShape> = {
       observationsCount: "ملاحظة",
       lsrCount: "مخالفة LSR",
       trainingHoursCount: "ساعة تدريب",
+    },
+    pmv: {
+      title: "المركبات والمعدات",
+      totalPmv: "إجمالي المركبات والمعدات",
+      vehiclesUnit: "مركبات",
+      machineryUnit: "معدات ثقيلة",
+      equipmentUnit: "معدات",
+      dueForInspection: "مستحق للفحص",
+      ofTotalPmv: "من إجمالي الأصول",
+      authorizedOperators: "المشغلون المعتمدون",
+      ofTotalOperators: "من إجمالي المشغلين",
+      expiringDocuments: "مستندات على وشك الانتهاء",
+      ofTotalDocuments: "من إجمالي المستندات",
+      byTypeTitle: "الأصول حسب النوع",
+      byTypeSubtitle: "المتاح / الإجمالي",
+      available: "متاح",
+      typeVehicles: "مركبات",
+      typeExcavators: "حفارات",
+      typeLoaders: "لوادر",
+      typeForklifts: "رافعات شوكية",
+      typeDumpTrucks: "شاحنات قلاب",
+      typeGenerators: "مولدات",
+      typeOtherEquipment: "معدات أخرى",
+      operatorsStatusTitle: "حالة المشغلين",
+      totalOperatorsLabel: "إجمالي المشغلين",
+      statusActive: "نشط",
+      statusInactive: "غير نشط",
+      statusSuspended: "موقوف",
+      statusOnLeave: "في إجازة",
+      ctaBanner: "حافظ على اعتماد ونشاط المشغلين لعمليات أكثر أمانًا وكفاءة.",
+      upcomingInspectionsTitle: "الفحوصات القادمة",
+      dueForInspectionSubtitle: "مستحق للفحص",
+      colPmvId: "رقم الأصل",
+      colType: "النوع",
+      colDescription: "الوصف",
+      colDueDate: "تاريخ الاستحقاق",
+      colStatus: "الحالة",
+      expiringDocumentsTitle: "مستندات على وشك الانتهاء",
+      colDocumentType: "نوع المستند",
+      colCount: "العدد",
+      operatorsOverviewTitle: "نظرة عامة على المشغلين",
     },
     topbar: {
       greetingMorning: "صباح الخير",

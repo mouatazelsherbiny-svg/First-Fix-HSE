@@ -21,6 +21,7 @@ const WORD_TONE: Record<string, Tone> = {
   "Unsafe Act&Unsafe Condition": "red",
   Lost: "red",
   Expired: "red",
+  "On Leave": "red",
 
   // Escalated red — more severe than the plain-red entries above
   Critical: "redStrong",
@@ -33,6 +34,7 @@ const WORD_TONE: Record<string, Tone> = {
   Valid: "green",
   Good: "green",
   Active: "green",
+  "On Time": "green",
 
   // Amber — caution / in-between
   Medium: "amber",
@@ -40,11 +42,14 @@ const WORD_TONE: Record<string, Tone> = {
   "Near Miss": "amber",
   Damaged: "amber",
   "Pending Approval": "amber",
+  "Due Soon": "amber",
+  Suspended: "amber",
 
   // Blue — informational / positive callout
   "Good Practice": "blue",
   Approved: "blue",
   "New Permit": "blue",
+  Inactive: "blue",
 
   // Neutral gray — no strong signal
   Pending: "gray",
