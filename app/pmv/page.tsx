@@ -21,13 +21,7 @@ import DashboardBackground from "@/components/DashboardBackground";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { getChartColor } from "@/lib/statusColors";
-import {
-  EXPIRING_DOCUMENTS,
-  OPERATOR_STATUS,
-  PMV_BY_TYPE,
-  PMV_SUMMARY,
-  UPCOMING_INSPECTIONS,
-} from "@/lib/pmvData";
+import { usePmvDashboard } from "@/lib/usePmvDashboard";
 import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
 import PmvLogTable from "@/components/pmv/PmvLogTable";
 import type { PmvTypeBreakdown } from "@/types/pmv";
@@ -71,8 +65,6 @@ const TYPE_BAR_COLORS: Record<PmvTypeBreakdown["key"], string> = {
   generators: "#94A3B8",
   otherEquipment: "#F43F5E",
 };
-
-const MAX_TYPE_TOTAL = Math.max(...PMV_BY_TYPE.map((row) => row.total));
 
 // Real product photos (background removed) for each equipment type, served
 // from /public/pmv. Swap the file to change a picture; no code change needed.
@@ -212,7 +204,13 @@ function PmvLogSection() {
 
 function PmvDashboard() {
   const { t, locale } = useLanguage();
-  const s = PMV_SUMMARY;
+  const {
+    summary: s,
+    byType,
+    operatorStatus,
+    upcomingInspections,
+    expiringDocuments,
+  } = usePmvDashboard();
 
   const duePct = s.totalPmv > 0 ? Math.round((s.dueForInspection / s.totalPmv) * 100) : 0;
   const operatorsPct =
@@ -220,11 +218,14 @@ function PmvDashboard() {
   const docsPct =
     s.totalDocuments > 0 ? Math.round((s.expiringDocuments / s.totalDocuments) * 100) : 0;
 
+  // At least 1 so a chart with no data yet doesn't divide by zero.
+  const maxTypeTotal = Math.max(1, ...byType.map((row) => row.total));
+
   const operatorStatusRows = [
-    { key: "Active", value: OPERATOR_STATUS.active, label: t.pmv.statusActive },
-    { key: "Inactive", value: OPERATOR_STATUS.inactive, label: t.pmv.statusInactive },
-    { key: "Suspended", value: OPERATOR_STATUS.suspended, label: t.pmv.statusSuspended },
-    { key: "On Leave", value: OPERATOR_STATUS.onLeave, label: t.pmv.statusOnLeave },
+    { key: "Active", value: operatorStatus.active, label: t.pmv.statusActive },
+    { key: "Inactive", value: operatorStatus.inactive, label: t.pmv.statusInactive },
+    { key: "Suspended", value: operatorStatus.suspended, label: t.pmv.statusSuspended },
+    { key: "On Leave", value: operatorStatus.onLeave, label: t.pmv.statusOnLeave },
   ];
 
   const typeLabel = (key: PmvTypeBreakdown["key"]) =>
@@ -278,11 +279,11 @@ function PmvDashboard() {
           <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
           <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
           <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
-            {PMV_BY_TYPE.map((row) => {
+            {byType.map((row) => {
               const TypeIcon = TYPE_ICONS[row.key];
               const pct = row.total > 0 ? Math.round((row.available / row.total) * 100) : 0;
               const barColor = TYPE_BAR_COLORS[row.key];
-              const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * MAX_BAR_HEIGHT_PX));
+              const barHeight = Math.max(14, Math.round((row.total / maxTypeTotal) * MAX_BAR_HEIGHT_PX));
               const stackHeight = MAX_BAR_HEIGHT_PX + IMAGE_BOX_HEIGHT_PX;
               return (
                 <div key={row.key} className="flex min-w-[130px] flex-1 flex-col items-center">
@@ -329,7 +330,7 @@ function PmvDashboard() {
         <div className="card flex flex-col">
           <h2 className="text-lg font-bold text-brand-black">{t.pmv.operatorsOverviewTitle}</h2>
           <p className="mt-1 text-sm text-brand-gray">
-            {t.pmv.totalOperatorsLabel}: {PMV_SUMMARY.totalOperators.toLocaleString()}
+            {t.pmv.totalOperatorsLabel}: {s.totalOperators.toLocaleString()}
           </p>
 
           <div className="relative mx-auto mt-2 h-48 w-48">
@@ -360,7 +361,7 @@ function PmvDashboard() {
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-extrabold text-brand-black">
-                {PMV_SUMMARY.authorizedOperators}
+                {s.authorizedOperators}
               </span>
               <span className="text-xs font-medium text-brand-gray">{t.pmv.statusActive}</span>
             </div>
@@ -412,27 +413,37 @@ function PmvDashboard() {
               </tr>
             </thead>
             <tbody>
-              {UPCOMING_INSPECTIONS.map((row) => (
-                <tr
-                  key={row.pmvId}
-                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
-                >
-                  <td className="px-4 py-3 font-semibold text-brand-black sm:px-6">
-                    {row.pmvId}
-                  </td>
-                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.type}</td>
-                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.description}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {new Date(row.dueDate).toLocaleDateString(
-                      locale === "ar" ? "ar-EG" : "en-US",
-                      { year: "numeric", month: "short", day: "numeric" }
-                    )}
-                  </td>
-                  <td className="px-4 py-3 sm:px-6">
-                    <Badge value={row.status} />
+              {upcomingInspections.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-brand-gray">
+                    {t.common.noDataYet}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                upcomingInspections.map((row) => (
+                  <tr
+                    key={row.pmvId}
+                    className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
+                  >
+                    <td className="px-4 py-3 font-semibold text-brand-black sm:px-6">
+                      {row.pmvId}
+                    </td>
+                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.type}</td>
+                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.description}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
+                      {row.dueDate
+                        ? new Date(row.dueDate).toLocaleDateString(
+                            locale === "ar" ? "ar-EG" : "en-US",
+                            { year: "numeric", month: "short", day: "numeric" }
+                          )
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3 sm:px-6">
+                      <Badge value={row.status} />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -451,17 +462,25 @@ function PmvDashboard() {
               </tr>
             </thead>
             <tbody>
-              {EXPIRING_DOCUMENTS.map((row) => (
-                <tr
-                  key={row.documentType}
-                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
-                >
-                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.documentType}</td>
-                  <td className="px-4 py-3 text-end font-semibold text-brand-black sm:px-6">
-                    {row.count}
+              {expiringDocuments.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="px-6 py-8 text-center text-brand-gray">
+                    {t.common.noDataYet}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                expiringDocuments.map((row) => (
+                  <tr
+                    key={row.documentType}
+                    className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
+                  >
+                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.documentType}</td>
+                    <td className="px-4 py-3 text-end font-semibold text-brand-black sm:px-6">
+                      {row.count}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
