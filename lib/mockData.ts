@@ -25,6 +25,7 @@ export const PROJECTS = [
   "Dariyah Square",
   "Exhibition Centre",
   "Six Sense",
+  "Head Office",
 ];
 
 export const OBSERVATION_TYPES = [
