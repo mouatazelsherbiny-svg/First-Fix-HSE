@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import {
   Boxes,
   CalendarClock,
-  Check,
   Construction,
   Container,
   FileWarning,
@@ -18,7 +17,6 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import Badge from "@/components/Badge";
-import { EQUIPMENT_ICONS } from "@/components/pmv/EquipmentIcons";
 import { useLanguage } from "@/context/LanguageContext";
 import { getChartColor } from "@/lib/statusColors";
 import {
@@ -70,6 +68,25 @@ const TYPE_BAR_COLORS: Record<PmvTypeBreakdown["key"], string> = {
 };
 
 const MAX_TYPE_TOTAL = Math.max(...PMV_BY_TYPE.map((row) => row.total));
+
+// Real product photos (background removed) for each equipment type, served
+// from /public/pmv. Swap the file to change a picture; no code change needed.
+const EQUIPMENT_IMAGES: Record<PmvTypeBreakdown["key"], string> = {
+  vehicles: "/pmv/vehicles.png",
+  excavators: "/pmv/excavators.png",
+  loaders: "/pmv/loaders.png",
+  forklifts: "/pmv/forklifts.png",
+  dumpTrucks: "/pmv/dumpTrucks.png",
+  generators: "/pmv/generators.png",
+  otherEquipment: "/pmv/otherEquipment.png",
+};
+
+// Max bar height in px (tallest category, currently Vehicles) and the fixed
+// box every equipment photo scales to fit inside (object-contain keeps each
+// photo's own aspect ratio regardless of orientation).
+const MAX_BAR_HEIGHT_PX = 120;
+const IMAGE_BOX_HEIGHT_PX = 104;
+const IMAGE_BOX_WIDTH_PX = 128;
 
 function IconBadge({ icon, tone }: { icon: React.ReactNode; tone: CardTone }) {
   return (
@@ -188,25 +205,33 @@ function PmvContent() {
             <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
             <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
               {PMV_BY_TYPE.map((row) => {
-                const EquipmentIcon = EQUIPMENT_ICONS[row.key];
                 const TypeIcon = TYPE_ICONS[row.key];
                 const pct = row.total > 0 ? Math.round((row.available / row.total) * 100) : 0;
                 const barColor = TYPE_BAR_COLORS[row.key];
-                const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * 100));
+                const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * MAX_BAR_HEIGHT_PX));
+                const stackHeight = MAX_BAR_HEIGHT_PX + IMAGE_BOX_HEIGHT_PX;
                 return (
-                  <div key={row.key} className="flex min-w-[92px] flex-1 flex-col items-center">
+                  <div key={row.key} className="flex min-w-[130px] flex-1 flex-col items-center">
                     <span className="text-lg font-extrabold text-brand-black">{row.total}</span>
-                    <div className="relative mt-1 flex h-[108px] w-full items-end justify-center">
+                    <div
+                      className="relative mt-1 w-full"
+                      style={{ height: `${stackHeight}px` }}
+                    >
                       <div
-                        className="w-9 rounded-t-md"
+                        className="absolute bottom-0 left-1/2 w-10 -translate-x-1/2 rounded-t-md"
                         style={{ height: `${barHeight}px`, backgroundColor: barColor }}
                       />
-                      <div className="absolute -top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-black/5">
-                        <EquipmentIcon className="h-7 w-7" />
-                      </div>
-                      <div className="absolute -top-3 right-1/2 flex h-4 w-4 translate-x-6 items-center justify-center rounded-full bg-green-500 ring-2 ring-white">
-                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
-                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={EQUIPMENT_IMAGES[row.key]}
+                        alt={typeLabel(row.key)}
+                        className="absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-xl"
+                        style={{
+                          bottom: `${Math.max(0, barHeight - 6)}px`,
+                          height: `${IMAGE_BOX_HEIGHT_PX}px`,
+                          width: `${IMAGE_BOX_WIDTH_PX}px`,
+                        }}
+                      />
                     </div>
                     <div
                       className="mt-2 flex h-8 w-8 items-center justify-center rounded-lg"
