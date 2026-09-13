@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Observation } from "@/types/observation";
 import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface ObservationsContextValue {
   observations: Observation[];
@@ -47,11 +48,25 @@ function mapRow(row: any): Observation {
 }
 
 export function ObservationsProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [observations, setObservations] = useState<Observation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` (only set once AuthContext confirms a signed-in AND
+  // approved account — context/AuthContext.tsx). This provider is mounted
+  // at the app root (app/layout.tsx), above ProtectedRoute, so it used to
+  // fire on every page load — including the public landing page — with
+  // whatever session happened to be in the browser, regardless of approval.
+  // RLS (is_approved_user()) now blocks that data at the database level
+  // too, but this stops the app from even asking while pending/signed out.
   useEffect(() => {
+    if (!user) {
+      setObservations([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchAllRows<any>("observations", (q) =>
       q.select("*").order("created_at", { ascending: false })
@@ -66,7 +81,7 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<ObservationsContextValue>(
     () => ({

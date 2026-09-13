@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Incident } from "@/types/incident";
 import { fetchAllRows } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface IncidentsContextValue {
   incidents: Incident[];
@@ -56,11 +57,19 @@ function mapRow(row: any): Incident {
 // in the app creates/edits incidents yet, this just powers the FICC-related
 // dashboard cards.
 export function IncidentsProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setIncidents([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     fetchAllRows<any>("incidents", (q) =>
       q.select("*").order("incident_date", { ascending: false })
     )
@@ -74,7 +83,7 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<IncidentsContextValue>(
     () => ({

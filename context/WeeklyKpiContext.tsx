@@ -14,6 +14,7 @@ import {
   WEEKLY_KPI_NUMERIC_FIELDS,
 } from "@/types/weeklyKpi";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface WeeklyKpiContextValue {
   records: WeeklyKpiRecord[];
@@ -64,11 +65,19 @@ function toNumericPayload(
 }
 
 export function WeeklyKpiProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [records, setRecords] = useState<WeeklyKpiRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setRecords([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     supabase
       .from("weekly_kpi_records")
       .select("*")
@@ -81,7 +90,7 @@ export function WeeklyKpiProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<WeeklyKpiContextValue>(
     () => ({

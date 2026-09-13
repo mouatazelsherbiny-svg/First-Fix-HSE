@@ -10,6 +10,7 @@ import {
 } from "react";
 import { PermitToWork } from "@/types/permit";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface PermitContextValue {
   permits: PermitToWork[];
@@ -65,11 +66,19 @@ function mapRow(row: any): PermitToWork {
 }
 
 export function PermitProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [permits, setPermits] = useState<PermitToWork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setPermits([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     supabase
       .from("permits")
       .select("*")
@@ -82,7 +91,7 @@ export function PermitProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<PermitContextValue>(
     () => ({

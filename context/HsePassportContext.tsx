@@ -15,6 +15,7 @@ import {
 } from "@/types/hsePassport";
 import { EmployeeRecord } from "@/lib/mockData";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface HsePassportContextValue {
   employees: EmployeeRecord[];
@@ -94,6 +95,7 @@ function mapTraining(row: any): TrainingCourseRecord {
 }
 
 export function HsePassportProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
   const [disciplinaryRecords, setDisciplinaryRecords] = useState<
     DisciplinaryRecord[]
@@ -104,8 +106,18 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setEmployees([]);
+      setDisciplinaryRecords([]);
+      setPpeRecords([]);
+      setTrainingRecords([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     Promise.all([
       supabase.from("employees").select("*").order("name"),
       supabase
@@ -132,7 +144,7 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<HsePassportContextValue>(
     () => ({

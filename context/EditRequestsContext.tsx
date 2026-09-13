@@ -10,6 +10,7 @@ import {
 } from "react";
 import { EditRequest, EditRequestStatus } from "@/types/editRequest";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface EditRequestsContextValue {
   requests: EditRequest[];
@@ -51,11 +52,19 @@ function mapRow(row: any): EditRequest {
 // they submit a request here, which an admin reviews (see
 // app/edit-requests/page.tsx) and applies by hand.
 export function EditRequestsProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [requests, setRequests] = useState<EditRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setRequests([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     supabase
       .from("edit_requests")
       .select("*")
@@ -68,7 +77,7 @@ export function EditRequestsProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<EditRequestsContextValue>(
     () => ({

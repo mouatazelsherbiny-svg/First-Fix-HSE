@@ -10,6 +10,7 @@ import {
 } from "react";
 import { ChecklistSubmission } from "@/types/checklistSubmission";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface ChecklistSubmissionContextValue {
   submissions: ChecklistSubmission[];
@@ -50,11 +51,19 @@ export function ChecklistSubmissionProvider({
 }: {
   children: ReactNode;
 }) {
+  const { user } = useAuth();
   const [submissions, setSubmissions] = useState<ChecklistSubmission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setSubmissions([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     supabase
       .from("checklist_submissions")
       .select("*")
@@ -67,7 +76,7 @@ export function ChecklistSubmissionProvider({
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<ChecklistSubmissionContextValue>(
     () => ({

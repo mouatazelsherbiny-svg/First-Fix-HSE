@@ -10,6 +10,7 @@ import {
 } from "react";
 import { TrainingRecord } from "@/types/toolboxTalk";
 import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 interface ToolboxTalkContextValue {
   records: TrainingRecord[];
@@ -44,11 +45,19 @@ function mapRow(row: any): TrainingRecord {
 }
 
 export function ToolboxTalkProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [records, setRecords] = useState<TrainingRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gated on `user` — see the matching comment in ObservationsContext.tsx.
   useEffect(() => {
+    if (!user) {
+      setRecords([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
+    setIsLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchAllRows<any>("toolbox_talk_records", (q) =>
       q.select("*").order("created_at", { ascending: false })
@@ -63,7 +72,7 @@ export function ToolboxTalkProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const value = useMemo<ToolboxTalkContextValue>(
     () => ({
