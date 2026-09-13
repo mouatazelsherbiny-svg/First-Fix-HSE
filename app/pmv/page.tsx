@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import {
   Boxes,
   CalendarClock,
+  Check,
   Construction,
   Container,
   FileWarning,
@@ -17,6 +18,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import Badge from "@/components/Badge";
+import { EQUIPMENT_ICONS } from "@/components/pmv/EquipmentIcons";
 import { useLanguage } from "@/context/LanguageContext";
 import { getChartColor } from "@/lib/statusColors";
 import {
@@ -54,6 +56,20 @@ const TYPE_ICONS: Record<PmvTypeBreakdown["key"], React.ElementType> = {
   generators: Zap,
   otherEquipment: Container,
 };
+
+// Everyday equipment colors used for the "PMV by Type" bars — matches the
+// natural color of each machine type rather than the app's status palette.
+const TYPE_BAR_COLORS: Record<PmvTypeBreakdown["key"], string> = {
+  vehicles: "#3B82F6",
+  excavators: "#F59E0B",
+  loaders: "#22C55E",
+  forklifts: "#8B5CF6",
+  dumpTrucks: "#14B8A6",
+  generators: "#94A3B8",
+  otherEquipment: "#F43F5E",
+};
+
+const MAX_TYPE_TOTAL = Math.max(...PMV_BY_TYPE.map((row) => row.total));
 
 function IconBadge({ icon, tone }: { icon: React.ReactNode; tone: CardTone }) {
   return (
@@ -170,31 +186,41 @@ function PmvContent() {
           <div className="card lg:col-span-2">
             <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
             <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
-            <div className="mt-6 space-y-5">
+            <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
               {PMV_BY_TYPE.map((row) => {
-                const Icon = TYPE_ICONS[row.key];
+                const EquipmentIcon = EQUIPMENT_ICONS[row.key];
+                const TypeIcon = TYPE_ICONS[row.key];
                 const pct = row.total > 0 ? Math.round((row.available / row.total) * 100) : 0;
+                const barColor = TYPE_BAR_COLORS[row.key];
+                const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * 100));
                 return (
-                  <div key={row.key} className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-orange/15 text-brand-orange">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                        <span className="truncate text-sm font-semibold text-brand-black">
-                          {typeLabel(row.key)}
-                        </span>
-                        <span className="whitespace-nowrap text-xs font-medium text-brand-gray">
-                          {row.available} / {row.total} {t.pmv.available}
-                        </span>
+                  <div key={row.key} className="flex min-w-[92px] flex-1 flex-col items-center">
+                    <span className="text-lg font-extrabold text-brand-black">{row.total}</span>
+                    <div className="relative mt-1 flex h-[108px] w-full items-end justify-center">
+                      <div
+                        className="w-9 rounded-t-md"
+                        style={{ height: `${barHeight}px`, backgroundColor: barColor }}
+                      />
+                      <div className="absolute -top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-black/5">
+                        <EquipmentIcon className="h-7 w-7" />
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-brand-grayLight">
-                        <div
-                          className="h-full rounded-full bg-brand-orange"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="absolute -top-3 right-1/2 flex h-4 w-4 translate-x-6 items-center justify-center rounded-full bg-green-500 ring-2 ring-white">
+                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                       </div>
                     </div>
+                    <div
+                      className="mt-2 flex h-8 w-8 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: barColor }}
+                    >
+                      <TypeIcon className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="mt-2 text-center text-xs font-bold text-brand-black">
+                      {typeLabel(row.key)}
+                    </span>
+                    <span className="mt-1 text-center text-[11px] font-medium text-brand-gray">
+                      {t.pmv.available} {row.available}/{row.total}
+                    </span>
+                    <span className="text-center text-[11px] text-brand-gray">({pct}%)</span>
                   </div>
                 );
               })}
