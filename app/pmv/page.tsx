@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import {
   Boxes,
   CalendarClock,
+  ClipboardList,
   Construction,
   Container,
   FileWarning,
   Forklift,
+  LayoutDashboard,
   Tractor,
   Truck,
   UserCheck,
@@ -26,17 +28,20 @@ import {
   PMV_SUMMARY,
   UPCOMING_INSPECTIONS,
 } from "@/lib/pmvData";
+import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
+import PmvLogTable from "@/components/pmv/PmvLogTable";
 import type { PmvTypeBreakdown } from "@/types/pmv";
 
 export default function PmvPage() {
   return (
     <ProtectedRoute>
-      <PmvContent />
+      <PmvPageContent />
     </ProtectedRoute>
   );
 }
 
 type CardTone = "orange" | "amber" | "green" | "red";
+type PmvTab = "dashboard" | "log";
 
 const TONE_CLASSES: Record<CardTone, string> = {
   orange: "bg-brand-orange/20 text-brand-orange",
@@ -127,7 +132,85 @@ function StatCard({
   );
 }
 
-function PmvContent() {
+function PmvPageContent() {
+  const { t } = useLanguage();
+  const [tab, setTab] = useState<PmvTab>("dashboard");
+
+  return (
+    <div className="relative isolate">
+      <DashboardBackground />
+      <div className="relative z-10">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-brand-black">{t.pmv.title}</h1>
+
+          <div className="inline-flex rounded-xl border border-brand-border bg-brand-surface/60 p-1 backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => setTab("dashboard")}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                tab === "dashboard"
+                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              {t.pmv.tabDashboard}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("log")}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                tab === "log"
+                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
+              }`}
+            >
+              <ClipboardList className="h-4 w-4" />
+              {t.pmv.tabLog}
+            </button>
+          </div>
+        </div>
+
+        {tab === "dashboard" ? <PmvDashboard /> : <PmvLogSection />}
+      </div>
+    </div>
+  );
+}
+
+function PmvLogSection() {
+  const { locale } = useLanguage();
+  const [activeKey, setActiveKey] = useState<string>(
+    PMV_LOG_DEFINITIONS[0]?.key ?? ""
+  );
+  const activeDefinition =
+    PMV_LOG_DEFINITIONS.find((d) => d.key === activeKey) ??
+    PMV_LOG_DEFINITIONS[0];
+
+  return (
+    <div>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {PMV_LOG_DEFINITIONS.map((def) => (
+          <button
+            key={def.key}
+            type="button"
+            onClick={() => setActiveKey(def.key)}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              def.key === activeDefinition?.key
+                ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                : "border border-brand-border bg-brand-surface/60 text-brand-grayDark hover:bg-brand-grayLight/60"
+            }`}
+          >
+            {locale === "ar" ? def.titleAr : def.titleEn}
+          </button>
+        ))}
+      </div>
+
+      {activeDefinition && <PmvLogTable definition={activeDefinition} />}
+    </div>
+  );
+}
+
+function PmvDashboard() {
   const { t, locale } = useLanguage();
   const s = PMV_SUMMARY;
 
@@ -137,15 +220,12 @@ function PmvContent() {
   const docsPct =
     s.totalDocuments > 0 ? Math.round((s.expiringDocuments / s.totalDocuments) * 100) : 0;
 
-  const operatorStatusRows = useMemo(
-    () => [
-      { key: "Active", value: OPERATOR_STATUS.active, label: t.pmv.statusActive },
-      { key: "Inactive", value: OPERATOR_STATUS.inactive, label: t.pmv.statusInactive },
-      { key: "Suspended", value: OPERATOR_STATUS.suspended, label: t.pmv.statusSuspended },
-      { key: "On Leave", value: OPERATOR_STATUS.onLeave, label: t.pmv.statusOnLeave },
-    ],
-    [t]
-  );
+  const operatorStatusRows = [
+    { key: "Active", value: OPERATOR_STATUS.active, label: t.pmv.statusActive },
+    { key: "Inactive", value: OPERATOR_STATUS.inactive, label: t.pmv.statusInactive },
+    { key: "Suspended", value: OPERATOR_STATUS.suspended, label: t.pmv.statusSuspended },
+    { key: "On Leave", value: OPERATOR_STATUS.onLeave, label: t.pmv.statusOnLeave },
+  ];
 
   const typeLabel = (key: PmvTypeBreakdown["key"]) =>
     ({
@@ -159,238 +239,231 @@ function PmvContent() {
     }[key]);
 
   return (
-    <div className="relative isolate">
-      <DashboardBackground />
-      <div className="relative z-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-brand-black">{t.pmv.title}</h1>
-        </div>
+    <div>
+      {/* Summary cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={<Boxes className="h-8 w-8" />}
+          tone="orange"
+          label={t.pmv.totalPmv}
+          value={s.totalPmv}
+          sublabel={`${s.vehiclesCount} ${t.pmv.vehiclesUnit} · ${s.machineryCount} ${t.pmv.machineryUnit} · ${s.equipmentCount} ${t.pmv.equipmentUnit}`}
+        />
+        <StatCard
+          icon={<CalendarClock className="h-8 w-8" />}
+          tone="amber"
+          label={t.pmv.dueForInspection}
+          value={s.dueForInspection}
+          sublabel={`${duePct}% ${t.pmv.ofTotalPmv}`}
+        />
+        <StatCard
+          icon={<UserCheck className="h-8 w-8" />}
+          tone="green"
+          label={t.pmv.authorizedOperators}
+          value={s.authorizedOperators}
+          sublabel={`${operatorsPct}% ${t.pmv.ofTotalOperators}`}
+        />
+        <StatCard
+          icon={<FileWarning className="h-8 w-8" />}
+          tone="red"
+          label={t.pmv.expiringDocuments}
+          value={s.expiringDocuments}
+          sublabel={`${docsPct}% ${t.pmv.ofTotalDocuments}`}
+        />
+      </div>
 
-        {/* Summary cards */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            icon={<Boxes className="h-8 w-8" />}
-            tone="orange"
-            label={t.pmv.totalPmv}
-            value={s.totalPmv}
-            sublabel={`${s.vehiclesCount} ${t.pmv.vehiclesUnit} · ${s.machineryCount} ${t.pmv.machineryUnit} · ${s.equipmentCount} ${t.pmv.equipmentUnit}`}
-          />
-          <StatCard
-            icon={<CalendarClock className="h-8 w-8" />}
-            tone="amber"
-            label={t.pmv.dueForInspection}
-            value={s.dueForInspection}
-            sublabel={`${duePct}% ${t.pmv.ofTotalPmv}`}
-          />
-          <StatCard
-            icon={<UserCheck className="h-8 w-8" />}
-            tone="green"
-            label={t.pmv.authorizedOperators}
-            value={s.authorizedOperators}
-            sublabel={`${operatorsPct}% ${t.pmv.ofTotalOperators}`}
-          />
-          <StatCard
-            icon={<FileWarning className="h-8 w-8" />}
-            tone="red"
-            label={t.pmv.expiringDocuments}
-            value={s.expiringDocuments}
-            sublabel={`${docsPct}% ${t.pmv.ofTotalDocuments}`}
-          />
-        </div>
-
-        {/* PMV by Type + Operators Overview */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          <div className="card lg:col-span-2">
-            <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
-            <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
-            <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
-              {PMV_BY_TYPE.map((row) => {
-                const TypeIcon = TYPE_ICONS[row.key];
-                const pct = row.total > 0 ? Math.round((row.available / row.total) * 100) : 0;
-                const barColor = TYPE_BAR_COLORS[row.key];
-                const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * MAX_BAR_HEIGHT_PX));
-                const stackHeight = MAX_BAR_HEIGHT_PX + IMAGE_BOX_HEIGHT_PX;
-                return (
-                  <div key={row.key} className="flex min-w-[130px] flex-1 flex-col items-center">
-                    <span className="text-lg font-extrabold text-brand-black">{row.total}</span>
-                    <div
-                      className="relative mt-1 w-full"
-                      style={{ height: `${stackHeight}px` }}
-                    >
-                      <div
-                        className="absolute bottom-0 left-1/2 w-10 -translate-x-1/2 rounded-t-md"
-                        style={{ height: `${barHeight}px`, backgroundColor: barColor }}
-                      />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={EQUIPMENT_IMAGES[row.key]}
-                        alt={typeLabel(row.key)}
-                        className="absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-xl"
-                        style={{
-                          bottom: `${Math.max(0, barHeight - 6)}px`,
-                          height: `${IMAGE_BOX_HEIGHT_PX}px`,
-                          width: `${IMAGE_BOX_WIDTH_PX}px`,
-                        }}
-                      />
-                    </div>
-                    <div
-                      className="mt-2 flex h-8 w-8 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: barColor }}
-                    >
-                      <TypeIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="mt-2 text-center text-xs font-bold text-brand-black">
-                      {typeLabel(row.key)}
-                    </span>
-                    <span className="mt-1 text-center text-[11px] font-medium text-brand-gray">
-                      {t.pmv.available} {row.available}/{row.total}
-                    </span>
-                    <span className="text-center text-[11px] text-brand-gray">({pct}%)</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="card flex flex-col">
-            <h2 className="text-lg font-bold text-brand-black">{t.pmv.operatorsOverviewTitle}</h2>
-            <p className="mt-1 text-sm text-brand-gray">
-              {t.pmv.totalOperatorsLabel}: {PMV_SUMMARY.totalOperators.toLocaleString()}
-            </p>
-
-            <div className="relative mx-auto mt-2 h-48 w-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={operatorStatusRows}
-                    dataKey="value"
-                    nameKey="label"
-                    innerRadius="65%"
-                    outerRadius="100%"
-                    paddingAngle={2}
-                    stroke="none"
+      {/* PMV by Type + Operators Overview */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <div className="card lg:col-span-2">
+          <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
+          <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
+          <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
+            {PMV_BY_TYPE.map((row) => {
+              const TypeIcon = TYPE_ICONS[row.key];
+              const pct = row.total > 0 ? Math.round((row.available / row.total) * 100) : 0;
+              const barColor = TYPE_BAR_COLORS[row.key];
+              const barHeight = Math.max(14, Math.round((row.total / MAX_TYPE_TOTAL) * MAX_BAR_HEIGHT_PX));
+              const stackHeight = MAX_BAR_HEIGHT_PX + IMAGE_BOX_HEIGHT_PX;
+              return (
+                <div key={row.key} className="flex min-w-[130px] flex-1 flex-col items-center">
+                  <span className="text-lg font-extrabold text-brand-black">{row.total}</span>
+                  <div
+                    className="relative mt-1 w-full"
+                    style={{ height: `${stackHeight}px` }}
                   >
-                    {operatorStatusRows.map((row) => (
-                      <Cell key={row.key} fill={getChartColor(row.key)} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: "var(--brand-surface, #1f2937)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: 12,
-                      fontSize: 12,
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-extrabold text-brand-black">
-                  {PMV_SUMMARY.authorizedOperators}
-                </span>
-                <span className="text-xs font-medium text-brand-gray">{t.pmv.statusActive}</span>
-              </div>
-            </div>
-
-            <h3 className="mt-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
-              {t.pmv.operatorsStatusTitle}
-            </h3>
-            <ul className="mt-3 space-y-2">
-              {operatorStatusRows.map((row) => (
-                <li key={row.key} className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 text-brand-grayDark">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: getChartColor(row.key) }}
+                    <div
+                      className="absolute bottom-0 left-1/2 w-10 -translate-x-1/2 rounded-t-md"
+                      style={{ height: `${barHeight}px`, backgroundColor: barColor }}
                     />
-                    {row.label}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={EQUIPMENT_IMAGES[row.key]}
+                      alt={typeLabel(row.key)}
+                      className="absolute left-1/2 -translate-x-1/2 object-contain drop-shadow-xl"
+                      style={{
+                        bottom: `${Math.max(0, barHeight - 6)}px`,
+                        height: `${IMAGE_BOX_HEIGHT_PX}px`,
+                        width: `${IMAGE_BOX_WIDTH_PX}px`,
+                      }}
+                    />
+                  </div>
+                  <div
+                    className="mt-2 flex h-8 w-8 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: barColor }}
+                  >
+                    <TypeIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="mt-2 text-center text-xs font-bold text-brand-black">
+                    {typeLabel(row.key)}
                   </span>
-                  <span className="font-semibold text-brand-black">
-                    {row.value.toLocaleString()}
+                  <span className="mt-1 text-center text-[11px] font-medium text-brand-gray">
+                    {t.pmv.available} {row.available}/{row.total}
                   </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-5 rounded-xl border border-brand-orange/25 bg-brand-orange/10 p-4 text-sm font-medium text-brand-grayDark">
-              {t.pmv.ctaBanner}
-            </div>
+                  <span className="text-center text-[11px] text-brand-gray">({pct}%)</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Upcoming Inspections + Expiring Documents */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          <div className="card overflow-x-auto !p-0 lg:col-span-2">
-            <div className="p-6 pb-0">
-              <h2 className="text-lg font-bold text-brand-black">
-                {t.pmv.upcomingInspectionsTitle}
-              </h2>
-              <p className="mt-1 text-sm text-brand-gray">{t.pmv.dueForInspectionSubtitle}</p>
+        <div className="card flex flex-col">
+          <h2 className="text-lg font-bold text-brand-black">{t.pmv.operatorsOverviewTitle}</h2>
+          <p className="mt-1 text-sm text-brand-gray">
+            {t.pmv.totalOperatorsLabel}: {PMV_SUMMARY.totalOperators.toLocaleString()}
+          </p>
+
+          <div className="relative mx-auto mt-2 h-48 w-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={operatorStatusRows}
+                  dataKey="value"
+                  nameKey="label"
+                  innerRadius="65%"
+                  outerRadius="100%"
+                  paddingAngle={2}
+                  stroke="none"
+                >
+                  {operatorStatusRows.map((row) => (
+                    <Cell key={row.key} fill={getChartColor(row.key)} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--brand-surface, #1f2937)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 12,
+                    fontSize: 12,
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-extrabold text-brand-black">
+                {PMV_SUMMARY.authorizedOperators}
+              </span>
+              <span className="text-xs font-medium text-brand-gray">{t.pmv.statusActive}</span>
             </div>
-            <table className="mt-4 w-full text-start text-sm">
-              <thead>
-                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colPmvId}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colType}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDescription}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDueDate}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colStatus}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {UPCOMING_INSPECTIONS.map((row) => (
-                  <tr
-                    key={row.pmvId}
-                    className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
-                  >
-                    <td className="px-4 py-3 font-semibold text-brand-black sm:px-6">
-                      {row.pmvId}
-                    </td>
-                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.type}</td>
-                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.description}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                      {new Date(row.dueDate).toLocaleDateString(
-                        locale === "ar" ? "ar-EG" : "en-US",
-                        { year: "numeric", month: "short", day: "numeric" }
-                      )}
-                    </td>
-                    <td className="px-4 py-3 sm:px-6">
-                      <Badge value={row.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
 
-          <div className="card overflow-x-auto !p-0">
-            <div className="p-6 pb-0">
-              <h2 className="text-lg font-bold text-brand-black">
-                {t.pmv.expiringDocumentsTitle}
-              </h2>
-            </div>
-            <table className="mt-4 w-full text-start text-sm">
-              <thead>
-                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                  <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDocumentType}</th>
-                  <th className="px-4 py-3 text-end sm:px-6">{t.pmv.colCount}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {EXPIRING_DOCUMENTS.map((row) => (
-                  <tr
-                    key={row.documentType}
-                    className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
-                  >
-                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.documentType}</td>
-                    <td className="px-4 py-3 text-end font-semibold text-brand-black sm:px-6">
-                      {row.count}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 className="mt-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            {t.pmv.operatorsStatusTitle}
+          </h3>
+          <ul className="mt-3 space-y-2">
+            {operatorStatusRows.map((row) => (
+              <li key={row.key} className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-brand-grayDark">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: getChartColor(row.key) }}
+                  />
+                  {row.label}
+                </span>
+                <span className="font-semibold text-brand-black">
+                  {row.value.toLocaleString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-5 rounded-xl border border-brand-orange/25 bg-brand-orange/10 p-4 text-sm font-medium text-brand-grayDark">
+            {t.pmv.ctaBanner}
           </div>
+        </div>
+      </div>
+
+      {/* Upcoming Inspections + Expiring Documents */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <div className="card overflow-x-auto !p-0 lg:col-span-2">
+          <div className="p-6 pb-0">
+            <h2 className="text-lg font-bold text-brand-black">
+              {t.pmv.upcomingInspectionsTitle}
+            </h2>
+            <p className="mt-1 text-sm text-brand-gray">{t.pmv.dueForInspectionSubtitle}</p>
+          </div>
+          <table className="mt-4 w-full text-start text-sm">
+            <thead>
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colPmvId}</th>
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colType}</th>
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDescription}</th>
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDueDate}</th>
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colStatus}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {UPCOMING_INSPECTIONS.map((row) => (
+                <tr
+                  key={row.pmvId}
+                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
+                >
+                  <td className="px-4 py-3 font-semibold text-brand-black sm:px-6">
+                    {row.pmvId}
+                  </td>
+                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.type}</td>
+                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.description}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
+                    {new Date(row.dueDate).toLocaleDateString(
+                      locale === "ar" ? "ar-EG" : "en-US",
+                      { year: "numeric", month: "short", day: "numeric" }
+                    )}
+                  </td>
+                  <td className="px-4 py-3 sm:px-6">
+                    <Badge value={row.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="card overflow-x-auto !p-0">
+          <div className="p-6 pb-0">
+            <h2 className="text-lg font-bold text-brand-black">
+              {t.pmv.expiringDocumentsTitle}
+            </h2>
+          </div>
+          <table className="mt-4 w-full text-start text-sm">
+            <thead>
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDocumentType}</th>
+                <th className="px-4 py-3 text-end sm:px-6">{t.pmv.colCount}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {EXPIRING_DOCUMENTS.map((row) => (
+                <tr
+                  key={row.documentType}
+                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
+                >
+                  <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.documentType}</td>
+                  <td className="px-4 py-3 text-end font-semibold text-brand-black sm:px-6">
+                    {row.count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -7,6 +7,14 @@ export interface TranslationShape {
     genericError: string;
     autoAssigned: string;
     loading: string;
+    cancel: string;
+    save: string;
+    saving: string;
+    edit: string;
+    select: string;
+    actions: string;
+    addRecord: string;
+    noDataYet: string;
     exportExcel: string;
     exportWord: string;
     exporting: string;
@@ -690,6 +698,10 @@ export interface TranslationShape {
     colDocumentType: string;
     colCount: string;
     operatorsOverviewTitle: string;
+    tabDashboard: string;
+    tabLog: string;
+    projectName: string;
+    projectPlaceholder: string;
   };
   topbar: {
     greetingMorning: string;
@@ -712,6 +724,14 @@ export const translations: Record<Locale, TranslationShape> = {
       genericError: "Something went wrong. Please try again.",
       autoAssigned: "Assigned automatically on submit",
       loading: "Loading...",
+      cancel: "Cancel",
+      save: "Save",
+      saving: "Saving...",
+      edit: "Edit",
+      select: "Select",
+      actions: "Actions",
+      addRecord: "Add Record",
+      noDataYet: "No records yet.",
       exportExcel: "Export to Excel",
       exportWord: "Export to Word",
       exporting: "Exporting...",
@@ -1395,6 +1415,10 @@ export const translations: Record<Locale, TranslationShape> = {
       colDocumentType: "Document Type",
       colCount: "Count",
       operatorsOverviewTitle: "Operators Overview",
+      tabDashboard: "Dashboard",
+      tabLog: "PMV Log",
+      projectName: "Project Name",
+      projectPlaceholder: "Select a project",
     },
     topbar: {
       greetingMorning: "Good Morning",
@@ -1415,6 +1439,14 @@ export const translations: Record<Locale, TranslationShape> = {
       genericError: "حدث خطأ ما. من فضلك حاول مرة أخرى.",
       autoAssigned: "يتم تعيينه تلقائيًا عند الإرسال",
       loading: "جارٍ التحميل...",
+      cancel: "إلغاء",
+      save: "حفظ",
+      saving: "جارٍ الحفظ...",
+      edit: "تعديل",
+      select: "اختر",
+      actions: "الإجراءات",
+      addRecord: "إضافة سجل",
+      noDataYet: "لا توجد سجلات بعد.",
       exportExcel: "تصدير إلى إكسل",
       exportWord: "تصدير إلى وورد",
       exporting: "جارٍ التصدير...",
@@ -2098,6 +2130,10 @@ export const translations: Record<Locale, TranslationShape> = {
       colDocumentType: "نوع المستند",
       colCount: "العدد",
       operatorsOverviewTitle: "نظرة عامة على المشغلين",
+      tabDashboard: "لوحة المعلومات",
+      tabLog: "سجل المركبات والمعدات",
+      projectName: "اسم المشروع",
+      projectPlaceholder: "اختر المشروع",
     },
     topbar: {
       greetingMorning: "صباح الخير",
