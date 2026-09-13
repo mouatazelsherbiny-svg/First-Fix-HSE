@@ -6,7 +6,8 @@
  * `initial === null` means "add new"; a row means "edit that row".
  */
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { PROJECTS } from "@/lib/mockData";
@@ -28,6 +29,18 @@ export default function PmvLogFormModal({
 }: PmvLogFormModalProps) {
   const { t, locale } = useLanguage();
   const isEdit = !!initial;
+
+  // Rendered via a portal straight into <body> (below) rather than in place,
+  // because this app's scroll-reveal effect (ScrollReveal.tsx) puts a
+  // `transform` on every `.card` once it animates in — and any ancestor
+  // with a non-"none" transform becomes a CSS containing block for
+  // `position: fixed` descendants, which silently traps this modal inside
+  // whichever `.card` it was opened from instead of covering the viewport.
+  // A portal sidesteps that regardless of where the component is used.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [projectName, setProjectName] = useState(
     (initial?.project_name as string) ?? ""
@@ -75,7 +88,9 @@ export default function PmvLogFormModal({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -176,6 +191,7 @@ export default function PmvLogFormModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
