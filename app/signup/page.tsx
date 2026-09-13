@@ -138,6 +138,15 @@ export default function SignupPage() {
                     <label htmlFor="project" className="label-field-glass">
                       {t.signup.project}
                     </label>
+                    {/* The dropdown itself keeps the "glass" white-on-photo look
+                        (input-field-glass), but its popup list is rendered by the
+                        OS/browser on its own opaque (usually white) background,
+                        ignoring that glass styling entirely. `text-brand-black`
+                        would NOT fix this here — in this app's dark theme
+                        --brand-black-rgb is near-white (see globals.css), so it
+                        reads as near-invisible white-on-white in the popup. Each
+                        <option> below is given an explicit, always-dark color
+                        instead, independent of the app's color theme. */}
                     <select
                       id="project"
                       required
@@ -145,11 +154,11 @@ export default function SignupPage() {
                       onChange={(e) => setProject(e.target.value)}
                       className="input-field-glass"
                     >
-                      <option value="" disabled className="text-brand-black">
+                      <option value="" disabled className="bg-white text-gray-900">
                         {t.signup.projectPlaceholder}
                       </option>
                       {PROJECTS.map((p) => (
-                        <option key={p} value={p} className="text-brand-black">
+                        <option key={p} value={p} className="bg-white text-gray-900">
                           {p}
                         </option>
                       ))}
