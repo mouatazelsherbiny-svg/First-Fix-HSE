@@ -54,12 +54,23 @@ interface ProfileRow {
 }
 
 /** Loads the profiles row created by the on_auth_user_created DB trigger.
- *  Falls back to bare session info if the row hasn't landed (or never will)
- *  so a missing profile can't crash the whole app. Returns `isApproved`
- *  separately so callers can decide whether to actually let the visitor
- *  into the app (see login() below) — self-registered accounts (see
- *  app/signup/page.tsx) start out with is_approved = false until an admin
- *  approves them (see app/admin/users/page.tsx). */
+ *  Returns `isApproved` separately so callers can decide whether to
+ *  actually let the visitor into the app (see login() below) —
+ *  self-registered accounts (see app/signup/page.tsx) start out with
+ *  is_approved = false until an admin approves them (see
+ *  app/user-management/page.tsx).
+ *
+ *  No row found means fail CLOSED (isApproved: false), not open. The
+ *  trigger fires in the same transaction as the auth.users insert, so a
+ *  missing row here in practice means the person's account was deleted
+ *  (app/user-management/page.tsx's "delete-user" edge function removes
+ *  the auth.users row, which cascades to profiles) — but their browser
+ *  can still be holding an unexpired access token. Without this, that
+ *  token kept working (as a synthesized "approved" guest profile) until
+ *  it happened to expire on its own; treating "not found" as "not
+ *  approved" instead makes the very next getSession()/refresh check
+ *  (see the effect below, which runs on every page load) sign them
+ *  straight back out. */
 async function loadProfile(
   userId: string,
   email: string
@@ -80,7 +91,7 @@ async function loadProfile(
         email,
         role: "employee",
       },
-      isApproved: true,
+      isApproved: false,
     };
   }
 
