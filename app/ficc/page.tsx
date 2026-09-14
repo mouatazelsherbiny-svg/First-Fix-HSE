@@ -5,7 +5,6 @@ import { Plus } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
-import { useAuth } from "@/context/AuthContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import FiccFormModal from "@/components/ficc/FiccFormModal";
 import IirFormModal from "@/components/ficc/IirFormModal";
@@ -21,22 +20,32 @@ export default function FiccPage() {
 
 function FiccPageContent() {
   const { t, locale } = useLanguage();
-  const { user } = useAuth();
   const { incidents, isLoading, submitFicc } = useIncidents();
   const [showAddModal, setShowAddModal] = useState(false);
   const [iirIncident, setIirIncident] = useState<Incident | null>(null);
+  const [query, setQuery] = useState("");
 
-  // Only rows created through this workflow (they always carry a
-  // ficc_submitted_by and an iir_due_at) — the 986 legacy-imported
-  // incidents/injuries have neither and belong to the Incidents/Injury
-  // pages instead.
-  const ficcRecords = useMemo(
-    () =>
-      incidents
-        .filter((i) => i.projectName === user?.project && !!i.iirDueAt)
-        .sort((a, b) => (b.incidentDate ?? "").localeCompare(a.incidentDate ?? "")),
-    [incidents, user]
-  );
+  // Only rows created through this workflow (they always carry an
+  // iir_due_at) — the 986 legacy-imported incidents/injuries have neither
+  // and belong to the Incidents/Injury pages instead. Not restricted to
+  // the viewer's own project — FICC/IIR reports can be filed for any
+  // project (see the Project field in the Add FICC form), same as the
+  // Injury page's own list, which is unfiltered by project too and just
+  // offers a search box.
+  const ficcRecords = useMemo(() => {
+    const all = incidents
+      .filter((i) => !!i.iirDueAt)
+      .sort((a, b) => (b.incidentDate ?? "").localeCompare(a.incidentDate ?? ""));
+    const q = query.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(
+      (i) =>
+        i.projectName.toLowerCase().includes(q) ||
+        i.incidentLocation.toLowerCase().includes(q) ||
+        i.incidentCategory.toLowerCase().includes(q) ||
+        String(i.incidentNumber).includes(q)
+    );
+  }, [incidents, query]);
 
   const now = Date.now();
   const hoursRemaining = (incident: Incident) => {
@@ -58,12 +67,23 @@ function FiccPageContent() {
         </button>
       </div>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t.list.search}
+          className="input-field max-w-sm"
+        />
+      </div>
+
       <div className="card overflow-hidden !p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm">
             <thead>
               <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colReportNumber}</th>
+                <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colProject}</th>
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colType}</th>
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colLocation}</th>
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colDate}</th>
@@ -75,13 +95,13 @@ function FiccPageContent() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-brand-gray">
+                  <td colSpan={8} className="px-6 py-8 text-center text-brand-gray">
                     {t.common.loading}
                   </td>
                 </tr>
               ) : ficcRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-brand-gray">
+                  <td colSpan={8} className="px-6 py-8 text-center text-brand-gray">
                     {t.common.noDataYet}
                   </td>
                 </tr>
@@ -97,6 +117,9 @@ function FiccPageContent() {
                     >
                       <td className="whitespace-nowrap px-4 py-3 font-semibold text-brand-black sm:px-6">
                         {incident.incidentNumber}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
+                        {incident.projectName}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
                         {incident.incidentCategory}
