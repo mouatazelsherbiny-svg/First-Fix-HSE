@@ -8,14 +8,23 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { Incident } from "@/types/incident";
-import { fetchAllRows } from "@/lib/supabaseClient";
+import { FiccInput, Incident } from "@/types/incident";
+import { fetchAllRows, getCurrentUserId, supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+
+const IIR_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 interface IncidentsContextValue {
   incidents: Incident[];
   isLoading: boolean;
   getById: (id: string) => Incident | undefined;
+  /** Creates the FICC row (record_type "Incident", iir_status "Open") and
+   *  starts its 48h IIR window. Also fires the deadline-notice email via
+   *  the send-ficc-email edge function — a failure there never blocks the
+   *  FICC save itself, it just leaves ficc_deadline_email_sent false. */
+  submitFicc: (input: FiccInput) => Promise<Incident>;
+  /** Marks the parent incident's IIR as filed once the IIR form is saved. */
+  markIirSubmitted: (incidentId: string) => Promise<void>;
 }
 
 const IncidentsContext = createContext<IncidentsContextValue | undefined>(
@@ -48,14 +57,19 @@ function mapRow(row: any): Incident {
     sourceModifiedBy: row.source_modified_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    constructionManager: row.construction_manager ?? null,
+    investigationCommenced: !!row.investigation_commenced,
+    ficcSubmittedBy: row.ficc_submitted_by,
+    iirDueAt: row.iir_due_at,
+    ficcDeadlineEmailSent: !!row.ficc_deadline_email_sent,
   };
 }
 
 // Same shape as the other data providers (ObservationsContext,
 // ToolboxTalkContext, ...): an unfiltered select on mount, with pages
-// filtering by project client-side as needed. Read-only for now — nothing
-// in the app creates/edits incidents yet, this just powers the FICC-related
-// dashboard cards.
+// filtering by project client-side as needed. Writes (submitFicc /
+// markIirSubmitted) power the FICC/IIR workflow (app/ficc/page.tsx);
+// everything else here remains read-only, same as before.
 export function IncidentsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -90,8 +104,100 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
       incidents,
       isLoading,
       getById: (id: string) => incidents.find((i) => i.id === id),
+
+      submitFicc: async (input: FiccInput) => {
+        const created_by = await getCurrentUserId();
+        const incidentDateTime = input.incidentTime
+          ? `${input.incidentDate}T${input.incidentTime}:00`
+          : `${input.incidentDate}T00:00:00`;
+        const now = new Date();
+        const iirDueAt = new Date(now.getTime() + IIR_WINDOW_MS).toISOString();
+
+        const { data, error } = await supabase
+          .from("incidents")
+          .insert({
+            incident_category: input.incidentCategory,
+            record_type: "Incident",
+            project_name: input.projectName,
+            incident_location: input.incidentLocation,
+            incident_date: incidentDateTime,
+            report_year: String(new Date(incidentDateTime).getFullYear()),
+            incident_description: input.incidentDescription,
+            project_director: input.projectDirector || null,
+            project_manager: input.projectManager || null,
+            construction_manager: input.constructionManager || null,
+            spic: input.spic || null,
+            investigation_commenced: input.investigationCommenced,
+            iir_status: "Open",
+            iir_due_at: iirDueAt,
+            ficc_submitted_by: created_by,
+            created_by,
+          })
+          .select()
+          .single();
+
+        if (error || !data) {
+          throw new Error(error?.message ?? "Failed to submit FICC");
+        }
+        const incident = mapRow(data);
+        setIncidents((prev) => [incident, ...prev]);
+
+        // Best-effort — the FICC is already saved regardless of whether the
+        // notice email goes out. See supabase/functions/send-ficc-email.
+        try {
+          const { error: fnError } = await supabase.functions.invoke(
+            "send-ficc-email",
+            {
+              body: {
+                incidentId: incident.id,
+                incidentNumber: incident.incidentNumber,
+                toEmail: user?.email,
+                toName: user?.name,
+                projectName: incident.projectName,
+                incidentLocation: incident.incidentLocation,
+                iirDueAt,
+              },
+            }
+          );
+          if (!fnError) {
+            await supabase
+              .from("incidents")
+              .update({ ficc_deadline_email_sent: true })
+              .eq("id", incident.id);
+            setIncidents((prev) =>
+              prev.map((i) =>
+                i.id === incident.id ? { ...i, ficcDeadlineEmailSent: true } : i
+              )
+            );
+          }
+        } catch {
+          // Swallow — email delivery is not allowed to block or fail the
+          // FICC submission itself.
+        }
+
+        return incident;
+      },
+
+      markIirSubmitted: async (incidentId: string) => {
+        const { data, error } = await supabase
+          .from("incidents")
+          .update({
+            iir_status: "Closed",
+            iir_submission_date: new Date().toISOString().slice(0, 10),
+          })
+          .eq("id", incidentId)
+          .select()
+          .single();
+        if (error || !data) {
+          throw new Error(error?.message ?? "Failed to update IIR status");
+        }
+        const updated = mapRow(data);
+        setIncidents((prev) =>
+          prev.map((i) => (i.id === incidentId ? updated : i))
+        );
+      },
     }),
-    [incidents, isLoading]
+    [incidents, user]
   );
 
   return (

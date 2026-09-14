@@ -15,6 +15,7 @@ import {
   BarChart3,
   ShieldCheck,
   ClipboardCheck,
+  FileWarning,
   ChevronDown,
   Menu,
   X,
@@ -211,6 +212,7 @@ export default function Sidebar() {
       count: observations.length,
     },
     { kind: "link", href: "/incidents", label: t.nav.incidents, icon: AlertTriangle },
+    { kind: "link", href: "/ficc", label: t.nav.ficc, icon: FileWarning },
     { kind: "link", href: "/injury", label: t.nav.injury, icon: HeartPulse },
     { kind: "link", href: "/reports", label: t.nav.reports, icon: FileText },
     {

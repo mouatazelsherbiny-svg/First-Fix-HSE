@@ -1,0 +1,30 @@
+// Debug test — shows what Postgres sees for your login (role, user id, etc).
+(async () => {
+  var EMAIL = "PASTE_YOUR_APP_EMAIL_HERE";
+  var PASSWORD = "PASTE_YOUR_APP_PASSWORD_HERE";
+  var SUPABASE_URL = "https://oxnfpqiezddaecaxsexw.supabase.co";
+  var ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94bmZwcWllemRkYWVjYXhzZXh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Mzg4MzEsImV4cCI6MjEwMzIxNDgzMX0.oh_zsLLoP9TAsC5IGsIWipp47_q-O_MQ9rq-_Oi_npE";
+
+  var loginRes = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+    method: "POST",
+    headers: { apikey: ANON_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: EMAIL, password: PASSWORD })
+  });
+  var loginJson = await loginRes.json();
+  console.log("Login status:", loginRes.status);
+  if (!loginRes.ok) { console.log("Login body:", JSON.stringify(loginJson)); return; }
+  var accessToken = loginJson.access_token;
+  console.log("Login OK.");
+
+  var res = await fetch(SUPABASE_URL + "/rest/v1/rpc/debug_auth", {
+    method: "POST",
+    headers: {
+      apikey: ANON_KEY,
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json"
+    },
+    body: "{}"
+  });
+  console.log("Debug status:", res.status);
+  console.log("Debug body:", await res.text());
+})();

@@ -1,0 +1,36 @@
+// Quick test — tries ONE image upload and prints the exact error text.
+(async () => {
+  var EMAIL = "PASTE_YOUR_APP_EMAIL_HERE";
+  var PASSWORD = "PASTE_YOUR_APP_PASSWORD_HERE";
+  var SUPABASE_URL = "https://oxnfpqiezddaecaxsexw.supabase.co";
+  var ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94bmZwcWllemRkYWVjYXhzZXh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Mzg4MzEsImV4cCI6MjEwMzIxNDgzMX0.oh_zsLLoP9TAsC5IGsIWipp47_q-O_MQ9rq-_Oi_npE";
+
+  var loginRes = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+    method: "POST",
+    headers: { apikey: ANON_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: EMAIL, password: PASSWORD })
+  });
+  var loginJson = await loginRes.json();
+  console.log("Login status:", loginRes.status);
+  if (!loginRes.ok) { console.log("Login body:", JSON.stringify(loginJson)); return; }
+  var accessToken = loginJson.access_token;
+  console.log("Login OK.");
+
+  // make a tiny 1x1 pixel test image
+  var canvas = document.createElement("canvas");
+  canvas.width = 1; canvas.height = 1;
+  var blob = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg"); });
+
+  var uploadRes = await fetch(SUPABASE_URL + "/storage/v1/object/observation-photos/test/upload-test.jpg", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      apikey: ANON_KEY,
+      "Content-Type": "image/jpeg",
+      "x-upsert": "true"
+    },
+    body: blob
+  });
+  console.log("Upload status:", uploadRes.status);
+  console.log("Upload body:", await uploadRes.text());
+})();

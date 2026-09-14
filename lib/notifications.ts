@@ -2,6 +2,7 @@ import { PermitToWork } from "@/types/permit";
 import { PPERecord, TrainingCourseRecord } from "@/types/hsePassport";
 import { EmployeeRecord } from "@/lib/mockData";
 import { ChecklistSubmission } from "@/types/checklistSubmission";
+import { Incident } from "@/types/incident";
 import { getPermitProgress } from "@/lib/permitProgress";
 import { TranslationShape } from "@/lib/i18n";
 
@@ -31,6 +32,7 @@ export function buildNotifications({
   ppeRecords,
   trainingRecords,
   checklistSubmissions,
+  incidents,
 }: {
   t: TranslationShape;
   project: string;
@@ -39,6 +41,7 @@ export function buildNotifications({
   ppeRecords: PPERecord[];
   trainingRecords: TrainingCourseRecord[];
   checklistSubmissions: ChecklistSubmission[];
+  incidents: Incident[];
 }): AppNotification[] {
   const notifications: AppNotification[] = [];
   const now = Date.now();
@@ -118,6 +121,25 @@ export function buildNotifications({
         String(missingChecklists.length)
       ),
       tone: "amber",
+    });
+  }
+
+  // FICC submissions whose 48h IIR window has passed with no IIR filed yet
+  // (iir_status still "Open" and iir_due_at in the past). See
+  // context/IncidentsContext.tsx's submitFicc() for how the deadline is set
+  // and app/ficc/page.tsx for where the IIR itself gets submitted.
+  const overdueIir = incidents.filter((i) => {
+    if (i.projectName !== project) return false;
+    if (!i.iirDueAt || i.iirStatus !== "Open") return false;
+    const due = new Date(i.iirDueAt).getTime();
+    if (Number.isNaN(due)) return false;
+    return due <= now;
+  });
+  if (overdueIir.length > 0) {
+    notifications.push({
+      id: "iir-overdue",
+      text: t.topbar.iirOverdue.replace("{count}", String(overdueIir.length)),
+      tone: "red",
     });
   }
 

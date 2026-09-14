@@ -110,6 +110,7 @@ export interface TranslationShape {
     hello: string;
     userManagement: string;
     incidents: string;
+    ficc: string;
     injury: string;
     reports: string;
     pmv: string;
@@ -703,6 +704,55 @@ export interface TranslationShape {
     projectName: string;
     projectPlaceholder: string;
   };
+  ficc: {
+    pageTitle: string;
+    pageSubtitle: string;
+    addFicc: string;
+    addFiccTitle: string;
+    iirButton: string;
+    iirFormTitle: string;
+    viewIir: string;
+    colReportNumber: string;
+    colProject: string;
+    colLocation: string;
+    colDate: string;
+    colType: string;
+    colStatus: string;
+    colDeadline: string;
+    deadlinePassed: string;
+    hoursRemaining: string;
+    incidentType: string;
+    project: string;
+    location: string;
+    date: string;
+    time: string;
+    description: string;
+    projectDirector: string;
+    projectManager: string;
+    constructionManager: string;
+    spic: string;
+    investigationCommenced: string;
+    notApplicable: string;
+    correctiveActionsTitle: string;
+    addAction: string;
+    removeAction: string;
+    noActions: string;
+    attachmentsTitle: string;
+    photosTitle: string;
+    signOffTitle: string;
+    hseSignOff: string;
+    pmSignOff: string;
+    signOffName: string;
+    signOffDate: string;
+    submitFicc: string;
+    submitIir: string;
+    submitting: string;
+    ficcSubmittedSuccess: string;
+    iirSubmittedSuccess: string;
+    emailSentNote: string;
+    emailFailedNote: string;
+    reportNumberLabel: string;
+  };
   topbar: {
     greetingMorning: string;
     greetingAfternoon: string;
@@ -713,6 +763,7 @@ export interface TranslationShape {
     ppeReplacementDue: string;
     trainingExpired: string;
     checklistsNotSubmitted: string;
+    iirOverdue: string;
   };
 }
 
@@ -828,6 +879,7 @@ export const translations: Record<Locale, TranslationShape> = {
       userManagement: "User Management",
       incidents: "Incidents",
       injury: "Injury",
+      ficc: "FICC",
       reports: "Reports",
       pmv: "PMV",
       summaryPerformanceReport: "Summary Performance Report",
@@ -1420,6 +1472,55 @@ export const translations: Record<Locale, TranslationShape> = {
       projectName: "Project Name",
       projectPlaceholder: "Select a project",
     },
+    ficc: {
+      pageTitle: "FICC",
+      pageSubtitle: "First Incident/Contributing Cause reports and their linked Incident Investigation Reports (IIR)",
+      addFicc: "Add FICC",
+      addFiccTitle: "Add FICC",
+      iirButton: "IIR",
+      iirFormTitle: "Incident Investigation Report (IIR)",
+      viewIir: "View IIR",
+      colReportNumber: "Report #",
+      colProject: "Project",
+      colLocation: "Location",
+      colDate: "Date",
+      colType: "Incident Type",
+      colStatus: "IIR Status",
+      colDeadline: "IIR Deadline",
+      deadlinePassed: "Deadline passed",
+      hoursRemaining: "{hours}h remaining",
+      incidentType: "Incident Type",
+      project: "Project",
+      location: "Location",
+      date: "Date",
+      time: "Time",
+      description: "Description",
+      projectDirector: "Project Director",
+      projectManager: "Project Manager",
+      constructionManager: "Construction Manager",
+      spic: "Site Person In Charge",
+      investigationCommenced: "Investigation commenced",
+      notApplicable: "N/A — doesn't apply",
+      correctiveActionsTitle: "Corrective Actions",
+      addAction: "Add Action",
+      removeAction: "Remove",
+      noActions: "No corrective actions added yet.",
+      attachmentsTitle: "Attachments",
+      photosTitle: "Photos",
+      signOffTitle: "Sign-Off",
+      hseSignOff: "HSE Sign-Off",
+      pmSignOff: "PM Sign-Off",
+      signOffName: "Name",
+      signOffDate: "Date",
+      submitFicc: "Submit FICC",
+      submitIir: "Submit IIR",
+      submitting: "Submitting...",
+      ficcSubmittedSuccess: "FICC submitted. A 48-hour IIR deadline notice has been emailed to you.",
+      iirSubmittedSuccess: "IIR submitted successfully.",
+      emailSentNote: "Deadline notice email sent",
+      emailFailedNote: "Deadline notice email could not be sent (check Resend setup)",
+      reportNumberLabel: "Report #",
+    },
     topbar: {
       greetingMorning: "Good Morning",
       greetingAfternoon: "Good Afternoon",
@@ -1430,6 +1531,7 @@ export const translations: Record<Locale, TranslationShape> = {
       ppeReplacementDue: "{count} PPE item(s) due for replacement soon",
       trainingExpired: "{count} training record(s) have expired",
       checklistsNotSubmitted: "{count} monthly checklist(s) not submitted yet this month",
+      iirOverdue: "{count} IIR report(s) overdue — 48-hour deadline has passed",
     },
   },
   ar: {
@@ -1543,6 +1645,7 @@ export const translations: Record<Locale, TranslationShape> = {
       userManagement: "إدارة المستخدمين",
       incidents: "الحوادث (Incidents)",
       injury: "الإصابات (Injury)",
+      ficc: "FICC",
       reports: "التقارير (Reports)",
       pmv: "PMV",
       summaryPerformanceReport: "تقرير الأداء الإجمالي",
@@ -2135,6 +2238,55 @@ export const translations: Record<Locale, TranslationShape> = {
       projectName: "اسم المشروع",
       projectPlaceholder: "اختر المشروع",
     },
+    ficc: {
+      pageTitle: "FICC",
+      pageSubtitle: "تقارير أول بلاغ عن حادث (FICC) وتقارير التحقيق المرتبطة بها (IIR)",
+      addFicc: "إضافة FICC",
+      addFiccTitle: "إضافة FICC",
+      iirButton: "IIR",
+      iirFormTitle: "تقرير التحقيق في الحادث (IIR)",
+      viewIir: "عرض IIR",
+      colReportNumber: "رقم التقرير",
+      colProject: "المشروع",
+      colLocation: "الموقع",
+      colDate: "التاريخ",
+      colType: "نوع الحادث",
+      colStatus: "حالة IIR",
+      colDeadline: "الموعد النهائي لـ IIR",
+      deadlinePassed: "انتهى الموعد النهائي",
+      hoursRemaining: "متبقٍ {hours} ساعة",
+      incidentType: "نوع الحادث",
+      project: "المشروع",
+      location: "الموقع",
+      date: "التاريخ",
+      time: "الوقت",
+      description: "الوصف",
+      projectDirector: "مدير المشروع العام",
+      projectManager: "مدير المشروع",
+      constructionManager: "مدير الإنشاءات",
+      spic: "المسؤول عن الموقع",
+      investigationCommenced: "تم بدء التحقيق",
+      notApplicable: "لا ينطبق",
+      correctiveActionsTitle: "الإجراءات التصحيحية",
+      addAction: "إضافة إجراء",
+      removeAction: "حذف",
+      noActions: "لم تتم إضافة إجراءات تصحيحية بعد.",
+      attachmentsTitle: "المرفقات",
+      photosTitle: "الصور",
+      signOffTitle: "الاعتماد النهائي",
+      hseSignOff: "اعتماد السلامة والصحة",
+      pmSignOff: "اعتماد مدير المشروع",
+      signOffName: "الاسم",
+      signOffDate: "التاريخ",
+      submitFicc: "إرسال FICC",
+      submitIir: "إرسال IIR",
+      submitting: "جارٍ الإرسال...",
+      ficcSubmittedSuccess: "تم إرسال FICC. تم إرسال بريد إلكتروني بموعد الـ 48 ساعة النهائي لتقديم IIR.",
+      iirSubmittedSuccess: "تم إرسال IIR بنجاح.",
+      emailSentNote: "تم إرسال بريد التنبيه بالموعد النهائي",
+      emailFailedNote: "تعذر إرسال بريد التنبيه (تحقق من إعداد Resend)",
+      reportNumberLabel: "رقم التقرير",
+    },
     topbar: {
       greetingMorning: "صباح الخير",
       greetingAfternoon: "مساء الخير",
@@ -2145,6 +2297,7 @@ export const translations: Record<Locale, TranslationShape> = {
       ppeReplacementDue: "{count} من مهمات الوقاية الشخصية بحاجة للاستبدال قريبًا",
       trainingExpired: "{count} من سجلات التدريب منتهية الصلاحية",
       checklistsNotSubmitted: "{count} من قوائم الفحص الشهرية لم تُرسل بعد هذا الشهر",
+      iirOverdue: "{count} تقرير IIR متأخر — انتهى الموعد النهائي (48 ساعة)",
     },
   },
 };

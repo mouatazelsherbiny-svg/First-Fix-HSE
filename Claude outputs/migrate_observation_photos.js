@@ -1,0 +1,170 @@
+// ============================================================================
+// FirstFix HSE — migrate Observation/Close-out photos from SharePoint to Supabase
+//
+// HOW TO RUN:
+// 1. Make sure you're on this exact page (already signed in):
+//    https://icad0.sharepoint.com/sites/FirstFixHSE/Lists/Observations/AllItems.aspx
+// 2. Open DevTools Console: press F12 (or Ctrl+Shift+J), click the "Console" tab.
+// 3. Paste this WHOLE script into the console.
+// 4. Replace PASTE_YOUR_SERVICE_ROLE_KEY_HERE below with your Supabase
+//    service_role (secret) key (Supabase Dashboard -> Project Settings -> API).
+// 5. Press Enter. Progress prints every 50 items. It's safe to leave the tab
+//    open and let it run — it will take roughly 30-60 minutes for ~10,500 images.
+// 6. It's safe to re-run if interrupted: it skips rows that already have a photo.
+// ============================================================================
+
+(async () => {
+  var SERVICE_ROLE_KEY = "PASTE_YOUR_SERVICE_ROLE_KEY_HERE"; // <-- paste your key here, keep the quotes
+  var SUPABASE_URL = "https://oxnfpqiezddaecaxsexw.supabase.co";
+  var CUTOFF = new Date("2026-05-09T00:00:00Z").getTime(); // last 4 months from 2026-09-09
+  var CONCURRENCY = 6;
+  var MAX_DIM = 900;      // resize longest side to this many pixels
+  var QUALITY = 0.62;     // JPEG quality
+
+  if (SERVICE_ROLE_KEY.indexOf("PASTE_YOUR") !== -1) {
+    console.error("Please paste your service_role key into the SERVICE_ROLE_KEY constant first.");
+    return;
+  }
+
+  var listBase = "https://icad0.sharepoint.com/sites/FirstFixHSE/_api/web/lists/getbytitle('Observation Details')";
+  var attachBase = "https://icad0.sharepoint.com/sites/FirstFixHSE/Lists/Observations/Attachments";
+
+  function log() {
+    var args = Array.prototype.slice.call(arguments);
+    console.log.apply(console, ["[migrate]"].concat(args));
+  }
+
+  async function spFetch(url) {
+    var res = await fetch(url, { headers: { Accept: "application/json;odata=verbose" }, credentials: "same-origin" });
+    if (!res.ok) throw new Error("SharePoint HTTP " + res.status + " for " + url);
+    return res.json();
+  }
+
+  async function compress(blob) {
+    var bmp = await createImageBitmap(blob);
+    var width = bmp.width, height = bmp.height;
+    if (width > MAX_DIM || height > MAX_DIM) {
+      var scale = MAX_DIM / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    var canvas = new OffscreenCanvas(width, height);
+    canvas.getContext("2d").drawImage(bmp, 0, 0, width, height);
+    return canvas.convertToBlob({ type: "image/jpeg", quality: QUALITY });
+  }
+
+  async function uploadToStorage(path, blob) {
+    var res = await fetch(SUPABASE_URL + "/storage/v1/object/observation-photos/" + path, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + SERVICE_ROLE_KEY,
+        apikey: SERVICE_ROLE_KEY,
+        "Content-Type": "image/jpeg",
+        "x-upsert": "true"
+      },
+      body: blob
+    });
+    if (!res.ok) throw new Error("Storage upload failed " + res.status + ": " + (await res.text()));
+    return SUPABASE_URL + "/storage/v1/object/public/observation-photos/" + path;
+  }
+
+  async function findCandidates(observationText) {
+    var url = SUPABASE_URL + "/rest/v1/observations?select=id,created_at,observation_photos,close_out_photos&observation_details=eq." + encodeURIComponent(observationText);
+    var res = await fetch(url, { headers: { apikey: SERVICE_ROLE_KEY, Authorization: "Bearer " + SERVICE_ROLE_KEY } });
+    if (!res.ok) throw new Error("Supabase select failed " + res.status + ": " + (await res.text()));
+    return res.json();
+  }
+
+  async function updateRow(id, patch) {
+    var res = await fetch(SUPABASE_URL + "/rest/v1/observations?id=eq." + id, {
+      method: "PATCH",
+      headers: {
+        apikey: SERVICE_ROLE_KEY,
+        Authorization: "Bearer " + SERVICE_ROLE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(patch)
+    });
+    if (!res.ok) throw new Error("Supabase update failed " + res.status + ": " + (await res.text()));
+  }
+
+  // ---- Step 1: scan SharePoint for in-scope items with photos ----
+  log("Scanning SharePoint list (this takes ~10-20s)...");
+  var fields = "ID,ProjectName,Category,Observation,ReportNumber,Created,ObservationPhoto,Close_x002d_outPhoto";
+  var lastId = 0;
+  var items = [];
+  while (true) {
+    var json = await spFetch(listBase + "/items?$select=" + fields + "&$filter=ID gt " + lastId + "&$orderby=ID asc&$top=3000");
+    var results = json.d.results;
+    if (results.length === 0) break;
+    for (var r = 0; r < results.length; r++) {
+      var it = results[r];
+      lastId = it.ID;
+      if (new Date(it.Created).getTime() < CUTOFF) continue;
+      if (!it.ObservationPhoto && !it.Close_x002d_outPhoto) continue;
+      items.push(it);
+    }
+  }
+  log("Found " + items.length + " SharePoint items in scope with at least one photo.");
+
+  // ---- Step 2: match + download + compress + upload + update, with limited concurrency ----
+  var ok = 0, noMatch = 0, ambiguous = 0, failed = 0, skippedAlready = 0;
+  var problems = [];
+
+  async function processOne(it) {
+    try {
+      var candidates = await findCandidates(it.Observation);
+      // SharePoint "Created" is UTC; this DB's created_at is consistently 7 hours behind it
+      // (a timezone artifact from the original CSV import) — match on that adjusted value.
+      var adjusted = new Date(new Date(it.Created).getTime() - 7 * 3600 * 1000).toISOString();
+      var matches = candidates.filter(function (c) {
+        return new Date(c.created_at).toISOString() === adjusted;
+      });
+      if (matches.length === 0) { noMatch++; problems.push({ id: it.ID, reason: "no-match" }); return; }
+      if (matches.length > 1) { ambiguous++; problems.push({ id: it.ID, reason: "ambiguous", count: matches.length }); return; }
+      var match = matches[0];
+
+      var patch = {};
+      if (it.ObservationPhoto && (!match.observation_photos || match.observation_photos.length === 0)) {
+        var meta1 = JSON.parse(it.ObservationPhoto);
+        var url1 = attachBase + "/" + it.ID + "/" + encodeURIComponent(meta1.fileName);
+        var blob1 = await (await fetch(url1, { credentials: "same-origin" })).blob();
+        var compressed1 = await compress(blob1);
+        patch.observation_photos = [await uploadToStorage(match.id + "/obs.jpg", compressed1)];
+      }
+      if (it.Close_x002d_outPhoto && (!match.close_out_photos || match.close_out_photos.length === 0)) {
+        var meta2 = JSON.parse(it.Close_x002d_outPhoto);
+        var url2 = attachBase + "/" + it.ID + "/" + encodeURIComponent(meta2.fileName);
+        var blob2 = await (await fetch(url2, { credentials: "same-origin" })).blob();
+        var compressed2 = await compress(blob2);
+        patch.close_out_photos = [await uploadToStorage(match.id + "/close.jpg", compressed2)];
+      }
+
+      if (Object.keys(patch).length === 0) { skippedAlready++; return; }
+      await updateRow(match.id, patch);
+      ok++;
+    } catch (e) {
+      failed++;
+      problems.push({ id: it.ID, reason: "error", message: String(e) });
+    }
+  }
+
+  var next = 0;
+  async function worker() {
+    while (next < items.length) {
+      var idx = next++;
+      await processOne(items[idx]);
+      if (idx % 50 === 0) {
+        log("Progress: " + idx + "/" + items.length + " | ok=" + ok + " skipped=" + skippedAlready + " noMatch=" + noMatch + " ambiguous=" + ambiguous + " failed=" + failed);
+      }
+    }
+  }
+  var workers = [];
+  for (var w = 0; w < CONCURRENCY; w++) workers.push(worker());
+  await Promise.all(workers);
+
+  log("DONE.", JSON.stringify({ total: items.length, ok: ok, skippedAlready: skippedAlready, noMatch: noMatch, ambiguous: ambiguous, failed: failed }));
+  window.__migrationProblems = problems;
+  log("Full problem list saved to window.__migrationProblems (array). Run copy(JSON.stringify(window.__migrationProblems)) to copy it, if you want to share it for troubleshooting.");
+})();

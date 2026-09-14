@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePermits } from "@/context/PermitContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
+import { useIncidents } from "@/context/IncidentsContext";
 import { buildNotifications } from "@/lib/notifications";
 
 const TONE_CLASSES: Record<"red" | "amber" | "blue", string> = {
@@ -24,6 +25,7 @@ export default function Topbar() {
   const { permits } = usePermits();
   const { employees, ppeRecords, trainingRecords } = useHsePassport();
   const { submissions: checklistSubmissions } = useChecklistSubmissions();
+  const { incidents } = useIncidents();
 
   // `now` starts null so the server-rendered markup and the first client
   // render match (no time-dependent text) — filled in after mount, then
@@ -67,8 +69,9 @@ export default function Topbar() {
       ppeRecords,
       trainingRecords,
       checklistSubmissions,
+      incidents,
     });
-  }, [t, user, permits, employees, ppeRecords, trainingRecords, checklistSubmissions]);
+  }, [t, user, permits, employees, ppeRecords, trainingRecords, checklistSubmissions, incidents]);
 
   const dateStr = now
     ? now.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
