@@ -61,10 +61,10 @@ export default function SignupPage() {
           and the compact sign-up card below it — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !bg-white/30 !p-3 shadow-cardHover text-sm">
+        <div className="card !bg-white/30 !p-2.5 shadow-cardHover text-sm">
           {success ? (
             <div className="text-center">
-              <h1 className="text-sm font-bold text-brand-black">{t.signup.successTitle}</h1>
+              <h1 className="text-xs font-bold text-brand-black">{t.signup.successTitle}</h1>
               <p className="mt-3 text-sm text-brand-gray">{t.signup.successMessage}</p>
               <Link
                 href="/login"
@@ -75,12 +75,12 @@ export default function SignupPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-sm font-bold text-brand-black">{t.signup.title}</h1>
-              <p className="mt-0.5 text-xs text-brand-gray">{t.signup.subtitle}</p>
+              <h1 className="text-xs font-bold text-brand-black">{t.signup.title}</h1>
+              <p className="mt-0.5 text-[10px] text-brand-gray">{t.signup.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-2 space-y-1.5">
+              <form onSubmit={handleSubmit} className="mt-1.5 space-y-1">
                 <div>
-                  <label htmlFor="fullName" className="label-field !mb-0.5 !text-xs">
+                  <label htmlFor="fullName" className="label-field !mb-0.5 !text-[10px]">
                     {t.signup.fullName}
                   </label>
                   <input
@@ -90,14 +90,14 @@ export default function SignupPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={t.signup.fullNamePlaceholder}
-                    className="input-field !py-1.5 !text-xs"
+                    className="input-field !py-1 !text-[10px]"
                     autoComplete="name"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   <div>
-                    <label htmlFor="employeeCode" className="label-field !mb-0.5 !text-xs">
+                    <label htmlFor="employeeCode" className="label-field !mb-0.5 !text-[10px]">
                       {t.signup.employeeCode}
                     </label>
                     <input
@@ -107,12 +107,12 @@ export default function SignupPage() {
                       value={employeeCode}
                       onChange={(e) => setEmployeeCode(e.target.value)}
                       placeholder={t.signup.employeeCodePlaceholder}
-                      className="input-field !py-1.5 !text-xs"
+                      className="input-field !py-1 !text-[10px]"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="project" className="label-field !mb-0.5 !text-xs">
+                    <label htmlFor="project" className="label-field !mb-0.5 !text-[10px]">
                       {t.signup.project}
                     </label>
                     <select
@@ -120,7 +120,7 @@ export default function SignupPage() {
                       required
                       value={project}
                       onChange={(e) => setProject(e.target.value)}
-                      className="input-field !py-1.5 !text-xs"
+                      className="input-field !py-1 !text-[10px]"
                     >
                       <option value="" disabled className="bg-white text-gray-900">
                         {t.signup.projectPlaceholder}
@@ -135,7 +135,7 @@ export default function SignupPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="label-field !mb-0.5 !text-xs">
+                  <label htmlFor="email" className="label-field !mb-0.5 !text-[10px]">
                     {t.signup.email}
                   </label>
                   <input
@@ -145,13 +145,13 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.signup.emailPlaceholder}
-                    className="input-field !py-1.5 !text-xs"
+                    className="input-field !py-1 !text-[10px]"
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-field !mb-0.5 !text-xs">
+                  <label htmlFor="password" className="label-field !mb-0.5 !text-[10px]">
                     {t.signup.password}
                   </label>
                   <input
@@ -162,13 +162,13 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.signup.passwordPlaceholder}
-                    className="input-field !py-1.5 !text-xs"
+                    className="input-field !py-1 !text-[10px]"
                     autoComplete="new-password"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="label-field !mb-0.5 !text-xs">
+                  <label htmlFor="confirmPassword" className="label-field !mb-0.5 !text-[10px]">
                     {t.signup.confirmPassword}
                   </label>
                   <input
@@ -179,7 +179,7 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t.signup.confirmPasswordPlaceholder}
-                    className="input-field !py-1.5 !text-xs"
+                    className="input-field !py-1 !text-[10px]"
                     autoComplete="new-password"
                   />
                 </div>
@@ -190,12 +190,12 @@ export default function SignupPage() {
                   </p>
                 )}
 
-                <button type="submit" disabled={submitting} className="btn-primary w-full !py-2 !text-xs">
+                <button type="submit" disabled={submitting} className="btn-primary w-full !py-1.5 !text-[10px]">
                   {submitting ? t.signup.submitting : t.signup.submit}
                 </button>
               </form>
 
-              <p className="mt-2 text-center text-xs text-brand-gray">
+              <p className="mt-1.5 text-center text-[10px] text-brand-gray">
                 {t.signup.haveAccount}{" "}
                 <Link href="/login" className="font-semibold text-brand-orange hover:underline">
                   {t.signup.loginLink}

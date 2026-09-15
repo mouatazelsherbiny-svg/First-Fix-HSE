@@ -15,7 +15,7 @@ export default function LandingHero({ children }: LandingHeroProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col">
+    <div className="relative isolate flex min-h-screen w-full flex-col">
       {/* Fills the whole screen: a plain (non-fixed) absolutely
           positioned cover-fit image behind everything, sized to at least
           one full viewport height/width. Using object-cover here is safe
@@ -59,7 +59,7 @@ export default function LandingHero({ children }: LandingHeroProps) {
           left below the nav. */}
       {children && (
         <div className="flex flex-1 items-center justify-center px-3 py-6">
-          <div className="w-full max-w-[260px]">{children}</div>
+          <div className="w-full max-w-[220px]">{children}</div>
         </div>
       )}
     </div>
