@@ -4,16 +4,10 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
-// Native pixel size of /public/brand/landing-hero-v2.jpg (a plain
-// illustration — unlike the earlier reference graphic, it has no menu or
-// headline printed on it, so both are built as real HTML below instead
-// of invisible hotspots over baked-in image text).
-const IMAGE_WIDTH = 1024;
-const IMAGE_HEIGHT = 512;
-
 interface LandingHeroProps {
-  /** Sign-in / sign-up form rendered below the hero image — used by
-      /login and /signup. Omitted on the plain landing page ("/"). */
+  /** Sign-in / sign-up form, rendered small and see-through, centered
+      over the hero image — used by /login and /signup. Omitted on the
+      plain landing page ("/"). */
   children?: ReactNode;
 }
 
@@ -21,9 +15,23 @@ export default function LandingHero({ children }: LandingHeroProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="w-full">
+    <div className="relative flex min-h-screen w-full flex-col">
+      {/* Fills the whole screen: a plain (non-fixed) absolutely
+          positioned cover-fit image behind everything, sized to at least
+          one full viewport height/width. Using object-cover here is safe
+          — unlike the earlier reference graphic, this artwork has no
+          menu or headline baked into its pixels, so cropping it never
+          breaks anything; the nav and card below are real HTML laid on
+          top of it. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/landing-hero-v2.jpg"
+        alt={t.landing.heroTagline}
+        className="absolute inset-0 -z-10 h-full w-full object-cover"
+      />
+
       {/* Real, visible nav row. Only Sign In / Sign Up are wired to real
-          routes for now — Home/About HSE Departement/HSE KPI's/Contact
+          routes for now — Home/About HSE Department/HSE KPI's/Contact
           are placeholders for pages that aren't built yet, so they carry
           no command. */}
       <nav
@@ -47,20 +55,13 @@ export default function LandingHero({ children }: LandingHeroProps) {
         </Link>
       </nav>
 
-      <div className="mx-auto mt-4 w-full max-w-xl px-3 sm:max-w-2xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/landing-hero-v2.jpg"
-          alt={t.landing.heroTagline}
-          className="block w-full rounded-2xl shadow-cardHover"
-          style={{ aspectRatio: `${IMAGE_WIDTH} / ${IMAGE_HEIGHT}` }}
-        />
-      </div>
-
-      {/* The card sits below the artwork (rather than overlapping it) —
-          this illustration has no built-in empty area to host a card the
-          way the old reference graphic did. */}
-      {children && <div className="mx-auto mt-4 w-full max-w-[280px] px-3">{children}</div>}
+      {/* Small, see-through card centered in whatever screen space is
+          left below the nav. */}
+      {children && (
+        <div className="flex flex-1 items-center justify-center px-3 py-6">
+          <div className="w-full max-w-[260px]">{children}</div>
+        </div>
+      )}
     </div>
   );
 }

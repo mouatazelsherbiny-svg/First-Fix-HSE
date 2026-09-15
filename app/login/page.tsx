@@ -79,7 +79,7 @@ export default function LoginPage() {
           and the compact sign-in card below it — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !p-3 shadow-cardHover text-sm">
+        <div className="card !bg-white/30 !p-3 shadow-cardHover text-sm">
           {mode === "login" ? (
             <>
               <h1 className="text-sm font-bold text-brand-black">{t.login.title}</h1>
