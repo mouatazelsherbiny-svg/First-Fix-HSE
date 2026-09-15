@@ -79,13 +79,13 @@ export default function LoginPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !p-4 shadow-cardHover">
+        <div className="card !p-3 shadow-cardHover">
           {mode === "login" ? (
             <>
-              <h1 className="text-lg font-bold text-brand-black">{t.login.title}</h1>
+              <h1 className="text-base font-bold text-brand-black">{t.login.title}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.login.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
+              <form onSubmit={handleSubmit} className="mt-2.5 space-y-2">
                 <div>
                   <label htmlFor="email" className="label-field">
                     {t.login.email}
@@ -97,7 +97,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="email"
                   />
                 </div>
@@ -113,7 +113,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.login.passwordPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="current-password"
                   />
                 </div>
@@ -159,10 +159,10 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <h1 className="text-lg font-bold text-brand-black">{t.login.forgotTitle}</h1>
+              <h1 className="text-base font-bold text-brand-black">{t.login.forgotTitle}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.login.forgotSubtitle}</p>
 
-              <form onSubmit={handleForgotSubmit} className="mt-3 space-y-2.5">
+              <form onSubmit={handleForgotSubmit} className="mt-2.5 space-y-2">
                 <div>
                   <label htmlFor="forgot-email" className="label-field">
                     {t.login.email}
@@ -174,7 +174,7 @@ export default function LoginPage() {
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="email"
                   />
                 </div>

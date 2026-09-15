@@ -61,10 +61,10 @@ export default function SignupPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !p-4 shadow-cardHover">
+        <div className="card !p-3 shadow-cardHover">
           {success ? (
             <div className="text-center">
-              <h1 className="text-lg font-bold text-brand-black">{t.signup.successTitle}</h1>
+              <h1 className="text-base font-bold text-brand-black">{t.signup.successTitle}</h1>
               <p className="mt-3 text-sm text-brand-gray">{t.signup.successMessage}</p>
               <Link
                 href="/login"
@@ -75,10 +75,10 @@ export default function SignupPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-lg font-bold text-brand-black">{t.signup.title}</h1>
+              <h1 className="text-base font-bold text-brand-black">{t.signup.title}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.signup.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
+              <form onSubmit={handleSubmit} className="mt-2.5 space-y-2">
                 <div>
                   <label htmlFor="fullName" className="label-field">
                     {t.signup.fullName}
@@ -90,12 +90,12 @@ export default function SignupPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={t.signup.fullNamePlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="name"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label htmlFor="employeeCode" className="label-field">
                       {t.signup.employeeCode}
@@ -107,7 +107,7 @@ export default function SignupPage() {
                       value={employeeCode}
                       onChange={(e) => setEmployeeCode(e.target.value)}
                       placeholder={t.signup.employeeCodePlaceholder}
-                      className="input-field"
+                      className="input-field !py-2"
                     />
                   </div>
 
@@ -120,7 +120,7 @@ export default function SignupPage() {
                       required
                       value={project}
                       onChange={(e) => setProject(e.target.value)}
-                      className="input-field"
+                      className="input-field !py-2"
                     >
                       <option value="" disabled className="bg-white text-gray-900">
                         {t.signup.projectPlaceholder}
@@ -145,7 +145,7 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.signup.emailPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="email"
                   />
                 </div>
@@ -162,7 +162,7 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.signup.passwordPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="new-password"
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t.signup.confirmPasswordPlaceholder}
-                    className="input-field"
+                    className="input-field !py-2"
                     autoComplete="new-password"
                   />
                 </div>
