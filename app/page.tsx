@@ -14,8 +14,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import Logo from "@/components/Logo";
-import HseHeroIllustration from "@/components/HseHeroIllustration";
 
 export default function RootPage() {
   const { user, isLoading } = useAuth();
@@ -59,63 +57,57 @@ function LandingPage() {
     { key: "hseTeam", icon: Network, label: t.nav.hseTeam },
   ];
 
-  const navLinks: { href: string; label: string }[] = [
-    { href: "/", label: t.landing.navHome },
-    { href: "/about", label: t.landing.navAbout },
-    { href: "/hse-kpis", label: t.landing.navKpis },
-    { href: "/contact", label: t.landing.navContact },
+  // Percentage bounding boxes for each nav word baked into
+  // /public/brand/landing-hero.jpg, measured against the source image
+  // (2514x1664) so they stay aligned at any container width as long as
+  // the wrapper below keeps the same aspect ratio. Each entry renders as
+  // an invisible, real <Link> directly on top of the printed word.
+  const heroNavHotspots: { href: string; label: string; left: number; width: number }[] = [
+    { href: "/", label: t.landing.navHome, left: 34.0, width: 5.6 },
+    { href: "/about", label: t.landing.navAbout, left: 40.5, width: 20.4 },
+    { href: "/hse-kpis", label: t.landing.navKpis, left: 63.7, width: 8.4 },
+    { href: "/contact", label: t.landing.navContact, left: 74.8, width: 6.5 },
+    { href: "/login", label: t.landing.ctaLogin, left: 84.1, width: 6.5 },
+    { href: "/signup", label: t.landing.ctaSignup, left: 93.4, width: 6.5 },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50 px-3 py-4 sm:px-6 sm:py-8">
-      {/* Hero card: a clean white panel over a soft multi-color gradient
-          canvas — no photo/video background. Nav is plain text links;
-          Home/About/KPI's/Contact are placeholders for now (see
-          components/PublicComingSoon.tsx), Sign In/Sign Up keep working
-          exactly as before. */}
-      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-cardHover">
-        <div className="pointer-events-none absolute -start-24 -top-24 h-64 w-64 rounded-full bg-indigo-200/50 blur-3xl" />
-        <div className="pointer-events-none absolute -end-24 -top-16 h-64 w-64 rounded-full bg-emerald-200/50 blur-3xl" />
-        <div className="pointer-events-none absolute -start-16 bottom-0 h-56 w-56 rounded-full bg-amber-200/40 blur-3xl" />
+    <div className="min-h-screen bg-app-base px-3 py-4 sm:px-6 sm:py-8">
+      {/* Hero: the reference graphic supplied by the client, used as-is
+          (heading, illustration, and printed nav row all baked into the
+          image) — see /public/brand/landing-hero.jpg. A matching set of
+          real, invisible links sits on top of the printed nav row
+          (heroNavHotspots above) so "Sign In"/"Sign Up" keep routing to
+          /login and /signup exactly as before, and Home/About/KPI's/
+          Contact route to their (placeholder-for-now) pages. The wrapper
+          locks the image's own aspect ratio so those percentage-based
+          hotspots stay lined up with the printed words at any width. */}
+      <div className="relative mx-auto max-w-6xl">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/landing-hero.jpg"
+          alt={t.landing.heroTagline}
+          className="w-full rounded-[2rem] shadow-cardHover"
+          style={{ aspectRatio: "2514 / 1664" }}
+        />
 
-        <div className="relative flex flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-10">
-          <Link href="/">
-            <Logo size={32} />
-          </Link>
-          <nav className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-brand-black">
-            {navLinks.map((link, i) => (
-              <span key={link.href} className="flex items-center gap-x-3">
-                {i > 0 && <span className="text-brand-gray">-</span>}
-                <Link href={link.href} className="transition hover:text-brand-orange">
-                  {link.label}
-                </Link>
-              </span>
-            ))}
-            <span className="text-brand-gray">-</span>
-            <Link href="/login" className="transition hover:text-brand-orange">
-              {t.landing.ctaLogin}
-            </Link>
-            <span className="text-brand-gray">-</span>
-            <Link href="/signup" className="transition hover:text-brand-orange">
-              {t.landing.ctaSignup}
-            </Link>
-          </nav>
-        </div>
-
-        <div className="relative grid gap-10 px-6 pb-16 pt-6 sm:px-10 lg:grid-cols-2 lg:items-center lg:gap-6 lg:pb-20">
-          <div>
-            <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
-              {t.landing.heroTagline.split(" ").map((word) => (
-                <span key={word} className="block">
-                  {word}
-                </span>
-              ))}
-            </h1>
-            <p className="mt-6 max-w-md text-base text-brand-gray">{t.landing.heroSubtitle}</p>
-          </div>
-
-          <HseHeroIllustration />
-        </div>
+        <nav aria-label="Primary" className="absolute inset-0">
+          {heroNavHotspots.map((hotspot) => (
+            <Link
+              key={hotspot.href}
+              href={hotspot.href}
+              aria-label={hotspot.label}
+              title={hotspot.label}
+              className="absolute"
+              style={{
+                left: `${hotspot.left}%`,
+                width: `${hotspot.width}%`,
+                top: "6%",
+                height: "5%",
+              }}
+            />
+          ))}
+        </nav>
       </div>
 
       {/* Feature highlights */}
