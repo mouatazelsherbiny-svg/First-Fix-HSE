@@ -78,8 +78,9 @@ body {
    subtleties. The gradient layer beneath the image is a flat,
    semi-transparent dark wash so text/cards stay readable — keep it
    moderate (~40%) so the photo is still clearly visible, not just a hint
-   of it. LOGIN-PAGE EXCEPTION: the login page paints its own full-screen
-   photo inline and isn't affected by this. This body-level image is only
+   of it. The login page no longer opts out of this — it now shares the
+   light hero + card look used app-wide (see components/LandingHero.tsx)
+   instead of its own full-screen photo. This body-level image is only
    ever seen behind the protected app pages, since only those show the
    translucent/backdrop-blurred cards, sidebar, and topbar that let it
    show through. */
@@ -107,7 +108,9 @@ body.app-bg-image {
 
 /* Borderless, on-image field style: thin translucent border, near-transparent
    fill, white text — used where inputs float directly over a photo with no
-   card container behind them. LOGIN-PAGE-ONLY — do not repurpose elsewhere. */
+   card container behind them. Used on /signup and /reset-password, which
+   still keep their own full-screen photo background — do not repurpose
+   elsewhere. */
 .input-field-glass {
   @apply w-full rounded-xl border-[1.5px] border-white/70 bg-white/10 px-4 py-2.5 text-sm text-white outline-none backdrop-blur-[2px] transition placeholder:text-white/70 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30 [text-shadow:0_1px_2px_rgb(0_0_0_/_0.45)];
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ClipboardList,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import LandingHero from "@/components/LandingHero";
 
 export default function RootPage() {
   const { user, isLoading } = useAuth();
@@ -57,58 +57,13 @@ function LandingPage() {
     { key: "hseTeam", icon: Network, label: t.nav.hseTeam },
   ];
 
-  // Percentage bounding boxes for each nav word baked into
-  // /public/brand/landing-hero.jpg, measured against the source image
-  // (2514x1664) so they stay aligned at any container width as long as
-  // the wrapper below keeps the same aspect ratio. Each entry renders as
-  // an invisible, real <Link> directly on top of the printed word.
-  const heroNavHotspots: { href: string; label: string; left: number; width: number }[] = [
-    { href: "/", label: t.landing.navHome, left: 34.0, width: 5.6 },
-    { href: "/about", label: t.landing.navAbout, left: 40.5, width: 20.4 },
-    { href: "/hse-kpis", label: t.landing.navKpis, left: 63.7, width: 8.4 },
-    { href: "/contact", label: t.landing.navContact, left: 74.8, width: 6.5 },
-    { href: "/login", label: t.landing.ctaLogin, left: 84.1, width: 6.5 },
-    { href: "/signup", label: t.landing.ctaSignup, left: 93.4, width: 6.5 },
-  ];
-
   return (
     <div className="min-h-screen bg-app-base px-3 py-4 sm:px-6 sm:py-8">
       {/* Hero: the reference graphic supplied by the client, used as-is
           (heading, illustration, and printed nav row all baked into the
-          image) — see /public/brand/landing-hero.jpg. A matching set of
-          real, invisible links sits on top of the printed nav row
-          (heroNavHotspots above) so "Sign In"/"Sign Up" keep routing to
-          /login and /signup exactly as before, and Home/About/KPI's/
-          Contact route to their (placeholder-for-now) pages. The wrapper
-          locks the image's own aspect ratio so those percentage-based
-          hotspots stay lined up with the printed words at any width. */}
-      <div className="relative mx-auto max-w-6xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/landing-hero.jpg"
-          alt={t.landing.heroTagline}
-          className="w-full rounded-[2rem] shadow-cardHover"
-          style={{ aspectRatio: "2514 / 1664" }}
-        />
-
-        <nav aria-label="Primary" className="absolute inset-0">
-          {heroNavHotspots.map((hotspot) => (
-            <Link
-              key={hotspot.href}
-              href={hotspot.href}
-              aria-label={hotspot.label}
-              title={hotspot.label}
-              className="absolute"
-              style={{
-                left: `${hotspot.left}%`,
-                width: `${hotspot.width}%`,
-                top: "6%",
-                height: "5%",
-              }}
-            />
-          ))}
-        </nav>
-      </div>
+          image), shared with /login via components/LandingHero — see
+          that file for the hotspot overlay details. */}
+      <LandingHero />
 
       {/* Feature highlights */}
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-8">

@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import LanguageToggle from "@/components/LanguageToggle";
+import LandingHero from "@/components/LandingHero";
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth();
@@ -66,34 +67,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="relative min-h-screen w-full bg-[#1F2226] bg-cover bg-bottom bg-no-repeat"
-      style={{ backgroundImage: 'url("/brand/login-bg.png?v=2")' }}
-    >
+    <div className="min-h-screen bg-app-base px-3 py-4 sm:px-6 sm:py-8">
       {/* Pinned to the true top-right screen corner via physical `right`/
           `top` (not the logical `end-*` utilities), so it stays put on the
-          right no matter the page's text direction (English or Arabic). */}
+          right no matter the page's text direction (English or Arabic).
+          The login page has no Topbar (that only wraps signed-in pages),
+          so it keeps its own language toggle. */}
       <div className="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
-        <LanguageToggle className="bg-white/85 backdrop-blur-sm" />
+        <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
-      {/* Fields float directly on the photo — no card container. Pinned to
-          the right side of the screen (physical `right`, not logical) and
-          the lower third, well clear of the logo/headline on the left. */}
-      <div className="absolute right-4 bottom-[20vh] z-10 w-[calc(100%-2rem)] max-w-sm sm:right-10 sm:bottom-[22vh] md:right-16 lg:right-24">
-        <div className="max-sm:rounded-2xl max-sm:bg-black/30 max-sm:p-5 max-sm:backdrop-blur-sm">
+      {/* Hero: the same reference graphic + clickable nav overlay used on
+          the public landing page ("/"), shared via components/LandingHero
+          so both stay in sync. */}
+      <LandingHero />
+
+      {/* Sign-in card, light-themed to match the rest of the app now that
+          this page no longer floats over a dark full-screen photo. */}
+      <div className="mx-auto max-w-sm px-4 py-10 sm:py-14">
+        <div className="card">
           {mode === "login" ? (
             <>
-              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
-                {t.login.title}
-              </h1>
-              <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-                {t.login.subtitle}
-              </p>
+              <h1 className="text-xl font-bold text-brand-black">{t.login.title}</h1>
+              <p className="mt-1 text-sm text-brand-gray">{t.login.subtitle}</p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>
-                  <label htmlFor="email" className="label-field-glass">
+                  <label htmlFor="email" className="label-field">
                     {t.login.email}
                   </label>
                   <input
@@ -103,13 +103,13 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-field-glass">
+                  <label htmlFor="password" className="label-field">
                     {t.login.password}
                   </label>
                   <input
@@ -119,66 +119,58 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.login.passwordPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="current-password"
                   />
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
                     {error}
                   </p>
                 )}
 
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+                  <label className="flex items-center gap-2 text-brand-grayDark">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-white/70 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
+                      className="h-4 w-4 rounded border-brand-border text-brand-orange focus:ring-brand-orange/40"
                     />
                     {t.login.rememberMe}
                   </label>
                   <button
                     type="button"
                     onClick={() => setMode("forgot")}
-                    className="font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)] hover:text-white hover:underline"
+                    className="font-medium text-brand-orange hover:underline"
                   >
                     {t.login.forgot}
                   </button>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary w-full"
-                >
+                <button type="submit" disabled={submitting} className="btn-primary w-full">
                   {submitting ? t.login.submitting : t.login.submit}
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+              <p className="mt-4 text-center text-sm text-brand-gray">
                 {t.login.noAccount}{" "}
-                <Link href="/signup" className="font-semibold text-white underline hover:no-underline">
+                <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-6 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+              <p className="mt-6 text-center text-xs font-medium text-brand-gray">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
-                {t.login.forgotTitle}
-              </h1>
-              <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-                {t.login.forgotSubtitle}
-              </p>
+              <h1 className="text-xl font-bold text-brand-black">{t.login.forgotTitle}</h1>
+              <p className="mt-1 text-sm text-brand-gray">{t.login.forgotSubtitle}</p>
 
               <form onSubmit={handleForgotSubmit} className="mt-6 space-y-4">
                 <div>
-                  <label htmlFor="forgot-email" className="label-field-glass">
+                  <label htmlFor="forgot-email" className="label-field">
                     {t.login.email}
                   </label>
                   <input
@@ -188,34 +180,30 @@ export default function LoginPage() {
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="email"
                   />
                 </div>
 
                 {forgotStatus === "success" && (
-                  <p className="rounded-lg bg-green-600/90 px-3 py-2 text-xs font-medium text-white shadow">
+                  <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
                     {t.login.forgotSuccess}
                   </p>
                 )}
                 {forgotStatus === "error" && (
-                  <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
                     {t.login.forgotError}
                   </p>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={forgotSubmitting}
-                  className="btn-primary w-full"
-                >
+                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full">
                   {forgotSubmitting ? t.login.forgotSubmitting : t.login.forgotSubmit}
                 </button>
 
                 <button
                   type="button"
                   onClick={backToLogin}
-                  className="w-full text-center text-sm font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)] hover:text-white hover:underline"
+                  className="w-full text-center text-sm font-medium text-brand-gray hover:text-brand-black hover:underline"
                 >
                   {t.login.backToLogin}
                 </button>
