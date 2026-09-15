@@ -61,10 +61,10 @@ export default function SignupPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card shadow-cardHover">
+        <div className="card !p-4 shadow-cardHover">
           {success ? (
             <div className="text-center">
-              <h1 className="text-xl font-bold text-brand-black">{t.signup.successTitle}</h1>
+              <h1 className="text-lg font-bold text-brand-black">{t.signup.successTitle}</h1>
               <p className="mt-3 text-sm text-brand-gray">{t.signup.successMessage}</p>
               <Link
                 href="/login"
@@ -75,10 +75,10 @@ export default function SignupPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-brand-black">{t.signup.title}</h1>
+              <h1 className="text-lg font-bold text-brand-black">{t.signup.title}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.signup.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
                 <div>
                   <label htmlFor="fullName" className="label-field">
                     {t.signup.fullName}
@@ -95,7 +95,7 @@ export default function SignupPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
                     <label htmlFor="employeeCode" className="label-field">
                       {t.signup.employeeCode}
@@ -195,7 +195,7 @@ export default function SignupPage() {
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-brand-gray">
+              <p className="mt-3 text-center text-sm text-brand-gray">
                 {t.signup.haveAccount}{" "}
                 <Link href="/login" className="font-semibold text-brand-orange hover:underline">
                   {t.signup.loginLink}

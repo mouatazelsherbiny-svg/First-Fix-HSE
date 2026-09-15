@@ -79,13 +79,13 @@ export default function LoginPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card shadow-cardHover">
+        <div className="card !p-4 shadow-cardHover">
           {mode === "login" ? (
             <>
-              <h1 className="text-xl font-bold text-brand-black">{t.login.title}</h1>
+              <h1 className="text-lg font-bold text-brand-black">{t.login.title}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.login.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
                 <div>
                   <label htmlFor="email" className="label-field">
                     {t.login.email}
@@ -146,23 +146,23 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-brand-gray">
+              <p className="mt-3 text-center text-sm text-brand-gray">
                 {t.login.noAccount}{" "}
                 <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-6 text-center text-xs font-medium text-brand-gray">
+              <p className="mt-3 text-center text-xs font-medium text-brand-gray">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-brand-black">{t.login.forgotTitle}</h1>
+              <h1 className="text-lg font-bold text-brand-black">{t.login.forgotTitle}</h1>
               <p className="mt-1 text-sm text-brand-gray">{t.login.forgotSubtitle}</p>
 
-              <form onSubmit={handleForgotSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleForgotSubmit} className="mt-3 space-y-2.5">
                 <div>
                   <label htmlFor="forgot-email" className="label-field">
                     {t.login.email}
