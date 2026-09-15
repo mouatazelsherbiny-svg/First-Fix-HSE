@@ -79,7 +79,7 @@ export default function LoginPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !bg-white/95 shadow-cardHover">
+        <div className="card shadow-cardHover">
           {mode === "login" ? (
             <>
               <h1 className="text-xl font-bold text-brand-black">{t.login.title}</h1>

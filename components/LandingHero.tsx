@@ -25,18 +25,21 @@ export default function LandingHero({ children }: LandingHeroProps) {
   ];
 
   return (
-    <div className="flex w-full justify-center px-3 pt-3 sm:px-6 sm:pt-6">
-      {/* Capped at max-w-2xl (rather than stretched edge-to-edge) so the
-          image plus the card overlapping it below always fit inside a
-          normal browser window without needing to scroll — a wider hero
-          would push its own height (it keeps its 2514:1664 aspect ratio)
-          past the average screen. */}
-      <div className="relative w-full max-w-2xl">
+    <div className="flex min-h-[100svh] w-full items-center justify-center px-3 py-4">
+      {/* Sized by height (not width) so the image fills the available
+          screen space edge to edge vertically — `max-h-[92svh]` plus
+          `max-w-full` and the locked aspect ratio below make the browser
+          scale it up as large as fits the viewport in both directions at
+          once (the same technique as object-fit: contain), with no crop
+          and no scroll. The wrapper is `inline-block` so it hugs the
+          image's own rendered box exactly, keeping the percentage-based
+          overlays below aligned with it. */}
+      <div className="relative inline-block max-h-[92svh] max-w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/brand/landing-hero.jpg"
           alt={t.landing.heroTagline}
-          className="block w-full rounded-2xl shadow-cardHover"
+          className="block h-auto max-h-[92svh] w-auto max-w-full rounded-2xl shadow-cardHover"
           style={{ aspectRatio: "2514 / 1664" }}
         />
 
@@ -58,8 +61,12 @@ export default function LandingHero({ children }: LandingHeroProps) {
           ))}
         </nav>
 
+        {/* The card sits fully inside the image's own box (never past its
+            edges) and stays see-through (see .card's own translucent
+            white + blur) so the artwork underneath keeps showing through
+            it, rather than a solid block hiding it. */}
         {children && (
-          <div className="absolute left-1/2 top-[55%] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2">
+          <div className="absolute left-1/2 top-[54%] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2">
             {children}
           </div>
         )}

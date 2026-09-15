@@ -61,7 +61,7 @@ export default function SignupPage() {
           card overlaid on top of it, below the illustration — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !bg-white/95 shadow-cardHover">
+        <div className="card shadow-cardHover">
           {success ? (
             <div className="text-center">
               <h1 className="text-xl font-bold text-brand-black">{t.signup.successTitle}</h1>
