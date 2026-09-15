@@ -44,6 +44,7 @@ const WORD_TONE: Record<string, Tone> = {
   "Pending Approval": "amber",
   "Due Soon": "amber",
   Suspended: "amber",
+  "Under Repair": "amber",
 
   // Blue — informational / positive callout
   "Good Practice": "blue",
@@ -56,6 +57,10 @@ const WORD_TONE: Record<string, Tone> = {
   Other: "gray",
   "N/A": "gray",
   Cancelled: "gray",
+  Idle: "gray",
+  "Returned to Rental Co.": "gray",
+  Demobilized: "gray",
+  Disposed: "gray",
 };
 
 // Opt-in variant for a badge placed on a light surface (dark={false}).

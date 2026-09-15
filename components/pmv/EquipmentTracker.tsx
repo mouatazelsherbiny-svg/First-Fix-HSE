@@ -1,16 +1,28 @@
 "use client";
 
 /**
- * "Equipment Tracker" tab — a live, searchable/filterable card view of
- * every asset in pmv_asset_register (the same table PMV Log → Asset
- * Register edits), focused on "where is it and what state is it in right
- * now". Unlike the old read-only table, this view can also add a new
- * asset or open an existing one for editing — both go through the same
- * generic PmvLogFormModal the Asset Register tab itself uses, so there is
- * still exactly one form definition for this table.
+ * "Equipment Tracker" tab — styled as a self-contained mobile-app screen
+ * (fixed-height frame, dark header bar, internal scroll, floating "+"
+ * button) per the reference mockup, rather than a plain in-page card. It's
+ * a live, searchable/filterable view of every asset in pmv_asset_register
+ * (the same table PMV Log → Asset Register edits), focused on "where is it
+ * and what state is it in right now". It can also add a new asset or open
+ * an existing one for editing — both go through the same generic
+ * PmvLogFormModal the Asset Register tab itself uses, so there is still
+ * exactly one form definition for this table.
+ *
+ * Equipment photos: the app only has real product photos for 7 broad
+ * equipment-type buckets (public/pmv/*.png, used by the PMV dashboard),
+ * while this table's equipment_category is much more specific (16
+ * values). Collapsing all 16 down to those 7 photos would make most cards
+ * show the same generic "otherEquipment" picture, losing the "tell it
+ * apart at a glance" purpose of an image. A distinct icon per category
+ * (below) keeps every type visually unique instead; swap CATEGORY_ICONS
+ * for real per-category photos later if/when those become available.
  */
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   Search,
   Plus,
@@ -43,8 +55,8 @@ import PmvLogFormModal from "./PmvLogFormModal";
 const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "assetRegister")!;
 
 // One icon per equipment_category (see PMV_OPTIONS_EQUIPMENT_CATEGORY in
-// lib/pmvLogs.ts) so each card is recognizable at a glance, matching the
-// reference design. Falls back to a generic wrench for anything else.
+// lib/pmvLogs.ts) so each card is recognizable at a glance. Falls back to
+// a generic wrench for anything else.
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Generator: Zap,
   Compressor: Wind,
@@ -114,31 +126,33 @@ export default function EquipmentTracker() {
   ];
 
   return (
-    <div className="card overflow-hidden !p-0">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-6 pb-4">
-        <div>
-          <h2 className="text-lg font-bold text-brand-black">{t.pmv.tabTracker}</h2>
-          <p className="mt-1 text-sm text-brand-gray">{t.pmv.trackerNote}</p>
+    <div className="relative mx-auto flex h-[680px] w-full max-w-sm flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-cardHover">
+      {/* Header — deliberately its own dark navy treatment (not the app's
+          orange brand color) so this tab reads as a dedicated mobile-app
+          screen, per the reference design. */}
+      <div className="flex shrink-0 items-center gap-3 bg-[#102A4C] px-5 py-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15">
+          <Image src="/logo-icon.png" alt="" width={22} height={22} className="object-contain" />
         </div>
-        <button type="button" onClick={() => setModalRow(null)} className="btn-primary gap-2">
-          <Plus className="h-4 w-4" />
-          {t.pmv.trackerAddEquipment}
-        </button>
+        <h2 className="truncate text-base font-bold text-white">{t.pmv.tabTracker}</h2>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 px-6 pb-4">
-        <div className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-gray" />
+      {/* Scrollable body — search, filters, and the equipment list all
+          scroll together inside the fixed-height frame, like a real app
+          screen, instead of growing the surrounding page. */}
+      <div className="relative flex-1 overflow-y-auto px-4 pb-24 pt-4">
+        <div className="relative mb-3">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t.pmv.trackerSearch}
-            className="input-field ps-9"
+            className="w-full rounded-full border border-slate-200 bg-slate-50 ps-9 pe-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#2F6FED] focus:bg-white"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           {filterPills.map((pill) => (
             <button
               key={pill.key}
@@ -146,74 +160,86 @@ export default function EquipmentTracker() {
               onClick={() => setFilter(pill.key)}
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                 filter === pill.key
-                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                  : "border border-brand-border bg-brand-surface/60 text-brand-grayDark hover:bg-brand-grayLight/60"
+                  ? "bg-[#2F6FED] text-white shadow-sm"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
               }`}
             >
               {pill.label}
             </button>
           ))}
         </div>
-      </div>
 
-      {error && (
-        <div className="mx-6 mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-500">
+            {error}
+          </div>
+        )}
 
-      <div className="space-y-3 px-6 pb-6">
-        {isLoading ? (
-          <p className="py-8 text-center text-sm text-brand-gray">{t.common.loading}</p>
-        ) : filtered.length === 0 ? (
-          <p className="py-8 text-center text-sm text-brand-gray">{t.common.noDataYet}</p>
-        ) : (
-          filtered.map((row) => {
-            const Icon = CATEGORY_ICONS[row.equipment_category as string] ?? Wrench;
-            const dueSoon = isDueForService(row);
-            return (
-              <button
-                key={row.id}
-                type="button"
-                onClick={() => setModalRow(row)}
-                className="flex w-full items-center gap-4 rounded-2xl border border-brand-border bg-brand-surface/60 p-4 text-start shadow-sm transition hover:bg-brand-grayLight/50"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-orange/15 text-brand-orange">
-                  <Icon className="h-6 w-6" strokeWidth={1.75} />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-semibold text-brand-black">
-                      {row.equipment_name ?? "—"}
-                    </p>
-                    {dueSoon ? (
-                      <Badge value="Due Soon" label={t.pmv.trackerFilterDueService} />
-                    ) : row.current_status ? (
-                      <Badge value={row.current_status} />
-                    ) : null}
+        <div className="space-y-3">
+          {isLoading ? (
+            <p className="py-8 text-center text-sm text-slate-400">{t.common.loading}</p>
+          ) : filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-400">{t.common.noDataYet}</p>
+          ) : (
+            filtered.map((row) => {
+              const Icon = CATEGORY_ICONS[row.equipment_category as string] ?? Wrench;
+              const dueSoon = isDueForService(row);
+              return (
+                <button
+                  key={row.id}
+                  type="button"
+                  onClick={() => setModalRow(row)}
+                  className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 text-start shadow-sm transition hover:bg-slate-50"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600">
+                    <Icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
 
-                  <p className="mt-1 flex items-center gap-1.5 text-xs text-brand-gray">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">
-                      {row.asset_transfer_site || row.project_name || row.project_code || "—"}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-brand-gray">
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      {t.pmv.trackerLastInspection}: {formatDate(row.last_periodic_maintenance_date, locale)}
-                    </span>
-                  </p>
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {row.equipment_name ?? "—"}
+                      </p>
+                      {dueSoon ? (
+                        <Badge value="Due Soon" label={t.pmv.trackerFilterDueService} />
+                      ) : row.current_status ? (
+                        <Badge value={row.current_status} />
+                      ) : null}
+                    </div>
 
-                <ChevronRight className="h-5 w-5 shrink-0 text-brand-gray rtl:rotate-180" />
-              </button>
-            );
-          })
-        )}
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">
+                        {row.asset_transfer_site || row.project_name || row.project_code || "—"}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
+                      <Calendar className="h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        {t.pmv.trackerLastInspection}: {formatDate(row.last_periodic_maintenance_date, locale)}
+                      </span>
+                    </p>
+                  </div>
+
+                  <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 rtl:rotate-180" />
+                </button>
+              );
+            })
+          )}
+        </div>
       </div>
+
+      {/* Floating add button, anchored to this screen (not the browser
+          viewport) so it stays put while the body above scrolls. */}
+      <button
+        type="button"
+        onClick={() => setModalRow(null)}
+        aria-label={t.pmv.trackerAddEquipment}
+        title={t.pmv.trackerAddEquipment}
+        className="absolute bottom-5 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-brand-orange text-white shadow-cardHover transition hover:scale-105"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
 
       {modalRow !== undefined && (
         <PmvLogFormModal
