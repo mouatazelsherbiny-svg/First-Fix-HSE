@@ -75,19 +75,19 @@ export default function LoginPage() {
         <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
-      {/* Full-bleed hero (shared with "/" and /signup) with the sign-in
-          card overlaid on top of it, below the illustration — see
+      {/* Hero (shared with "/" and /signup) with a real, visible nav row
+          and the compact sign-in card below it — see
           components/LandingHero. */}
       <LandingHero>
-        <div className="card !p-3 shadow-cardHover">
+        <div className="card !p-3 shadow-cardHover text-sm">
           {mode === "login" ? (
             <>
-              <h1 className="text-base font-bold text-brand-black">{t.login.title}</h1>
-              <p className="mt-1 text-sm text-brand-gray">{t.login.subtitle}</p>
+              <h1 className="text-sm font-bold text-brand-black">{t.login.title}</h1>
+              <p className="mt-0.5 text-xs text-brand-gray">{t.login.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-2.5 space-y-2">
+              <form onSubmit={handleSubmit} className="mt-2 space-y-1.5">
                 <div>
-                  <label htmlFor="email" className="label-field">
+                  <label htmlFor="email" className="label-field !mb-0.5 !text-xs">
                     {t.login.email}
                   </label>
                   <input
@@ -97,13 +97,13 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field !py-2"
+                    className="input-field !py-1.5 !text-xs"
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-field">
+                  <label htmlFor="password" className="label-field !mb-0.5 !text-xs">
                     {t.login.password}
                   </label>
                   <input
@@ -113,7 +113,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.login.passwordPlaceholder}
-                    className="input-field !py-2"
+                    className="input-field !py-1.5 !text-xs"
                     autoComplete="current-password"
                   />
                 </div>
@@ -124,7 +124,7 @@ export default function LoginPage() {
                   </p>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                   <label className="flex items-center gap-2 text-brand-grayDark">
                     <input
                       type="checkbox"
@@ -141,30 +141,30 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn-primary w-full">
+                <button type="submit" disabled={submitting} className="btn-primary w-full !py-2 !text-xs">
                   {submitting ? t.login.submitting : t.login.submit}
                 </button>
               </form>
 
-              <p className="mt-3 text-center text-sm text-brand-gray">
+              <p className="mt-2 text-center text-xs text-brand-gray">
                 {t.login.noAccount}{" "}
                 <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-3 text-center text-xs font-medium text-brand-gray">
+              <p className="mt-2 text-center text-[10px] font-medium text-brand-gray">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-base font-bold text-brand-black">{t.login.forgotTitle}</h1>
-              <p className="mt-1 text-sm text-brand-gray">{t.login.forgotSubtitle}</p>
+              <h1 className="text-sm font-bold text-brand-black">{t.login.forgotTitle}</h1>
+              <p className="mt-0.5 text-xs text-brand-gray">{t.login.forgotSubtitle}</p>
 
-              <form onSubmit={handleForgotSubmit} className="mt-2.5 space-y-2">
+              <form onSubmit={handleForgotSubmit} className="mt-2 space-y-1.5">
                 <div>
-                  <label htmlFor="forgot-email" className="label-field">
+                  <label htmlFor="forgot-email" className="label-field !mb-0.5 !text-xs">
                     {t.login.email}
                   </label>
                   <input
@@ -174,7 +174,7 @@ export default function LoginPage() {
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field !py-2"
+                    className="input-field !py-1.5 !text-xs"
                     autoComplete="email"
                   />
                 </div>
@@ -190,7 +190,7 @@ export default function LoginPage() {
                   </p>
                 )}
 
-                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full">
+                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full !py-2 !text-xs">
                   {forgotSubmitting ? t.login.forgotSubmitting : t.login.forgotSubmit}
                 </button>
 

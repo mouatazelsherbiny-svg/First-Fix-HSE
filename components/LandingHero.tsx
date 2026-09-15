@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
-// Native pixel size of /public/brand/landing-hero.jpg (a plain
+// Native pixel size of /public/brand/landing-hero-v2.jpg (a plain
 // illustration — unlike the earlier reference graphic, it has no menu or
 // headline printed on it, so both are built as real HTML below instead
 // of invisible hotspots over baked-in image text).
@@ -50,7 +50,7 @@ export default function LandingHero({ children }: LandingHeroProps) {
       <div className="mx-auto mt-4 w-full max-w-xl px-3 sm:max-w-2xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/landing-hero.jpg"
+          src="/brand/landing-hero-v2.jpg"
           alt={t.landing.heroTagline}
           className="block w-full rounded-2xl shadow-cardHover"
           style={{ aspectRatio: `${IMAGE_WIDTH} / ${IMAGE_HEIGHT}` }}
@@ -60,7 +60,7 @@ export default function LandingHero({ children }: LandingHeroProps) {
       {/* The card sits below the artwork (rather than overlapping it) —
           this illustration has no built-in empty area to host a card the
           way the old reference graphic did. */}
-      {children && <div className="mx-auto mt-4 w-full max-w-xs px-3">{children}</div>}
+      {children && <div className="mx-auto mt-4 w-full max-w-[280px] px-3">{children}</div>}
     </div>
   );
 }
