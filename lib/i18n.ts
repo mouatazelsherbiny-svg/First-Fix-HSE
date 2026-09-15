@@ -666,6 +666,9 @@ export interface TranslationShape {
     observationsCount: string;
     lsrCount: string;
     trainingHoursCount: string;
+    advertisementLabel: string;
+    eventsTitle: string;
+    recentNewsTitle: string;
   };
   pmv: {
     title: string;
@@ -1464,6 +1467,9 @@ export const translations: Record<Locale, TranslationShape> = {
       observationsCount: "observations",
       lsrCount: "LSR violations",
       trainingHoursCount: "training hours",
+      advertisementLabel: "Advertisement",
+      eventsTitle: "Events",
+      recentNewsTitle: "Recent News",
     },
     pmv: {
       title: "PMV",
@@ -2260,6 +2266,9 @@ export const translations: Record<Locale, TranslationShape> = {
       observationsCount: "ملاحظة",
       lsrCount: "مخالفة LSR",
       trainingHoursCount: "ساعة تدريب",
+      advertisementLabel: "إعلان",
+      eventsTitle: "الفعاليات",
+      recentNewsTitle: "آخر الأخبار",
     },
     pmv: {
       title: "المركبات والمعدات",

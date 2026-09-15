@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Flame, HardHat, ShieldAlert, Trophy } from "lucide-react";
+import { CalendarDays, Flame, HardHat, MapPin, Newspaper, ShieldAlert, Trophy } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
@@ -132,9 +132,127 @@ function DashboardContent() {
                 noDataText={t.dashboard.noDataYet}
               />
             </div>
+
+            {/* Advertisement / Events / Recent News — same layout spot as
+                the reference (a Yahoo-style homepage): a full-width ad
+                banner, then an Events list and a Recent News feed side by
+                side. This is a placeholder layout with sample rows —
+                replace SAMPLE_EVENTS / SAMPLE_NEWS below with real content
+                (or wire them to a data source) whenever it's ready. */}
+            <div className="mt-8">
+              <AdvertisementBanner label={t.dashboard.advertisementLabel} />
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
+              <EventsWidget title={t.dashboard.eventsTitle} viewAllLabel={t.dashboard.viewAll} />
+              <RecentNewsWidget title={t.dashboard.recentNewsTitle} viewAllLabel={t.dashboard.viewAll} />
+            </div>
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ---- Sample placeholder content for the Events / Recent News widgets ----
+// Swap these arrays for real data (or fetch from a table) once it's ready;
+// the widgets below only care about this shape.
+const SAMPLE_EVENTS: { en: string; ar: string; dateEn: string; dateAr: string; locationEn: string; locationAr: string }[] = [
+  { en: "Monthly Safety Walk", ar: "جولة السلامة الشهرية", dateEn: "Sep 20, 2026", dateAr: "20 سبتمبر 2026", locationEn: "Zone B — Building 1", locationAr: "المنطقة B — مبنى 1" },
+  { en: "Fire Drill", ar: "تدريب إخلاء حريق", dateEn: "Sep 24, 2026", dateAr: "24 سبتمبر 2026", locationEn: "Site Office", locationAr: "مكتب الموقع" },
+  { en: "HSE Toolbox Briefing", ar: "إحاطة سلامة قصيرة", dateEn: "Sep 27, 2026", dateAr: "27 سبتمبر 2026", locationEn: "All Zones", locationAr: "كل المناطق" },
+  { en: "Quarterly Audit", ar: "التدقيق الربع سنوي", dateEn: "Oct 3, 2026", dateAr: "3 أكتوبر 2026", locationEn: "Zone A — Level 5", locationAr: "المنطقة A — الدور 5" },
+];
+
+const SAMPLE_NEWS: { categoryEn: string; categoryAr: string; titleEn: string; titleAr: string; sourceEn: string; sourceAr: string }[] = [
+  { categoryEn: "Safety", categoryAr: "السلامة", titleEn: "New PPE policy takes effect next month", titleAr: "سياسة معدات الوقاية الجديدة تسري الشهر القادم", sourceEn: "HSE Team", sourceAr: "فريق السلامة" },
+  { categoryEn: "Training", categoryAr: "التدريب", titleEn: "Toolbox talk attendance up 12% this quarter", titleAr: "حضور جلسات التوعية ارتفع 12% هذا الربع", sourceEn: "HSE Team", sourceAr: "فريق السلامة" },
+  { categoryEn: "Equipment", categoryAr: "المعدات", titleEn: "Two generators due for periodic maintenance", titleAr: "مولدان مستحقان للصيانة الدورية", sourceEn: "PMV Log", sourceAr: "سجل المركبات والمعدات" },
+  { categoryEn: "Announcement", categoryAr: "إعلان", titleEn: "Updated permit-to-work form now live", titleAr: "نموذج تصريح العمل المحدث أصبح متاحًا", sourceEn: "Admin", sourceAr: "الإدارة" },
+];
+
+function AdvertisementBanner({ label }: { label: string }) {
+  return (
+    <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-brand-border bg-brand-grayLight/40 text-sm font-semibold tracking-wide text-brand-gray">
+      {label}
+    </div>
+  );
+}
+
+function EventsWidget({ title, viewAllLabel }: { title: string; viewAllLabel: string }) {
+  const { locale } = useLanguage();
+  return (
+    <div className="card !p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-base font-bold text-brand-black">
+          <CalendarDays className="h-5 w-5 text-brand-orange" />
+          {title}
+        </h2>
+      </div>
+      <ul className="space-y-4">
+        {SAMPLE_EVENTS.map((ev, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-orange/15 text-xs font-bold text-brand-orange">
+              {i + 1}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-brand-black">
+                {locale === "ar" ? ev.ar : ev.en}
+              </p>
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-gray">
+                <span className="flex items-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {locale === "ar" ? ev.dateAr : ev.dateEn}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {locale === "ar" ? ev.locationAr : ev.locationEn}
+                </span>
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="mt-4 text-sm font-semibold text-brand-orange hover:underline">
+        {viewAllLabel}
+      </button>
+    </div>
+  );
+}
+
+function RecentNewsWidget({ title, viewAllLabel }: { title: string; viewAllLabel: string }) {
+  const { locale } = useLanguage();
+  return (
+    <div className="card !p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-base font-bold text-brand-black">
+          <Newspaper className="h-5 w-5 text-brand-orange" />
+          {title}
+        </h2>
+      </div>
+      <ul className="divide-y divide-brand-border">
+        {SAMPLE_NEWS.map((item, i) => (
+          <li key={i} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-grayLight/60 text-brand-gray">
+              <Newspaper className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-brand-orange">
+                {locale === "ar" ? item.categoryAr : item.categoryEn}
+              </p>
+              <p className="mt-0.5 truncate text-sm font-semibold text-brand-black">
+                {locale === "ar" ? item.titleAr : item.titleEn}
+              </p>
+              <p className="mt-0.5 text-xs text-brand-gray">
+                {locale === "ar" ? item.sourceAr : item.sourceEn}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="mt-4 text-sm font-semibold text-brand-orange hover:underline">
+        {viewAllLabel}
+      </button>
     </div>
   );
 }
