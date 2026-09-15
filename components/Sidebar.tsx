@@ -21,13 +21,11 @@ import {
   X,
   Users,
   Network,
-  MapPin,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
-import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { usePermits } from "@/context/PermitContext";
 import { useHsePassport } from "@/context/HsePassportContext";
@@ -47,9 +45,7 @@ interface NavGroupItem {
   /** One or more route prefixes that count as "inside this group" for the
    *  active/auto-expand highlight. An array is needed when a group's
    *  children don't share a single common prefix (e.g. HSE Passport's
-   *  Disciplinary + PPE children live under two different sub-paths, and
-   *  Training's two children — /toolbox-talk and /hse-passport/training —
-   *  don't share a prefix at all). */
+   *  Disciplinary + PPE children live under two different sub-paths). */
   basePath: string | string[];
   count?: number;
   children: { href: string; label: string }[];
@@ -167,7 +163,6 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const { observations } = useObservations();
-  const { records: toolboxRecords } = useToolboxTalk();
   const { records: kpiRecords } = useWeeklyKpi();
   const { permits } = usePermits();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
@@ -196,10 +191,10 @@ export default function Sidebar() {
   // Performance Report. Incidents/Injury/PMV/Summary Performance Report
   // are new placeholder pages (content to follow); Reports absorbs the
   // former "Monthly Checklists" group + "My Checklist" link as its Monthly
-  // tab; Training absorbs the former standalone Toolbox Talk link
-  // alongside HSE Passport's Training sub-page (both pages unchanged,
-  // just regrouped under one entry point); KPI's is the former Weekly KPI
-  // page, relabeled.
+  // tab; Training links straight to HSE Passport's Training sub-page (the
+  // standalone Toolbox Talk page was removed); KPI's is the former Weekly
+  // KPI page, relabeled. Project Map is no longer a standalone nav entry —
+  // it's reachable as a button from inside Permit to Work.
   const navEntries: NavEntry[] = [
     { kind: "link", href: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
     {
@@ -240,15 +235,11 @@ export default function Sidebar() {
       ],
     },
     {
-      kind: "group",
+      kind: "link",
+      href: "/hse-passport/training",
       label: t.nav.training,
       icon: GraduationCap,
-      basePath: ["/toolbox-talk", "/hse-passport/training"],
-      count: toolboxRecords.length + trainingRecords.length,
-      children: [
-        { href: "/toolbox-talk", label: t.nav.toolboxTalk },
-        { href: "/hse-passport/training", label: t.nav.training },
-      ],
+      count: trainingRecords.length,
     },
     {
       kind: "link",
@@ -257,7 +248,6 @@ export default function Sidebar() {
       icon: FileSpreadsheet,
     },
     { kind: "link", href: "/hse-team", label: t.nav.hseTeam, icon: Network },
-    { kind: "link", href: "/project-map", label: t.nav.projectMap, icon: MapPin },
   ];
 
   const closedTranslate = dir === "rtl" ? "translate-x-full" : "-translate-x-full";

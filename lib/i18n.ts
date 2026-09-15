@@ -96,7 +96,6 @@ export interface TranslationShape {
     fireChecklist: string;
     shChecklist: string;
     tcChecklist: string;
-    toolboxTalk: string;
     hsePassport: string;
     disciplinaryAction: string;
     ppe: string;
@@ -246,6 +245,7 @@ export interface TranslationShape {
     };
     view: string;
     edit: string;
+    cancel: string;
     search: string;
   };
   detail: {
@@ -255,15 +255,15 @@ export interface TranslationShape {
     save: string;
     saved: string;
     reportedOn: string;
+    cancelBtn: string;
+    cancelConfirmTitle: string;
+    cancelConfirmMessage: string;
+    cancelConfirmConfirm: string;
+    cancelling: string;
+    cancelError: string;
   };
   lang: {
     switchTo: string;
-  };
-  appearance: {
-    openLabel: string;
-    title: string;
-    colorTheme: string;
-    morphismStyle: string;
   };
   reports: {
     subtitle: string;
@@ -893,7 +893,6 @@ export const translations: Record<Locale, TranslationShape> = {
       fireChecklist: "Fire Assessment Checklist",
       shChecklist: "Health & Safety Checklist",
       tcChecklist: "T&C and Energization Checklist",
-      toolboxTalk: "Toolbox Talk",
       hsePassport: "HSE Passport",
       disciplinaryAction: "Disciplinary Action",
       ppe: "PPE",
@@ -1043,6 +1042,7 @@ export const translations: Record<Locale, TranslationShape> = {
       },
       view: "View",
       edit: "Edit",
+      cancel: "Cancel",
       search: "Search by report number, project...",
     },
     detail: {
@@ -1052,15 +1052,16 @@ export const translations: Record<Locale, TranslationShape> = {
       save: "Save Changes",
       saved: "Changes saved successfully!",
       reportedOn: "Reported on",
+      cancelBtn: "Cancel Observation",
+      cancelConfirmTitle: "Cancel this observation?",
+      cancelConfirmMessage:
+        "This will mark the observation as Cancelled. It will not be deleted and will still appear in the list.",
+      cancelConfirmConfirm: "Yes, Cancel It",
+      cancelling: "Cancelling...",
+      cancelError: "Failed to cancel the observation. Please try again.",
     },
     lang: {
       switchTo: "العربية",
-    },
-    appearance: {
-      openLabel: "Appearance settings",
-      title: "Appearance",
-      colorTheme: "Color Theme",
-      morphismStyle: "Card Style",
     },
     reports: {
       subtitle: "Daily, weekly, and monthly HSE reporting in one place.",
@@ -1688,7 +1689,6 @@ export const translations: Record<Locale, TranslationShape> = {
       fireChecklist: "قائمة فحص السلامة من الحريق",
       shChecklist: "قائمة الصحة والسلامة المهنية",
       tcChecklist: "قائمة فحص التشغيل والطاقة (T&C)",
-      toolboxTalk: "توعية العمل (Toolbox Talk)",
       hsePassport: "جواز السلامة (HSE Passport)",
       disciplinaryAction: "الإجراءات التأديبية",
       ppe: "معدات الوقاية الشخصية",
@@ -1838,6 +1838,7 @@ export const translations: Record<Locale, TranslationShape> = {
       },
       view: "عرض",
       edit: "تعديل",
+      cancel: "إلغاء",
       search: "ابحث برقم التقرير أو المشروع...",
     },
     detail: {
@@ -1847,15 +1848,16 @@ export const translations: Record<Locale, TranslationShape> = {
       save: "حفظ التغييرات",
       saved: "تم حفظ التغييرات بنجاح!",
       reportedOn: "تاريخ الإبلاغ",
+      cancelBtn: "إلغاء الملاحظة",
+      cancelConfirmTitle: "هل تريد إلغاء هذه الملاحظة؟",
+      cancelConfirmMessage:
+        "سيتم تغيير حالة الملاحظة إلى \"ملغاة\". لن يتم حذفها وستظل تظهر في القائمة.",
+      cancelConfirmConfirm: "نعم، قم بالإلغاء",
+      cancelling: "جاري الإلغاء...",
+      cancelError: "تعذر إلغاء الملاحظة. حاول مرة أخرى.",
     },
     lang: {
       switchTo: "English",
-    },
-    appearance: {
-      openLabel: "إعدادات المظهر",
-      title: "المظهر",
-      colorTheme: "لون الثيم",
-      morphismStyle: "نمط الكروت",
     },
     reports: {
       subtitle: "تقارير السلامة اليومية والأسبوعية والشهرية في مكان واحد.",

@@ -1,4 +1,4 @@
-export type ObservationStatus = "Open" | "In Progress" | "Closed" | "Overdue";
+export type ObservationStatus = "Open" | "In Progress" | "Closed" | "Overdue" | "Cancelled";
 
 export interface Observation {
   id: string;

@@ -76,7 +76,7 @@ function mapRow(row: any): Incident {
 }
 
 // Same shape as the other data providers (ObservationsContext,
-// ToolboxTalkContext, ...): an unfiltered select on mount, with pages
+// WeeklyKpiContext, ...): an unfiltered select on mount, with pages
 // filtering by project client-side as needed. Writes (submitFicc /
 // markIirSubmitted) power the FICC/IIR workflow (app/ficc/page.tsx);
 // everything else here remains read-only, same as before.

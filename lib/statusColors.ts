@@ -55,6 +55,7 @@ const WORD_TONE: Record<string, Tone> = {
   Pending: "gray",
   Other: "gray",
   "N/A": "gray",
+  Cancelled: "gray",
 };
 
 // Opt-in variant for a badge placed on a light surface (dark={false}).

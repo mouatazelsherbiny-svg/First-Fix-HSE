@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
+import type { Observation } from "@/types/observation";
 
 export default function MyObservationsPage() {
   return (
@@ -20,9 +22,26 @@ const PAGE_SIZE = 100;
 
 function ObservationsList() {
   const { t, locale } = useLanguage();
-  const { observations, isLoading } = useObservations();
+  const { observations, isLoading, updateObservation } = useObservations();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [cancelTarget, setCancelTarget] = useState<Observation | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
+
+  const handleCancelObservation = async () => {
+    if (!cancelTarget) return;
+    setIsCancelling(true);
+    setCancelError("");
+    try {
+      await updateObservation(cancelTarget.id, { status: "Cancelled" });
+      setCancelTarget(null);
+    } catch {
+      setCancelError(t.detail.cancelError);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -188,6 +207,15 @@ function ObservationsList() {
                       >
                         {t.list.edit}
                       </Link>
+                      {o.status !== "Cancelled" && (
+                        <button
+                          type="button"
+                          onClick={() => setCancelTarget(o)}
+                          className="font-medium text-brand-gray hover:text-red-500 hover:underline"
+                        >
+                          {t.list.cancel}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -222,6 +250,22 @@ function ObservationsList() {
             </div>
           )}
         </div>
+      )}
+
+      {cancelTarget && (
+        <ConfirmDialog
+          title={t.detail.cancelConfirmTitle}
+          message={t.detail.cancelConfirmMessage}
+          confirmLabel={isCancelling ? t.detail.cancelling : t.detail.cancelConfirmConfirm}
+          cancelLabel={t.common.close}
+          isBusy={isCancelling}
+          error={cancelError}
+          onConfirm={handleCancelObservation}
+          onClose={() => {
+            setCancelError("");
+            setCancelTarget(null);
+          }}
+        />
       )}
     </div>
   );

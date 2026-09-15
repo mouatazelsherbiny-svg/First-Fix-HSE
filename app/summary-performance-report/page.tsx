@@ -5,13 +5,11 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { useObservations } from "@/context/ObservationsContext";
-import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
-const normalizeName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
 export default function SummaryPerformanceReportPage() {
   return (
@@ -25,7 +23,6 @@ function SummaryPerformanceReport() {
   const { t } = useLanguage();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
   const { observations } = useObservations();
-  const { records: toolboxRecords } = useToolboxTalk();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [query, setQuery] = useState("");
@@ -79,10 +76,6 @@ function SummaryPerformanceReport() {
     const observationsInspected = observations.filter(
       (o) => o.inspectedBy === selected.employeeId
     );
-    const normalizedName = normalizeName(selected.name);
-    const toolboxInductions = toolboxRecords.filter(
-      (r) => normalizeName(r.inductedBy) === normalizedName
-    );
     return {
       disciplinaryCount: disciplinary.length,
       ppeCount: ppe.length,
@@ -90,9 +83,8 @@ function SummaryPerformanceReport() {
       trainingHours,
       lsrCount: lsr.length,
       observationsCount: observationsInspected.length,
-      toolboxCount: toolboxInductions.length,
     };
-  }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations, toolboxRecords]);
+  }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations]);
 
   const openEdit = () => {
     if (!selected) return;
@@ -363,7 +355,6 @@ function SummaryPerformanceReport() {
               <StatCard label={t.summaryReport.observationsInspected} value={stats.observationsCount} />
               <StatCard label={t.summaryReport.lsrViolations} value={stats.lsrCount} />
               <StatCard label={t.summaryReport.disciplinaryTotal} value={stats.disciplinaryCount} />
-              <StatCard label={t.summaryReport.toolboxInductions} value={stats.toolboxCount} />
               <StatCard label={t.summaryReport.ppeTotal} value={stats.ppeCount} />
               <StatCard label={t.summaryReport.trainingTotal} value={stats.trainingCount} />
               <StatCard label={t.summaryReport.trainingHoursTotal} value={stats.trainingHours} />

@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useThemeSettings } from "@/context/ThemeSettingsContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import ThemeCustomizer from "./ThemeCustomizer";
 import ScrollReveal from "./ScrollReveal";
 
 export default function ProtectedRoute({
@@ -24,11 +23,12 @@ export default function ProtectedRoute({
     }
   }, [isLoading, user, router]);
 
-  // The glass/solid "morphism" style (see globals.css and ThemeCustomizer)
-  // is only ever applied while an authenticated app page is mounted, so
-  // this in-app appearance setting never touches the public login/signup
-  // screens' own glass design. Re-applies whenever the user changes it in
-  // the customizer panel.
+  // The glass/solid "morphism" style (see globals.css and
+  // ThemeSettingsContext) is only ever applied while an authenticated app
+  // page is mounted, so it never touches the public login/signup screens'
+  // own glass design. There's currently no UI to change it (the appearance
+  // customizer panel was removed), so this applies whatever the stored
+  // default/last-picked value is.
   useEffect(() => {
     document.documentElement.setAttribute("data-morphism", morphism);
     return () => {
@@ -47,7 +47,6 @@ export default function ProtectedRoute({
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <ThemeCustomizer />
       {/* pt-14 clears the mobile top bar; lg:ps-64 clears the fixed
           sidebar's width once it's always-visible from `lg` up. */}
       <main className="min-h-screen pt-14 lg:ps-64 lg:pt-0">

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
@@ -41,6 +42,10 @@ function PermitList() {
           <p className="mt-1 text-sm text-brand-gray">{t.ptw.listSubtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link href="/project-map" className="btn-secondary gap-2">
+            <MapPin className="h-4 w-4" />
+            {t.nav.projectMap}
+          </Link>
           <Link href="/permit-to-work/my-permits" className="btn-secondary">
             {t.nav.myPermits}
           </Link>

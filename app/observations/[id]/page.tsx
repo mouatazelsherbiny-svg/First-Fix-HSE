@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 
@@ -18,9 +20,26 @@ export default function ObservationDetailPage() {
 function ObservationDetail() {
   const { t, locale } = useLanguage();
   const params = useParams<{ id: string }>();
-  const { getById } = useObservations();
+  const { getById, updateObservation } = useObservations();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   const observation = getById(params.id);
+
+  const handleCancelObservation = async () => {
+    if (!observation) return;
+    setIsCancelling(true);
+    setCancelError("");
+    try {
+      await updateObservation(observation.id, { status: "Cancelled" });
+      setCancelOpen(false);
+    } catch {
+      setCancelError(t.detail.cancelError);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   if (!observation) {
     return (
@@ -62,6 +81,11 @@ function ObservationDetail() {
           <Link href={`/observations/${observation.id}/edit`} className="btn-primary">
             {t.list.edit}
           </Link>
+          {observation.status !== "Cancelled" && (
+            <button type="button" onClick={() => setCancelOpen(true)} className="btn-secondary">
+              {t.detail.cancelBtn}
+            </button>
+          )}
         </div>
       </div>
 
@@ -147,6 +171,22 @@ function ObservationDetail() {
           </div>
         )}
       </div>
+
+      {cancelOpen && (
+        <ConfirmDialog
+          title={t.detail.cancelConfirmTitle}
+          message={t.detail.cancelConfirmMessage}
+          confirmLabel={isCancelling ? t.detail.cancelling : t.detail.cancelConfirmConfirm}
+          cancelLabel={t.common.close}
+          isBusy={isCancelling}
+          error={cancelError}
+          onConfirm={handleCancelObservation}
+          onClose={() => {
+            setCancelError("");
+            setCancelOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

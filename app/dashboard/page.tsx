@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { Award, Flame, GraduationCap, HardHat, ShieldAlert, Trophy } from "lucide-react";
+import { Flame, HardHat, ShieldAlert, Trophy } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
-import { useToolboxTalk } from "@/context/ToolboxTalkContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import { useAuth } from "@/context/AuthContext";
@@ -48,20 +47,15 @@ function DashboardContent() {
   const project = user?.project ?? "KSP";
 
   const { observations, isLoading: obsLoading } = useObservations();
-  const { records: toolboxRecords, isLoading: toolboxLoading } = useToolboxTalk();
   const { records: kpiRecords, isLoading: kpiLoading } = useWeeklyKpi();
   const { incidents, isLoading: incidentsLoading } = useIncidents();
 
-  const isLoading = obsLoading || toolboxLoading || kpiLoading || incidentsLoading;
+  const isLoading = obsLoading || kpiLoading || incidentsLoading;
 
   // ---- Company-wide totals (all projects combined) ----
   const totalSafeManhours = useMemo(
     () => kpiRecords.reduce((sum, r) => sum + (r.totalSafeWorkHours || 0), 0),
     [kpiRecords]
-  );
-  const totalTrainingHours = useMemo(
-    () => toolboxRecords.reduce((sum, r) => sum + (r.trainingManHours || 0), 0),
-    [toolboxRecords]
   );
   const lsrIncidents = useMemo(
     () => incidents.filter((i) => i.incidentCategory === LSR_VIOLATION_CATEGORY),
@@ -77,10 +71,6 @@ function DashboardContent() {
   const topLsrProject = useMemo(
     () => topGroup(lsrIncidents, (i) => i.projectName),
     [lsrIncidents]
-  );
-  const topTrainingProject = useMemo(
-    () => topGroup(toolboxRecords, (r) => r.projectName, (r) => r.trainingManHours || 0),
-    [toolboxRecords]
   );
 
   return (
@@ -103,20 +93,13 @@ function DashboardContent() {
             <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.dashboard.companyOverview}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2">
               <TotalCard
                 icon={<HardHat className="h-8 w-8" />}
                 tone="orange"
                 label={t.dashboard.totalSafeManhours}
                 value={totalSafeManhours}
                 unit={t.dashboard.manhoursUnit}
-              />
-              <TotalCard
-                icon={<GraduationCap className="h-8 w-8" />}
-                tone="blue"
-                label={t.dashboard.totalTrainingHours}
-                value={totalTrainingHours}
-                unit={t.dashboard.hoursUnit}
               />
               <TotalCard
                 icon={<ShieldAlert className="h-8 w-8" />}
@@ -131,7 +114,7 @@ function DashboardContent() {
             <h2 className="mb-4 mt-8 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.dashboard.topProjectsTitle}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2">
               <TopProjectCard
                 icon={<Trophy className="h-8 w-8" />}
                 tone="amber"
@@ -146,14 +129,6 @@ function DashboardContent() {
                 label={t.dashboard.mostLsrByProject}
                 top={topLsrProject}
                 unit={t.dashboard.lsrCount}
-                noDataText={t.dashboard.noDataYet}
-              />
-              <TopProjectCard
-                icon={<Award className="h-8 w-8" />}
-                tone="green"
-                label={t.dashboard.mostTrainingByProject}
-                top={topTrainingProject}
-                unit={t.dashboard.trainingHoursCount}
                 noDataText={t.dashboard.noDataYet}
               />
             </div>

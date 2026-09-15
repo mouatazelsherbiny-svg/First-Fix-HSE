@@ -4,7 +4,6 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeSettingsProvider } from "@/context/ThemeSettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ObservationsProvider } from "@/context/ObservationsContext";
-import { ToolboxTalkProvider } from "@/context/ToolboxTalkContext";
 import { HsePassportProvider } from "@/context/HsePassportContext";
 import { WeeklyKpiProvider } from "@/context/WeeklyKpiContext";
 import { IncidentsProvider } from "@/context/IncidentsContext";
@@ -46,19 +45,17 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <ObservationsProvider>
-                <ToolboxTalkProvider>
-                  <HsePassportProvider>
-                    <WeeklyKpiProvider>
-                      <IncidentsProvider>
-                        <EditRequestsProvider>
-                          <PermitProvider>
-                            <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
-                          </PermitProvider>
-                        </EditRequestsProvider>
-                      </IncidentsProvider>
-                    </WeeklyKpiProvider>
-                  </HsePassportProvider>
-                </ToolboxTalkProvider>
+                <HsePassportProvider>
+                  <WeeklyKpiProvider>
+                    <IncidentsProvider>
+                      <EditRequestsProvider>
+                        <PermitProvider>
+                          <ChecklistSubmissionProvider>{children}</ChecklistSubmissionProvider>
+                        </PermitProvider>
+                      </EditRequestsProvider>
+                    </IncidentsProvider>
+                  </WeeklyKpiProvider>
+                </HsePassportProvider>
               </ObservationsProvider>
             </AuthProvider>
           </LanguageProvider>

@@ -28,13 +28,17 @@ const VALID_THEMES: ColorThemeId[] = ["orange", "blue", "green", "red", "purple"
 const VALID_MORPHISMS: MorphismId[] = ["glass", "solid"];
 
 /** App-wide Appearance settings (color theme + glass/solid card style),
- *  picked from the ThemeCustomizer panel and persisted per device. The
- *  color theme is applied globally via a `data-theme` attribute on <html>
- *  (see globals.css) so it also affects the public login/signup screens.
- *  The morphism style is intentionally NOT applied here — ProtectedRoute
- *  applies the `data-morphism` attribute only while an authenticated app
- *  page is mounted, so this in-app setting never touches the login/signup
- *  glass design. */
+ *  persisted per device (defaults: "orange" / "glass"). There's no in-app
+ *  UI to change these anymore (the appearance customizer panel was
+ *  removed), but the settings themselves — and the CSS they drive — are
+ *  kept here so a value already stored on a device keeps applying, and so
+ *  a picker could be reintroduced later without touching the rest of the
+ *  app. The color theme is applied globally via a `data-theme` attribute
+ *  on <html> (see globals.css) so it also affects the public login/signup
+ *  screens. The morphism style is intentionally NOT applied here —
+ *  ProtectedRoute applies the `data-morphism` attribute only while an
+ *  authenticated app page is mounted, so this in-app setting never
+ *  touches the login/signup glass design. */
 export function ThemeSettingsProvider({ children }: { children: ReactNode }) {
   const [colorTheme, setColorTheme] = useState<ColorThemeId>("orange");
   const [morphism, setMorphism] = useState<MorphismId>("glass");
