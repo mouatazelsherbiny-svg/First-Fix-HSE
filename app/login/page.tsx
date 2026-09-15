@@ -15,8 +15,8 @@ import LandingHero from "@/components/LandingHero";
 // see the shared globals.css comment on .input-field-glass for the same
 // pattern used on /signup and /reset-password.
 const glassInput =
-  "w-full rounded-lg border border-white/30 bg-white/10 px-3 py-1 text-[10px] text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
-const glassLabel = "mb-0.5 block text-[10px] font-medium text-white/90";
+  "w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
+const glassLabel = "mb-1.5 block text-sm font-medium text-white/90";
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth();
@@ -85,16 +85,16 @@ export default function LoginPage() {
       </div>
 
       {/* Hero (shared with "/" and /signup) with a real, visible nav row
-          and the compact, see-through sign-in card in its lower-right
+          and the larger, see-through sign-in card in its lower-right
           corner — see components/LandingHero. */}
       <LandingHero>
-        <div className="rounded-2xl border border-white/20 bg-black/30 p-2.5 text-sm shadow-cardHover backdrop-blur-md">
+        <div className="rounded-2xl border border-white/15 bg-neutral-800/50 p-5 text-sm shadow-cardHover backdrop-blur-xl">
           {mode === "login" ? (
             <>
-              <h1 className="text-xs font-bold text-white">{t.login.title}</h1>
-              <p className="mt-0.5 text-[10px] text-white/80">{t.login.subtitle}</p>
+              <h1 className="text-xl font-bold text-white">{t.login.title}</h1>
+              <p className="mt-1 text-sm text-white/80">{t.login.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-1.5 space-y-1">
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 <div>
                   <label htmlFor="email" className={glassLabel}>
                     {t.login.email}
@@ -128,16 +128,16 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-[10px] font-medium text-white">
+                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-xs font-medium text-white">
                     {error}
                   </p>
                 )}
 
-                <div className="flex items-center justify-between text-[10px]">
+                <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-2 text-white/90">
                     <input
                       type="checkbox"
-                      className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
+                      className="h-4 w-4 rounded border-white/50 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
                     />
                     {t.login.rememberMe}
                   </label>
@@ -150,28 +150,28 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn-primary w-full !py-1.5 !text-[10px]">
+                <button type="submit" disabled={submitting} className="btn-primary w-full">
                   {submitting ? t.login.submitting : t.login.submit}
                 </button>
               </form>
 
-              <p className="mt-1.5 text-center text-[10px] text-white/80">
+              <p className="mt-4 text-center text-sm text-white/80">
                 {t.login.noAccount}{" "}
                 <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-1.5 text-center text-[9px] font-medium text-white/70">
+              <p className="mt-4 text-center text-xs font-medium text-white/70">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-xs font-bold text-white">{t.login.forgotTitle}</h1>
-              <p className="mt-0.5 text-[10px] text-white/80">{t.login.forgotSubtitle}</p>
+              <h1 className="text-xl font-bold text-white">{t.login.forgotTitle}</h1>
+              <p className="mt-1 text-sm text-white/80">{t.login.forgotSubtitle}</p>
 
-              <form onSubmit={handleForgotSubmit} className="mt-1.5 space-y-1">
+              <form onSubmit={handleForgotSubmit} className="mt-5 space-y-4">
                 <div>
                   <label htmlFor="forgot-email" className={glassLabel}>
                     {t.login.email}
@@ -189,24 +189,24 @@ export default function LoginPage() {
                 </div>
 
                 {forgotStatus === "success" && (
-                  <p className="rounded-lg bg-green-600/80 px-3 py-2 text-[10px] font-medium text-white">
+                  <p className="rounded-lg bg-green-600/80 px-3 py-2 text-xs font-medium text-white">
                     {t.login.forgotSuccess}
                   </p>
                 )}
                 {forgotStatus === "error" && (
-                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-[10px] font-medium text-white">
+                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-xs font-medium text-white">
                     {t.login.forgotError}
                   </p>
                 )}
 
-                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full !py-1.5 !text-[10px]">
+                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full">
                   {forgotSubmitting ? t.login.forgotSubmitting : t.login.forgotSubmit}
                 </button>
 
                 <button
                   type="button"
                   onClick={backToLogin}
-                  className="w-full text-center text-[10px] font-medium text-white/80 hover:text-white hover:underline"
+                  className="w-full text-center text-sm font-medium text-white/80 hover:text-white hover:underline"
                 >
                   {t.login.backToLogin}
                 </button>

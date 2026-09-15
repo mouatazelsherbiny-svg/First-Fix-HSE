@@ -14,8 +14,8 @@ import LandingHero from "@/components/LandingHero";
 // see the shared globals.css comment on .input-field-glass for the same
 // pattern used on /reset-password.
 const glassInput =
-  "w-full rounded-lg border border-white/30 bg-white/10 px-3 py-1 text-[10px] text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
-const glassLabel = "mb-0.5 block text-[10px] font-medium text-white/90";
+  "w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
+const glassLabel = "mb-1.5 block text-sm font-medium text-white/90";
 
 export default function SignupPage() {
   const { signUp } = useAuth();
@@ -67,27 +67,27 @@ export default function SignupPage() {
       </div>
 
       {/* Hero (shared with "/" and /login) with a real, visible nav row
-          and the compact, see-through sign-up card in its lower-right
+          and the larger, see-through sign-up card in its lower-right
           corner — see components/LandingHero. */}
       <LandingHero>
-        <div className="rounded-2xl border border-white/20 bg-black/30 p-2.5 text-sm shadow-cardHover backdrop-blur-md">
+        <div className="rounded-2xl border border-white/15 bg-neutral-800/50 p-5 text-sm shadow-cardHover backdrop-blur-xl">
           {success ? (
             <div className="text-center">
-              <h1 className="text-xs font-bold text-white">{t.signup.successTitle}</h1>
-              <p className="mt-2 text-[10px] text-white/80">{t.signup.successMessage}</p>
+              <h1 className="text-xl font-bold text-white">{t.signup.successTitle}</h1>
+              <p className="mt-1 text-sm text-white/80">{t.signup.successMessage}</p>
               <Link
                 href="/login"
-                className="btn-primary mt-3 inline-flex w-full items-center justify-center !py-1.5 !text-[10px]"
+                className="btn-primary mt-4 inline-flex w-full items-center justify-center"
               >
                 {t.signup.backToLogin}
               </Link>
             </div>
           ) : (
             <>
-              <h1 className="text-xs font-bold text-white">{t.signup.title}</h1>
-              <p className="mt-0.5 text-[10px] text-white/80">{t.signup.subtitle}</p>
+              <h1 className="text-xl font-bold text-white">{t.signup.title}</h1>
+              <p className="mt-1 text-sm text-white/80">{t.signup.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-1.5 space-y-1">
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 <div>
                   <label htmlFor="fullName" className={glassLabel}>
                     {t.signup.fullName}
@@ -104,7 +104,7 @@ export default function SignupPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-1">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="employeeCode" className={glassLabel}>
                       {t.signup.employeeCode}
@@ -194,17 +194,17 @@ export default function SignupPage() {
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-[10px] font-medium text-white">
+                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-xs font-medium text-white">
                     {error}
                   </p>
                 )}
 
-                <button type="submit" disabled={submitting} className="btn-primary w-full !py-1.5 !text-[10px]">
+                <button type="submit" disabled={submitting} className="btn-primary w-full">
                   {submitting ? t.signup.submitting : t.signup.submit}
                 </button>
               </form>
 
-              <p className="mt-1.5 text-center text-[10px] text-white/80">
+              <p className="mt-4 text-center text-sm text-white/80">
                 {t.signup.haveAccount}{" "}
                 <Link href="/login" className="font-semibold text-brand-orange hover:underline">
                   {t.signup.loginLink}

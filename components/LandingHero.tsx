@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface LandingHeroProps {
-  /** Sign-in / sign-up form, rendered small and see-through in the
-      lower-right corner of the hero image — used by /login and /signup.
-      Omitted on the plain landing page ("/"). */
+  /** Sign-in / sign-up form, rendered in the lower-right corner of the
+      hero image — used by /login and /signup. Omitted on the plain
+      landing page ("/"). */
   children?: ReactNode;
 }
 
@@ -19,9 +19,9 @@ export default function LandingHero({ children }: LandingHeroProps) {
       {/* Fills the whole screen: a plain (non-fixed) absolutely
           positioned cover-fit image behind everything. The nav and card
           are real HTML laid on top of it, so cropping this photo never
-          breaks anything. This particular photo is dark, so the nav text
+          breaks anything. This particular photo is dark, so the nav bar
           and card below are styled light/translucent to stay legible
-          over it (see the "glass" card in app/login and app/signup). */}
+          over it. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/brand/landing-hero-v3.jpg"
@@ -29,36 +29,40 @@ export default function LandingHero({ children }: LandingHeroProps) {
         className="absolute inset-0 -z-10 h-full w-full object-cover"
       />
 
-      {/* Real, visible nav row. Only Sign In / Sign Up are wired to real
-          routes for now — Home/About HSE Department/HSE KPI's/Contact
-          are placeholders for pages that aren't built yet, so they carry
-          no command. */}
-      <nav
-        aria-label="Primary"
-        className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 pt-4 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.6)] sm:text-sm"
-      >
-        <span>{t.landing.navHome}</span>
-        <span className="text-white/40">–</span>
-        <span>{t.landing.navAbout}</span>
-        <span className="text-white/40">–</span>
-        <span>{t.landing.navKpis}</span>
-        <span className="text-white/40">–</span>
-        <span>{t.landing.navContact}</span>
-        <span className="text-white/40">–</span>
-        <Link href="/login" className="font-semibold text-white hover:text-brand-orange">
-          {t.landing.ctaLogin}
-        </Link>
-        <span className="text-white/40">–</span>
-        <Link href="/signup" className="font-semibold text-white hover:text-brand-orange">
-          {t.landing.ctaSignup}
-        </Link>
-      </nav>
+      {/* Real, visible nav row, on its own translucent bar rather than
+          floating directly on the busy photo — keeps it readable no
+          matter what part of the artwork sits behind it. Only Sign In /
+          Sign Up are wired to real routes for now — Home/About HSE
+          Department/HSE KPI's/Contact are placeholders for pages that
+          aren't built yet, so they carry no command. */}
+      <div className="bg-black/35 backdrop-blur-sm">
+        <nav
+          aria-label="Primary"
+          className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 px-3 py-3 text-center text-sm font-medium text-white/90"
+        >
+          <span>{t.landing.navHome}</span>
+          <span className="text-white/40">–</span>
+          <span>{t.landing.navAbout}</span>
+          <span className="text-white/40">–</span>
+          <span>{t.landing.navKpis}</span>
+          <span className="text-white/40">–</span>
+          <span>{t.landing.navContact}</span>
+          <span className="text-white/40">–</span>
+          <Link href="/login" className="font-semibold text-white hover:text-brand-orange">
+            {t.landing.ctaLogin}
+          </Link>
+          <span className="text-white/40">–</span>
+          <Link href="/signup" className="font-semibold text-white hover:text-brand-orange">
+            {t.landing.ctaSignup}
+          </Link>
+        </nav>
+      </div>
 
-      {/* Small, see-through card pinned to the lower-right corner (under
-          the right-hand vest in this photo), sized to comfortably fit
-          without pushing the page past one screen. */}
+      {/* See-through card, pinned to the lower-right corner (under the
+          right-hand vest in this photo), sized to stay clear of the top
+          nav bar and comfortably fit without needing to scroll. */}
       {children && (
-        <div className="absolute bottom-5 right-4 w-full max-w-[220px] px-2 sm:bottom-10 sm:right-10 sm:px-0">
+        <div className="absolute bottom-5 right-4 w-[calc(100%-2rem)] max-w-sm sm:bottom-10 sm:right-10 sm:w-full">
           {children}
         </div>
       )}
