@@ -151,9 +151,16 @@ export interface TranslationShape {
     heroSubtitle: string;
     ctaLogin: string;
     ctaSignup: string;
+    navHome: string;
+    navAbout: string;
+    navKpis: string;
+    navContact: string;
     featuresTitle: string;
     featuresSubtitle: string;
     footerTagline: string;
+    comingSoon: string;
+    comingSoonSubtitle: string;
+    backHome: string;
   };
   userManagement: {
     title: string;
@@ -933,13 +940,20 @@ export const translations: Record<Locale, TranslationShape> = {
       permitsWord: "permits",
     },
     landing: {
-      heroTagline: "Safety Today Secures Tomorrow",
-      heroSubtitle: "Building a Safe Culture. Every Day. Everywhere.",
-      ctaLogin: "Log In",
-      ctaSignup: "Create an Account",
+      heroTagline: "Health Safety Environment",
+      heroSubtitle: "Protecting your workplace and planet. Our core values, for a safer today and greener tomorrow.",
+      ctaLogin: "Sign In",
+      ctaSignup: "Sign Up",
+      navHome: "Home",
+      navAbout: "About HSE Department",
+      navKpis: "HSE KPI's",
+      navContact: "Contact",
       featuresTitle: "Everything your HSE team needs, in one place",
       featuresSubtitle: "Observations, incidents, permits, training and performance — tracked and reported from a single system.",
       footerTagline: "Protect People. Protect Projects. Protect Future. — One Team. One Standard. Zero Harm.",
+      comingSoon: "Coming Soon",
+      comingSoonSubtitle: "This page is being built. Check back soon.",
+      backHome: "Back to Home",
     },
     userManagement: {
       title: "User Management",
@@ -1717,13 +1731,20 @@ export const translations: Record<Locale, TranslationShape> = {
       permitsWord: "تصريح",
     },
     landing: {
-      heroTagline: "السلامة اليوم تؤمّن الغد",
-      heroSubtitle: "نبني ثقافة سلامة آمنة. كل يوم. في كل مكان.",
+      heroTagline: "الصحة والسلامة والبيئة",
+      heroSubtitle: "بنحمي مكان عملك وكوكبنا. قيمنا الأساسية، من أجل حاضر أكثر أمانًا ومستقبل أكثر اخضرارًا.",
       ctaLogin: "تسجيل الدخول",
       ctaSignup: "إنشاء حساب",
+      navHome: "الرئيسية",
+      navAbout: "عن قسم السلامة والصحة",
+      navKpis: "مؤشرات الأداء",
+      navContact: "تواصل معنا",
       featuresTitle: "كل ما يحتاجه فريق السلامة لديك، في مكان واحد",
       featuresSubtitle: "الملاحظات، الحوادث، تصاريح العمل، التدريب والأداء — يتم تتبعها والإبلاغ عنها من نظام واحد.",
       footerTagline: "حماية الأفراد. حماية المشاريع. حماية المستقبل. — فريق واحد. معيار واحد. صفر إصابات.",
+      comingSoon: "قريبًا",
+      comingSoonSubtitle: "هذه الصفحة قيد الإنشاء. تابعنا قريبًا.",
+      backHome: "العودة للرئيسية",
     },
     userManagement: {
       title: "إدارة المستخدمين",
