@@ -712,6 +712,10 @@ export interface TranslationShape {
     tabTracker: string;
     trackerSearch: string;
     trackerAllStatuses: string;
+    trackerFilterActive: string;
+    trackerFilterDueService: string;
+    trackerLastInspection: string;
+    trackerAddEquipment: string;
     trackerNote: string;
     trackerColAssetId: string;
     trackerColEquipment: string;
@@ -1503,9 +1507,13 @@ export const translations: Record<Locale, TranslationShape> = {
       tabDashboard: "Dashboard",
       tabLog: "PMV Log",
       tabTracker: "Equipment Tracker",
-      trackerSearch: "Search by asset ID, equipment name, plate no...",
-      trackerAllStatuses: "All statuses",
-      trackerNote: "To add or edit an asset, use PMV Log → Asset Register.",
+      trackerSearch: "Search equipment...",
+      trackerAllStatuses: "All",
+      trackerFilterActive: "Active",
+      trackerFilterDueService: "Due for Service",
+      trackerLastInspection: "Last Inspection",
+      trackerAddEquipment: "Add Equipment",
+      trackerNote: "Tap an asset to view or edit it, or add a new one.",
       trackerColAssetId: "Asset ID",
       trackerColEquipment: "Equipment",
       trackerColCategory: "Category",
@@ -2294,9 +2302,13 @@ export const translations: Record<Locale, TranslationShape> = {
       tabDashboard: "لوحة المعلومات",
       tabLog: "سجل المركبات والمعدات",
       tabTracker: "متابعة المعدات",
-      trackerSearch: "ابحث برقم الأصل أو اسم المعدة أو رقم اللوحة...",
-      trackerAllStatuses: "كل الحالات",
-      trackerNote: "لإضافة أو تعديل أصل، استخدم سجل المركبات والمعدات ← سجل الأصول.",
+      trackerSearch: "ابحث عن معدة...",
+      trackerAllStatuses: "الكل",
+      trackerFilterActive: "نشط",
+      trackerFilterDueService: "بحاجة لصيانة",
+      trackerLastInspection: "آخر فحص",
+      trackerAddEquipment: "إضافة معدة",
+      trackerNote: "اضغط على أي معدة لعرضها أو تعديلها، أو أضف معدة جديدة.",
       trackerColAssetId: "رقم الأصل",
       trackerColEquipment: "المعدة",
       trackerColCategory: "الفئة",

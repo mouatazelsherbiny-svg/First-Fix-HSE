@@ -1,20 +1,80 @@
 "use client";
 
 /**
- * "Equipment Tracker" tab — a live, read-only snapshot of every asset in
- * pmv_asset_register (the same table PMV Log → Asset Register edits),
- * focused on "where is it and what state is it in right now" rather than
- * the Asset Register's full editable field set. Search + status filter
- * only; adding/editing an asset still happens in PMV Log → Asset Register
- * so there is exactly one place that writes this data.
+ * "Equipment Tracker" tab — a live, searchable/filterable card view of
+ * every asset in pmv_asset_register (the same table PMV Log → Asset
+ * Register edits), focused on "where is it and what state is it in right
+ * now". Unlike the old read-only table, this view can also add a new
+ * asset or open an existing one for editing — both go through the same
+ * generic PmvLogFormModal the Asset Register tab itself uses, so there is
+ * still exactly one form definition for this table.
  */
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import {
+  Search,
+  Plus,
+  ChevronRight,
+  MapPin,
+  Calendar,
+  type LucideIcon,
+  Forklift,
+  Construction,
+  Zap,
+  Wind,
+  Droplet,
+  Lightbulb,
+  Car,
+  Flame,
+  Container,
+  Grid3x3,
+  Scissors,
+  Truck,
+  Bus,
+  Van,
+  Wrench,
+} from "lucide-react";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
-import { usePmvLogRecords } from "@/lib/usePmvLogRecords";
-import { PMV_OPTIONS_ASSET_STATUS } from "@/lib/pmvLogs";
+import { usePmvLogRecords, type PmvLogRow } from "@/lib/usePmvLogRecords";
+import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
+import PmvLogFormModal from "./PmvLogFormModal";
+
+const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "assetRegister")!;
+
+// One icon per equipment_category (see PMV_OPTIONS_EQUIPMENT_CATEGORY in
+// lib/pmvLogs.ts) so each card is recognizable at a glance, matching the
+// reference design. Falls back to a generic wrench for anything else.
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  Generator: Zap,
+  Compressor: Wind,
+  Pump: Droplet,
+  Forklift: Forklift,
+  Excavator: Construction,
+  Lighting: Lightbulb,
+  Vehicle: Car,
+  "Welding Machine": Flame,
+  "Concrete Mixer": Container,
+  Crane: Construction,
+  Scaffolding: Grid3x3,
+  "Scissor Lift": Scissors,
+  Truck: Truck,
+  Bus: Bus,
+  Pickup: Truck,
+  "Mini Van": Van,
+};
+
+const DUE_SOON_DAYS = 14;
+
+function isDueForService(row: PmvLogRow) {
+  const raw = row.next_periodic_maintenance_due;
+  if (!raw) return false;
+  const due = new Date(String(raw));
+  if (Number.isNaN(due.getTime())) return false;
+  const threshold = new Date();
+  threshold.setDate(threshold.getDate() + DUE_SOON_DAYS);
+  return due.getTime() <= threshold.getTime();
+}
 
 function formatDate(raw: unknown, locale: string) {
   if (!raw) return "—";
@@ -29,27 +89,29 @@ function formatDate(raw: unknown, locale: string) {
 
 export default function EquipmentTracker() {
   const { t, locale } = useLanguage();
-  const { rows, isLoading, error } = usePmvLogRecords("pmv_asset_register");
+  const { rows, isLoading, error, addRow, updateRow } = usePmvLogRecords("pmv_asset_register");
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [filter, setFilter] = useState<"all" | "active" | "due">("all");
+  // undefined = modal closed, null = add new, a row = editing that row
+  const [modalRow, setModalRow] = useState<PmvLogRow | null | undefined>(undefined);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((row) => {
-      if (statusFilter && row.current_status !== statusFilter) return false;
+      if (filter === "active" && row.current_status !== "Active") return false;
+      if (filter === "due" && !isDueForService(row)) return false;
       if (!q) return true;
-      return [
-        row.asset_id,
-        row.equipment_name,
-        row.plate_serial_no,
-        row.project_code,
-        row.project_name,
-        row.operator_name,
-      ]
+      return [row.asset_id, row.equipment_name, row.plate_serial_no, row.project_code, row.project_name, row.operator_name]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [rows, query, statusFilter]);
+  }, [rows, query, filter]);
+
+  const filterPills: { key: "all" | "active" | "due"; label: string }[] = [
+    { key: "all", label: t.pmv.trackerAllStatuses },
+    { key: "active", label: t.pmv.trackerFilterActive },
+    { key: "due", label: t.pmv.trackerFilterDueService },
+  ];
 
   return (
     <div className="card overflow-hidden !p-0">
@@ -58,6 +120,10 @@ export default function EquipmentTracker() {
           <h2 className="text-lg font-bold text-brand-black">{t.pmv.tabTracker}</h2>
           <p className="mt-1 text-sm text-brand-gray">{t.pmv.trackerNote}</p>
         </div>
+        <button type="button" onClick={() => setModalRow(null)} className="btn-primary gap-2">
+          <Plus className="h-4 w-4" />
+          {t.pmv.trackerAddEquipment}
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 px-6 pb-4">
@@ -73,29 +139,18 @@ export default function EquipmentTracker() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setStatusFilter("")}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-              statusFilter === ""
-                ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                : "border border-brand-border bg-brand-surface/60 text-brand-grayDark hover:bg-brand-grayLight/60"
-            }`}
-          >
-            {t.pmv.trackerAllStatuses}
-          </button>
-          {PMV_OPTIONS_ASSET_STATUS.map((status) => (
+          {filterPills.map((pill) => (
             <button
-              key={status}
+              key={pill.key}
               type="button"
-              onClick={() => setStatusFilter(status)}
+              onClick={() => setFilter(pill.key)}
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                statusFilter === status
+                filter === pill.key
                   ? "bg-brand-orange text-brand-onAccent shadow-sm"
                   : "border border-brand-border bg-brand-surface/60 text-brand-grayDark hover:bg-brand-grayLight/60"
               }`}
             >
-              {status}
+              {pill.label}
             </button>
           ))}
         </div>
@@ -107,73 +162,73 @@ export default function EquipmentTracker() {
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-start text-sm">
-          <thead>
-            <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColAssetId}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColEquipment}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColCategory}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColSite}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColOperator}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColDeployment}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColUtilization}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColStatus}</th>
-              <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.pmv.trackerColNextMaintenance}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={9} className="px-6 py-8 text-center text-brand-gray">
-                  {t.common.loading}
-                </td>
-              </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-6 py-8 text-center text-brand-gray">
-                  {t.common.noDataYet}
-                </td>
-              </tr>
-            ) : (
-              filtered.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
-                >
-                  <td className="whitespace-nowrap px-4 py-3 font-semibold text-brand-black sm:px-6">
-                    {row.asset_id ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {row.equipment_name ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {row.equipment_category ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {row.asset_transfer_site || row.project_name || row.project_code || "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {row.operator_name ?? "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 sm:px-6">
-                    {row.deployment_status ? <Badge value={row.deployment_status} /> : "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 sm:px-6">
-                    {row.utilization_status ? <Badge value={row.utilization_status} /> : "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 sm:px-6">
-                    {row.current_status ? <Badge value={row.current_status} /> : "—"}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
-                    {formatDate(row.next_periodic_maintenance_due, locale)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="space-y-3 px-6 pb-6">
+        {isLoading ? (
+          <p className="py-8 text-center text-sm text-brand-gray">{t.common.loading}</p>
+        ) : filtered.length === 0 ? (
+          <p className="py-8 text-center text-sm text-brand-gray">{t.common.noDataYet}</p>
+        ) : (
+          filtered.map((row) => {
+            const Icon = CATEGORY_ICONS[row.equipment_category as string] ?? Wrench;
+            const dueSoon = isDueForService(row);
+            return (
+              <button
+                key={row.id}
+                type="button"
+                onClick={() => setModalRow(row)}
+                className="flex w-full items-center gap-4 rounded-2xl border border-brand-border bg-brand-surface/60 p-4 text-start shadow-sm transition hover:bg-brand-grayLight/50"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-orange/15 text-brand-orange">
+                  <Icon className="h-6 w-6" strokeWidth={1.75} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-semibold text-brand-black">
+                      {row.equipment_name ?? "—"}
+                    </p>
+                    {dueSoon ? (
+                      <Badge value="Due Soon" label={t.pmv.trackerFilterDueService} />
+                    ) : row.current_status ? (
+                      <Badge value={row.current_status} />
+                    ) : null}
+                  </div>
+
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-brand-gray">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">
+                      {row.asset_transfer_site || row.project_name || row.project_code || "—"}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-brand-gray">
+                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      {t.pmv.trackerLastInspection}: {formatDate(row.last_periodic_maintenance_date, locale)}
+                    </span>
+                  </p>
+                </div>
+
+                <ChevronRight className="h-5 w-5 shrink-0 text-brand-gray rtl:rotate-180" />
+              </button>
+            );
+          })
+        )}
       </div>
+
+      {modalRow !== undefined && (
+        <PmvLogFormModal
+          definition={ASSET_REGISTER_DEFINITION}
+          initial={modalRow}
+          onClose={() => setModalRow(undefined)}
+          onSubmit={async (values) => {
+            if (modalRow) {
+              await updateRow(modalRow.id, values);
+            } else {
+              await addRow(values);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
