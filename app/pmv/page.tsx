@@ -10,6 +10,7 @@ import {
   FileWarning,
   Forklift,
   LayoutDashboard,
+  MapPinned,
   Tractor,
   Truck,
   UserCheck,
@@ -24,6 +25,7 @@ import { getChartColor } from "@/lib/statusColors";
 import { usePmvDashboard } from "@/lib/usePmvDashboard";
 import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
 import PmvLogTable from "@/components/pmv/PmvLogTable";
+import EquipmentTracker from "@/components/pmv/EquipmentTracker";
 import type { PmvTypeBreakdown } from "@/types/pmv";
 
 export default function PmvPage() {
@@ -35,7 +37,7 @@ export default function PmvPage() {
 }
 
 type CardTone = "orange" | "amber" | "green" | "red";
-type PmvTab = "dashboard" | "log";
+type PmvTab = "dashboard" | "log" | "tracker";
 
 const TONE_CLASSES: Record<CardTone, string> = {
   orange: "bg-brand-orange/20 text-brand-orange",
@@ -112,7 +114,7 @@ function StatCard({
     <div className="card flex items-center gap-5 !p-7">
       <IconBadge icon={icon} tone={tone} />
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold uppercase tracking-wide text-brand-gray">
+        <p className="truncate text-sm font-semibold tracking-wide text-brand-gray">
           {label}
         </p>
         <p className="mt-2 text-4xl font-extrabold leading-none text-brand-black">
@@ -160,10 +162,28 @@ function PmvPageContent() {
               <ClipboardList className="h-4 w-4" />
               {t.pmv.tabLog}
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("tracker")}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                tab === "tracker"
+                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
+              }`}
+            >
+              <MapPinned className="h-4 w-4" />
+              {t.pmv.tabTracker}
+            </button>
           </div>
         </div>
 
-        {tab === "dashboard" ? <PmvDashboard /> : <PmvLogSection />}
+        {tab === "dashboard" ? (
+          <PmvDashboard />
+        ) : tab === "log" ? (
+          <PmvLogSection />
+        ) : (
+          <EquipmentTracker />
+        )}
       </div>
     </div>
   );
@@ -351,10 +371,11 @@ function PmvDashboard() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "var(--brand-surface, #1f2937)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--brand-surface, #ffffff)",
+                    border: "1px solid rgba(0,0,0,0.08)",
                     borderRadius: 12,
                     fontSize: 12,
+                    boxShadow: "0 6px 20px rgba(20,38,32,0.10)",
                   }}
                 />
               </PieChart>
@@ -367,7 +388,7 @@ function PmvDashboard() {
             </div>
           </div>
 
-          <h3 className="mt-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+          <h3 className="mt-4 text-sm font-bold tracking-wide text-brand-grayDark">
             {t.pmv.operatorsStatusTitle}
           </h3>
           <ul className="mt-3 space-y-2">
@@ -404,7 +425,7 @@ function PmvDashboard() {
           </div>
           <table className="mt-4 w-full text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colPmvId}</th>
                 <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colType}</th>
                 <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDescription}</th>
@@ -456,7 +477,7 @@ function PmvDashboard() {
           </div>
           <table className="mt-4 w-full text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start sm:px-6">{t.pmv.colDocumentType}</th>
                 <th className="px-4 py-3 text-end sm:px-6">{t.pmv.colCount}</th>
               </tr>

@@ -224,6 +224,7 @@ export interface TranslationShape {
     title: string;
     subtitle: string;
     newBtn: string;
+    goodPracticeBtn: string;
     empty: string;
     emptyCta: string;
     col: {
@@ -701,6 +702,19 @@ export interface TranslationShape {
     operatorsOverviewTitle: string;
     tabDashboard: string;
     tabLog: string;
+    tabTracker: string;
+    trackerSearch: string;
+    trackerAllStatuses: string;
+    trackerNote: string;
+    trackerColAssetId: string;
+    trackerColEquipment: string;
+    trackerColCategory: string;
+    trackerColSite: string;
+    trackerColOperator: string;
+    trackerColDeployment: string;
+    trackerColUtilization: string;
+    trackerColStatus: string;
+    trackerColNextMaintenance: string;
     projectName: string;
     projectPlaceholder: string;
   };
@@ -710,6 +724,10 @@ export interface TranslationShape {
     addFicc: string;
     addFiccTitle: string;
     iirButton: string;
+    attachIirHint: string;
+    uploadingFile: string;
+    viewFile: string;
+    fileTooLarge: string;
     iirFormTitle: string;
     viewIir: string;
     colReportNumber: string;
@@ -859,7 +877,7 @@ export const translations: Record<Locale, TranslationShape> = {
     nav: {
       dashboard: "Dashboard",
       newObservation: "New Observation",
-      myObservations: "My Observations",
+      myObservations: "Observations",
       envChecklist: "Environmental Checklist",
       fireChecklist: "Fire Assessment Checklist",
       shChecklist: "Health & Safety Checklist",
@@ -992,6 +1010,7 @@ export const translations: Record<Locale, TranslationShape> = {
       title: "My Observations",
       subtitle: "Observations you have submitted",
       newBtn: "+ New Observation",
+      goodPracticeBtn: "+ Good Practice",
       empty: "No observations yet. Create your first one!",
       emptyCta: "New Observation",
       col: {
@@ -1278,12 +1297,12 @@ export const translations: Record<Locale, TranslationShape> = {
       formTitle: "New Permit to Work",
       formSubtitle: "Request a new Permit to Work (PTW). Fields marked with * are required.",
       permitNumber: "Permit Number",
-      issuerBy: "Issuer By / ID",
+      issuerBy: "Issuer",
       receiver: "Receiver",
       receiverPlaceholder: "Name of the person receiving the permit",
-      hseValidator: "HSE Validator",
+      hseValidator: "HSE Reviewer",
       hseValidatorPlaceholder: "Name of the HSE validator",
-      supervisorForeman: "Supervisor / Foreman",
+      supervisorForeman: "Site Person In Charge",
       supervisorForemanPlaceholder: "Name of the supervisor / foreman",
       emergencyContactNumber: "Emergency Contact Number",
       emergencyContactNumberPlaceholder: "e.g. +966 5x xxx xxxx",
@@ -1321,7 +1340,7 @@ export const translations: Record<Locale, TranslationShape> = {
       isolationRequired: "Isolation / LOTO Certificate Required?",
       isolationYes: "Yes",
       isolationNo: "No",
-      precautions: "Precautions / Control Measures",
+      precautions: "Control Measures",
       precautionsPlaceholder: "Describe the control measures in place...",
       permitPhoto: "Site / Permit Photo",
       attachments: "Attachments (Risk Assessment, Isolation Certificate, etc.)",
@@ -1469,6 +1488,19 @@ export const translations: Record<Locale, TranslationShape> = {
       operatorsOverviewTitle: "Operators Overview",
       tabDashboard: "Dashboard",
       tabLog: "PMV Log",
+      tabTracker: "Equipment Tracker",
+      trackerSearch: "Search by asset ID, equipment name, plate no...",
+      trackerAllStatuses: "All statuses",
+      trackerNote: "To add or edit an asset, use PMV Log → Asset Register.",
+      trackerColAssetId: "Asset ID",
+      trackerColEquipment: "Equipment",
+      trackerColCategory: "Category",
+      trackerColSite: "Site / Project",
+      trackerColOperator: "Operator",
+      trackerColDeployment: "Deployment",
+      trackerColUtilization: "Utilization",
+      trackerColStatus: "Status",
+      trackerColNextMaintenance: "Next Maintenance",
       projectName: "Project Name",
       projectPlaceholder: "Select a project",
     },
@@ -1477,7 +1509,11 @@ export const translations: Record<Locale, TranslationShape> = {
       pageSubtitle: "First Incident/Contributing Cause reports and their linked Incident Investigation Reports (IIR)",
       addFicc: "Add FICC",
       addFiccTitle: "Add FICC",
-      iirButton: "IIR",
+      iirButton: "Attach IIR",
+      attachIirHint: "Upload the completed IIR document (PDF, Word, image — up to 10MB)",
+      uploadingFile: "Uploading...",
+      viewFile: "View file",
+      fileTooLarge: "File is too large — please attach a file under 10MB.",
       iirFormTitle: "Incident Investigation Report (IIR)",
       viewIir: "View IIR",
       colReportNumber: "Report #",
@@ -1625,7 +1661,7 @@ export const translations: Record<Locale, TranslationShape> = {
     nav: {
       dashboard: "الرئيسية",
       newObservation: "ملاحظة جديدة",
-      myObservations: "ملاحظاتي",
+      myObservations: "الملاحظات",
       envChecklist: "قائمة الفحص البيئي",
       fireChecklist: "قائمة فحص السلامة من الحريق",
       shChecklist: "قائمة الصحة والسلامة المهنية",
@@ -1758,6 +1794,7 @@ export const translations: Record<Locale, TranslationShape> = {
       title: "ملاحظاتي",
       subtitle: "الملاحظات التي قمت برفعها",
       newBtn: "+ ملاحظة جديدة",
+      goodPracticeBtn: "+ ممارسة جيدة",
       empty: "لا توجد ملاحظات بعد. أضف أول ملاحظة لك!",
       emptyCta: "ملاحظة جديدة",
       col: {
@@ -2044,12 +2081,12 @@ export const translations: Record<Locale, TranslationShape> = {
       formTitle: "طلب تصريح عمل جديد",
       formSubtitle: "قدّم طلب تصريح عمل (PTW) جديد. الحقول المميزة بـ * إلزامية.",
       permitNumber: "رقم التصريح",
-      issuerBy: "مُصدر التصريح / الرقم الوظيفي",
+      issuerBy: "المُصدر",
       receiver: "المستلم",
       receiverPlaceholder: "اسم الشخص المستلم للتصريح",
-      hseValidator: "مدقق السلامة (HSE Validator)",
+      hseValidator: "مراجع السلامة",
       hseValidatorPlaceholder: "اسم مدقق السلامة",
-      supervisorForeman: "المشرف / رئيس العمال",
+      supervisorForeman: "الشخص المسؤول في الموقع",
       supervisorForemanPlaceholder: "اسم المشرف / رئيس العمال",
       emergencyContactNumber: "رقم الطوارئ",
       emergencyContactNumberPlaceholder: "مثال: 05xxxxxxxx",
@@ -2087,7 +2124,7 @@ export const translations: Record<Locale, TranslationShape> = {
       isolationRequired: "هل يلزم شهادة عزل الطاقة (LOTO)؟",
       isolationYes: "نعم",
       isolationNo: "لا",
-      precautions: "الاحتياطات / إجراءات التحكم",
+      precautions: "إجراءات التحكم",
       precautionsPlaceholder: "اكتب إجراءات التحكم المتبعة...",
       permitPhoto: "صورة الموقع / التصريح",
       attachments: "المرفقات (تقييم المخاطر، شهادة العزل، إلخ)",
@@ -2235,6 +2272,19 @@ export const translations: Record<Locale, TranslationShape> = {
       operatorsOverviewTitle: "نظرة عامة على المشغلين",
       tabDashboard: "لوحة المعلومات",
       tabLog: "سجل المركبات والمعدات",
+      tabTracker: "متابعة المعدات",
+      trackerSearch: "ابحث برقم الأصل أو اسم المعدة أو رقم اللوحة...",
+      trackerAllStatuses: "كل الحالات",
+      trackerNote: "لإضافة أو تعديل أصل، استخدم سجل المركبات والمعدات ← سجل الأصول.",
+      trackerColAssetId: "رقم الأصل",
+      trackerColEquipment: "المعدة",
+      trackerColCategory: "الفئة",
+      trackerColSite: "الموقع / المشروع",
+      trackerColOperator: "المشغل",
+      trackerColDeployment: "حالة التشغيل",
+      trackerColUtilization: "حالة الاستخدام",
+      trackerColStatus: "الحالة",
+      trackerColNextMaintenance: "الصيانة القادمة",
       projectName: "اسم المشروع",
       projectPlaceholder: "اختر المشروع",
     },
@@ -2243,7 +2293,11 @@ export const translations: Record<Locale, TranslationShape> = {
       pageSubtitle: "تقارير أول بلاغ عن حادث (FICC) وتقارير التحقيق المرتبطة بها (IIR)",
       addFicc: "إضافة FICC",
       addFiccTitle: "إضافة FICC",
-      iirButton: "IIR",
+      iirButton: "إرفاق تقرير التحقيق",
+      attachIirHint: "ارفع تقرير التحقيق المكتمل (PDF أو Word أو صورة — بحد أقصى 10 ميجابايت)",
+      uploadingFile: "جارٍ الرفع...",
+      viewFile: "عرض الملف",
+      fileTooLarge: "حجم الملف كبير جدًا — من فضلك أرفق ملفًا أقل من 10 ميجابايت.",
       iirFormTitle: "تقرير التحقيق في الحادث (IIR)",
       viewIir: "عرض IIR",
       colReportNumber: "رقم التقرير",

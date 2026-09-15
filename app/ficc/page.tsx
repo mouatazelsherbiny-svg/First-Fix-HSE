@@ -1,14 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Paperclip, Plus } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import FiccFormModal from "@/components/ficc/FiccFormModal";
-import IirFormModal from "@/components/ficc/IirFormModal";
 import type { FiccInput, Incident } from "@/types/incident";
+
+// Base64 data URLs are this app's established convention for storing
+// uploaded files directly on the row (see observation_photos) — no
+// Supabase Storage bucket anywhere in this codebase. 10MB keeps a single
+// incidents row (and the client-side fetch of the whole table) reasonable.
+const MAX_IIR_FILE_BYTES = 10 * 1024 * 1024;
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function FiccPage() {
   return (
@@ -20,10 +34,39 @@ export default function FiccPage() {
 
 function FiccPageContent() {
   const { t, locale } = useLanguage();
-  const { incidents, isLoading, submitFicc } = useIncidents();
+  const { incidents, isLoading, submitFicc, attachIirFile } = useIncidents();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [iirIncident, setIirIncident] = useState<Incident | null>(null);
   const [query, setQuery] = useState("");
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingIncidentId, setPendingIncidentId] = useState<string | null>(null);
+
+  const handleAttachClick = (incident: Incident) => {
+    setUploadError("");
+    setPendingIncidentId(incident.id);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (file: File | null) => {
+    const incidentId = pendingIncidentId;
+    setPendingIncidentId(null);
+    if (!file || !incidentId) return;
+    if (file.size > MAX_IIR_FILE_BYTES) {
+      setUploadError(t.ficc.fileTooLarge);
+      return;
+    }
+    setUploadingId(incidentId);
+    setUploadError("");
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      await attachIirFile(incidentId, dataUrl, file.name);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Failed to attach file");
+    } finally {
+      setUploadingId(null);
+    }
+  };
 
   // Only rows created through this workflow (they always carry an
   // iir_due_at) — the 986 legacy-imported incidents/injuries have neither
@@ -75,13 +118,29 @@ function FiccPageContent() {
           placeholder={t.list.search}
           className="input-field max-w-sm"
         />
+        {uploadError && (
+          <p className="mt-2 text-xs font-semibold text-red-400">{uploadError}</p>
+        )}
       </div>
+
+      {/* One shared, hidden file input for every row's "Attach IIR"
+          button — handleAttachClick records which incident it's for. */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,image/*"
+        className="hidden"
+        onChange={(e) => {
+          handleFileSelected(e.target.files?.[0] ?? null);
+          e.target.value = "";
+        }}
+      />
 
       <div className="card overflow-hidden !p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colReportNumber}</th>
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colProject}</th>
                 <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">{t.ficc.colType}</th>
@@ -154,14 +213,30 @@ function FiccPageContent() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-end sm:px-6">
-                        {isOpen && (
+                        {isOpen ? (
                           <button
                             type="button"
-                            onClick={() => setIirIncident(incident)}
-                            className="inline-flex items-center rounded-lg bg-brand-orange px-3 py-1.5 text-xs font-bold text-brand-onAccent transition hover:opacity-90"
+                            onClick={() => handleAttachClick(incident)}
+                            disabled={uploadingId === incident.id}
+                            title={t.ficc.attachIirHint}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-orange px-3 py-1.5 text-xs font-bold text-brand-onAccent transition hover:opacity-90 disabled:opacity-60"
                           >
-                            {t.ficc.iirButton}
+                            <Paperclip className="h-3.5 w-3.5" />
+                            {uploadingId === incident.id
+                              ? t.ficc.uploadingFile
+                              : t.ficc.iirButton}
                           </button>
+                        ) : incident.iirFileUrl ? (
+                          <a
+                            href={incident.iirFileUrl}
+                            download={incident.iirFileName || undefined}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-orange hover:underline"
+                          >
+                            <Paperclip className="h-3.5 w-3.5" />
+                            {t.ficc.viewFile}
+                          </a>
+                        ) : (
+                          "—"
                         )}
                       </td>
                     </tr>
@@ -182,13 +257,6 @@ function FiccPageContent() {
         />
       )}
 
-      {iirIncident && (
-        <IirFormModal
-          incident={iirIncident}
-          onClose={() => setIirIncident(null)}
-          onSubmitted={() => setIirIncident(null)}
-        />
-      )}
     </div>
   );
 }

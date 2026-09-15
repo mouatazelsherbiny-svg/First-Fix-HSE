@@ -96,6 +96,9 @@ function ObservationsList() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={filtered.length === 0} />
+          <Link href="/observations/new?type=Good%20Practice" className="btn-secondary">
+            {t.list.goodPracticeBtn}
+          </Link>
           <Link href="/observations/new" className="btn-primary">
             {t.list.newBtn}
           </Link>
@@ -127,7 +130,7 @@ function ObservationsList() {
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[820px] text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.list.col.reportNumber}</th>
                 <th className="px-4 py-3 text-start">{t.list.col.project}</th>
                 <th className="px-4 py-3 text-start">{t.list.col.type}</th>

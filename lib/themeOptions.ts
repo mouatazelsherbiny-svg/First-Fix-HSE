@@ -20,7 +20,7 @@ interface MorphismOption {
 }
 
 export const COLOR_THEMES: ColorThemeOption[] = [
-  { id: "orange", swatch: "#E8590C", name: { en: "Safety Orange", ar: "برتقالي السلامة" } },
+  { id: "orange", swatch: "#F36F24", name: { en: "Safety Orange", ar: "برتقالي السلامة" } },
   { id: "blue", swatch: "#2563EB", name: { en: "Ocean Blue", ar: "أزرق المحيط" } },
   { id: "green", swatch: "#16A34A", name: { en: "Industrial Green", ar: "أخضر صناعي" } },
   { id: "red", swatch: "#DC2626", name: { en: "Crimson Red", ar: "أحمر قرمزي" } },

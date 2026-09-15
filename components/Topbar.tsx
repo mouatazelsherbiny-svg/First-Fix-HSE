@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
+import Avatar from "@/components/Avatar";
 import { useAuth } from "@/context/AuthContext";
 import { usePermits } from "@/context/PermitContext";
 import { useHsePassport } from "@/context/HsePassportContext";
@@ -11,9 +14,9 @@ import { useIncidents } from "@/context/IncidentsContext";
 import { buildNotifications } from "@/lib/notifications";
 
 const TONE_CLASSES: Record<"red" | "amber" | "blue", string> = {
-  red: "bg-red-500/10 text-red-400",
-  amber: "bg-amber-500/10 text-amber-400",
-  blue: "bg-blue-500/10 text-blue-400",
+  red: "bg-red-50 text-red-700",
+  amber: "bg-amber-50 text-amber-700",
+  blue: "bg-blue-50 text-blue-700",
 };
 
 /** Shared top bar rendered once, above every page's content (see
@@ -21,7 +24,8 @@ const TONE_CLASSES: Record<"red" | "amber" | "blue", string> = {
  *  notifications bell built from real, current data — never placeholders. */
 export default function Topbar() {
   const { t, locale } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const { permits } = usePermits();
   const { employees, ppeRecords, trainingRecords } = useHsePassport();
   const { submissions: checklistSubmissions } = useChecklistSubmissions();
@@ -73,6 +77,11 @@ export default function Topbar() {
     });
   }, [t, user, permits, employees, ppeRecords, trainingRecords, checklistSubmissions, incidents]);
 
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   const dateStr = now
     ? now.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
         weekday: "long",
@@ -104,7 +113,32 @@ export default function Topbar() {
         </p>
       </div>
 
-      <div className="relative shrink-0 self-end sm:self-auto" ref={panelRef}>
+      <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
+        <LanguageToggle />
+
+        {user && (
+          <div className="hidden items-center gap-2 sm:flex">
+            <Avatar name={user.name} src={user.avatarUrl} size={30} />
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-brand-gray">{t.nav.hello}</p>
+              <p className="max-w-[8rem] truncate text-xs font-semibold text-brand-black">
+                {user.name}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label={t.nav.logout}
+          title={t.nav.logout}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-grayLight text-brand-grayDark transition-colors hover:bg-red-500/10 hover:text-red-500"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
+
+        <div className="relative" ref={panelRef}>
         <button
           type="button"
           onClick={() => setShowNotifications((v) => !v)}
@@ -121,7 +155,7 @@ export default function Topbar() {
 
         {showNotifications && (
           <div className="absolute end-0 z-20 mt-2 w-72 rounded-xl border border-brand-border bg-brand-surface/80 p-3 shadow-cardHover backdrop-blur-xl">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+            <p className="mb-2 text-xs font-bold tracking-wide text-brand-grayDark">
               {t.topbar.notifications}
             </p>
             {notifications.length === 0 ? (
@@ -140,6 +174,7 @@ export default function Topbar() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

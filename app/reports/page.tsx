@@ -64,7 +64,7 @@ function ReportsContent() {
       {tab === "monthly" ? (
         <div className="space-y-5">
           <div>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-gray">
+            <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
               {t.reports.monthlyIntro}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

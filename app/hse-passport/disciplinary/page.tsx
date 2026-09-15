@@ -297,7 +297,7 @@ function DisciplinaryActionContent() {
                 className="rounded-2xl bg-black p-5 text-center shadow-card"
               >
                 <p className="text-3xl font-extrabold text-white">{counts[key]}</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/70">
+                <p className="mt-1 text-xs font-semibold tracking-wide text-white/70">
                   {label}
                 </p>
               </div>
@@ -306,7 +306,7 @@ function DisciplinaryActionContent() {
 
           {/* Life Saving Rules */}
           <div className="rounded-2xl bg-black p-5 shadow-card sm:p-6">
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-white">
+            <h3 className="mb-4 text-sm font-bold tracking-wide text-white">
               {t.hse.disciplinary.lifeSavingRulesTitle}
             </h3>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -328,7 +328,7 @@ function DisciplinaryActionContent() {
 
           {/* Bar chart */}
           <div className="card">
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h3 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.hse.disciplinary.chartTitle}
             </h3>
             <div className="flex h-52 items-end justify-between gap-3">
@@ -352,7 +352,7 @@ function DisciplinaryActionContent() {
             <div className="card overflow-x-auto !p-0">
               <table className="w-full min-w-[560px] text-start text-sm">
                 <thead>
-                  <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                  <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                     <th className="px-4 py-3 text-start sm:px-6">{t.hse.date}</th>
                     <th className="px-4 py-3 text-start sm:px-6">{t.hse.disciplinary.type}</th>
                     <th className="px-4 py-3 text-start sm:px-6">
@@ -441,7 +441,7 @@ function AddDisciplinaryForm({
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4">
-      <h3 className="text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+      <h3 className="text-sm font-bold tracking-wide text-brand-grayDark">
         {t.hse.disciplinary.addTitle}
       </h3>
       {error && (

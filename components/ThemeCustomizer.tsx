@@ -63,7 +63,7 @@ export default function ThemeCustomizer() {
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+              <p className="mb-3 text-xs font-bold tracking-wide text-brand-grayDark">
                 {t.appearance.colorTheme}
               </p>
               <div className="flex flex-wrap gap-3">
@@ -92,7 +92,7 @@ export default function ThemeCustomizer() {
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+              <p className="mb-3 text-xs font-bold tracking-wide text-brand-grayDark">
                 {t.appearance.morphismStyle}
               </p>
               <div className="grid grid-cols-2 gap-3">

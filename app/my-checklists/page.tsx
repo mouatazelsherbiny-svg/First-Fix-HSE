@@ -118,7 +118,7 @@ function MyChecklistList() {
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[1100px] text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.myChecklist.colType}</th>
                 <th className="px-4 py-3 text-start">{t.myChecklist.colInspectedBy}</th>
                 <th className="px-4 py-3 text-start">{t.myChecklist.colInspectionDate}</th>

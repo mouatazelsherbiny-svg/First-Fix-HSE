@@ -104,7 +104,7 @@ function TrainingContent() {
 
           {/* Total Performance */}
           <div className="card">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h3 className="mb-3 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.hse.training.totalPerformance}
             </h3>
             <div className="flex h-4 w-full overflow-hidden rounded-full bg-brand-grayLight">
@@ -136,7 +136,7 @@ function TrainingContent() {
             ].map(([label, value]) => (
               <div key={label as string} className="card text-center">
                 <p className="text-3xl font-extrabold text-brand-black">{value}</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <p className="mt-1 text-xs font-semibold tracking-wide text-brand-gray">
                   {label}
                 </p>
               </div>
@@ -145,13 +145,13 @@ function TrainingContent() {
 
           {/* Training History */}
           <div className="overflow-hidden rounded-2xl bg-brand-black shadow-card">
-            <h3 className="px-5 pt-5 text-sm font-bold uppercase tracking-wide text-white sm:px-6">
+            <h3 className="px-5 pt-5 text-sm font-bold tracking-wide text-white sm:px-6">
               {t.hse.training.historyTitle}
             </h3>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[480px] text-start text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-xs font-semibold uppercase tracking-wide text-white/60">
+                  <tr className="border-b border-white/10 text-xs font-semibold tracking-wide text-white/60">
                     <th className="px-5 py-2 text-start sm:px-6">{t.hse.training.courseName}</th>
                     <th className="px-5 py-2 text-start sm:px-6">{t.hse.date}</th>
                     <th className="px-5 py-2 text-start sm:px-6">{t.hse.training.status}</th>
@@ -192,7 +192,7 @@ function TrainingContent() {
 
           {/* Training Bending */}
           <div className="card">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h3 className="mb-3 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.hse.training.bendingTitle}
             </h3>
             <ul className="space-y-2">
@@ -265,7 +265,7 @@ function AddTrainingForm({
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4">
-      <h3 className="text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+      <h3 className="text-sm font-bold tracking-wide text-brand-grayDark">
         {t.hse.training.addTitle}
       </h3>
       {error && (

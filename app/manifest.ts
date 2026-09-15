@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "First Fix HSE — Health, Safety & Environment management",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#1F2226",
-    theme_color: "#E8590C",
+    background_color: "#F5F5F3",
+    theme_color: "#F36F24",
     orientation: "portrait-primary",
     icons: [
       {

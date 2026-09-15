@@ -69,7 +69,7 @@ function InjuryList() {
       ) : (
         <>
           <div className="card mb-6">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.injury.bodyMapTitle}
             </h2>
             {!hasBodyData ? (
@@ -99,7 +99,7 @@ function InjuryList() {
                           width: size,
                           height: size,
                           fontSize: 11,
-                          backgroundColor: `rgba(232, 89, 12, ${opacity})`,
+                          backgroundColor: `rgba(243, 111, 36, ${opacity})`,
                         }}
                       >
                         {count}
@@ -138,7 +138,7 @@ function InjuryList() {
           </div>
 
           <div className="card">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.injury.listTitle}
             </h2>
             {filtered.length === 0 ? (
@@ -147,7 +147,7 @@ function InjuryList() {
               <div className="overflow-x-auto">
                 <table className="w-full text-start text-sm">
                   <thead>
-                    <tr className="border-b border-brand-border text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                    <tr className="border-b border-brand-border text-xs font-semibold tracking-wide text-brand-gray">
                       <th className="px-3 py-3 text-start">{t.injury.colDate}</th>
                       <th className="px-3 py-3 text-start">{t.injury.colProject}</th>
                       <th className="px-3 py-3 text-start">{t.injury.colClassification}</th>

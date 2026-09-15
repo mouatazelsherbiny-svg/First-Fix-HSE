@@ -165,7 +165,7 @@ export default function ChecklistTemplate({
 
       {/* General information */}
       <div className="card mb-6">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+        <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
           {t.checklist.generalInfo}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -273,7 +273,7 @@ export default function ChecklistTemplate({
               </h3>
             </div>
 
-            <div className="hidden items-center gap-4 border-b border-brand-border px-6 pt-4 text-end text-[11px] font-semibold uppercase tracking-wide text-brand-gray sm:flex">
+            <div className="hidden items-center gap-4 border-b border-brand-border px-6 pt-4 text-end text-[11px] font-semibold tracking-wide text-brand-gray sm:flex">
               <span className="flex-1" />
               <span className="w-32">{t.checklist.possible}</span>
               <span className="w-32">{t.checklist.scored}</span>
@@ -293,7 +293,7 @@ export default function ChecklistTemplate({
                   </p>
                   <div className="flex gap-3 sm:contents">
                     <div className="w-full sm:w-32">
-                      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-brand-gray sm:hidden">
+                      <span className="mb-1 block text-[11px] font-semibold tracking-wide text-brand-gray sm:hidden">
                         {t.checklist.possible}
                       </span>
                       <select
@@ -314,7 +314,7 @@ export default function ChecklistTemplate({
                       </select>
                     </div>
                     <div className="w-full sm:w-32">
-                      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-brand-gray sm:hidden">
+                      <span className="mb-1 block text-[11px] font-semibold tracking-wide text-brand-gray sm:hidden">
                         {t.checklist.scored}
                       </span>
                       <select
@@ -340,12 +340,12 @@ export default function ChecklistTemplate({
             </div>
 
             <div className="flex flex-col items-start gap-3 border-t border-brand-border bg-brand-grayLight/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <span className="text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+              <span className="text-xs font-bold tracking-wide text-brand-grayDark">
                 {t.checklist.possiblePointsAwarded}
               </span>
               <div className="flex gap-3">
                 <div className="min-w-[84px] rounded-lg bg-blue-600 px-4 py-2 text-center text-white">
-                  <div className="text-[10px] font-medium uppercase tracking-wide opacity-80">
+                  <div className="text-[10px] font-medium tracking-wide opacity-80">
                     {t.checklist.possible}
                   </div>
                   <div className="text-lg font-bold leading-tight">
@@ -353,7 +353,7 @@ export default function ChecklistTemplate({
                   </div>
                 </div>
                 <div className="min-w-[84px] rounded-lg bg-blue-600 px-4 py-2 text-center text-white">
-                  <div className="text-[10px] font-medium uppercase tracking-wide opacity-80">
+                  <div className="text-[10px] font-medium tracking-wide opacity-80">
                     {t.checklist.scored}
                   </div>
                   <div className="text-lg font-bold leading-tight">
@@ -374,7 +374,7 @@ export default function ChecklistTemplate({
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[560px] text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start sm:px-6">
                   {t.checklist.section}
                 </th>

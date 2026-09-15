@@ -105,7 +105,7 @@ function WeeklyKpiList() {
         <div className="card overflow-x-auto !p-0">
           <table className="w-full text-start text-sm" style={{ minWidth: 220 * 2 + 130 * WEEKLY_KPI_NUMERIC_FIELDS.length }}>
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="sticky start-0 z-10 bg-brand-grayLight/50 px-4 py-3 text-start sm:px-6">
                   {t.weeklyKpi.colProject}
                 </th>

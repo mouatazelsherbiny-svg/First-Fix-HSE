@@ -62,7 +62,7 @@ function ProjectMapContent() {
           </div>
 
           <div className="card w-full shrink-0 !p-4 lg:w-72">
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+            <h2 className="mb-3 text-xs font-bold tracking-wide text-brand-grayDark">
               {t.projectMap.listTitle}
             </h2>
             <div className="max-h-[60vh] space-y-1 overflow-y-auto">

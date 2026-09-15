@@ -62,7 +62,7 @@ interface ChecklistExportData {
 // colors rather than following the app's brand tokens. Only TOTAL_SHADING
 // intentionally tracks the brand accent (currently safety orange).
 const HEADER_SHADING = { type: ShadingType.SOLID, color: "EDEEF0", fill: "EDEEF0" };
-const TOTAL_SHADING = { type: ShadingType.SOLID, color: "E8590C", fill: "E8590C" };
+const TOTAL_SHADING = { type: ShadingType.SOLID, color: "F36F24", fill: "F36F24" };
 
 function headerCell(text: string, width?: number): TableCell {
   return new TableCell({

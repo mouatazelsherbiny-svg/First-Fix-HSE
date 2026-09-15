@@ -132,7 +132,7 @@ function UserManagementView() {
       </div>
 
       <div className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-gray">
+        <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
           {t.userManagement.pendingSection}
           {pending.length > 0 && (
             <span className="ms-2 rounded-full bg-brand-orange/20 px-2 py-0.5 text-xs font-bold text-brand-orange">
@@ -153,7 +153,7 @@ function UserManagementView() {
           <div className="card overflow-x-auto !p-0">
             <table className="w-full min-w-[900px] text-start text-sm">
               <thead>
-                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                   <th className="px-4 py-3 text-start">{t.userManagement.colName}</th>
                   <th className="px-4 py-3 text-start">{t.userManagement.colEmail}</th>
                   <th className="px-4 py-3 text-start">{t.userManagement.colEmployeeCode}</th>
@@ -195,13 +195,13 @@ function UserManagementView() {
       </div>
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-gray">
+        <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
           {t.userManagement.allApprovedSection}
         </h2>
         <div className="card overflow-x-auto !p-0">
           <table className="w-full min-w-[900px] text-start text-sm">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+              <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.userManagement.colName}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmail}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmployeeCode}</th>
@@ -219,7 +219,7 @@ function UserManagementView() {
                   <td className="px-4 py-3 font-semibold text-brand-black">
                     {p.full_name || "—"}
                     {p.role === "admin" && (
-                      <span className="ms-2 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase text-brand-gold">
+                      <span className="ms-2 rounded-full bg-brand-gold/20 px-2 py-0.5 text-[10px] font-bold text-brand-gold">
                         Admin
                       </span>
                     )}

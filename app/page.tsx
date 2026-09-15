@@ -123,7 +123,7 @@ function LandingPage() {
 
       {/* Footer */}
       <div className="border-t border-brand-border bg-brand-black px-4 py-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/80">
+        <p className="text-xs font-semibold tracking-wide text-white/80">
           {t.landing.footerTagline}
         </p>
       </div>

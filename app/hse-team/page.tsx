@@ -134,7 +134,7 @@ function RegionGroup({ name, people }: { name: string; people: OrgPerson[] }) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div
-        className={`rounded bg-brand-orange px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-brand-onAccent ${
+        className={`rounded bg-brand-orange px-3 py-1.5 text-center text-xs font-bold tracking-wide text-brand-onAccent ${
           hasColumns ? "w-full" : "w-full max-w-[16.5rem]"
         }`}
       >

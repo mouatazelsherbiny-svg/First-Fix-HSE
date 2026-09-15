@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ImageUpload from "@/components/ImageUpload";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +19,9 @@ import { ObservationStatus } from "@/types/observation";
 export default function NewObservationPage() {
   return (
     <ProtectedRoute>
-      <NewObservationForm />
+      <Suspense fallback={null}>
+        <NewObservationForm />
+      </Suspense>
     </ProtectedRoute>
   );
 }
@@ -32,12 +34,24 @@ function NewObservationForm() {
 
   const inspectedBy = user ? `${user.name} (${user.employeeCode})` : "";
 
+  // Reached from the Observations list's dedicated "Good Practice" button
+  // (?type=Good%20Practice) as a shortcut that pre-fills the type,
+  // classification, and risk rating instead of leaving the user to pick
+  // all three by hand — the fields stay fully editable either way.
+  const searchParams = useSearchParams();
+  const presetType = searchParams.get("type") || "";
+  const isGoodPracticeShortcut = presetType === "Good Practice";
+
   const [projectName, setProjectName] = useState("");
-  const [observationType, setObservationType] = useState("");
+  const [observationType, setObservationType] = useState(presetType);
   const [observationTypeOther, setObservationTypeOther] = useState("");
   const [observationDetails, setObservationDetails] = useState("");
-  const [classification, setClassification] = useState("");
-  const [riskRating, setRiskRating] = useState("");
+  const [classification, setClassification] = useState(
+    isGoodPracticeShortcut ? "Good Practice" : ""
+  );
+  const [riskRating, setRiskRating] = useState(
+    isGoodPracticeShortcut ? "Good Practice" : ""
+  );
   const [observationPhotos, setObservationPhotos] = useState<string[]>([]);
   const [closeOutPhotos, setCloseOutPhotos] = useState<string[]>([]);
   const [closeOutDetails, setCloseOutDetails] = useState("");

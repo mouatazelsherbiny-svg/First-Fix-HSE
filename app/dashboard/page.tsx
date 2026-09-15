@@ -100,7 +100,7 @@ function DashboardContent() {
         ) : (
           <>
             {/* Company-wide totals */}
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.dashboard.companyOverview}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -128,7 +128,7 @@ function DashboardContent() {
             </div>
 
             {/* Top projects */}
-            <h2 className="mb-4 mt-8 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h2 className="mb-4 mt-8 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.dashboard.topProjectsTitle}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -202,7 +202,7 @@ function TotalCard({
     <div className="card flex items-center gap-5 !p-7">
       <IconBadge icon={icon} tone={tone} />
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold uppercase tracking-wide text-brand-gray">
+        <p className="truncate text-sm font-semibold tracking-wide text-brand-gray">
           {label}
         </p>
         <p className="mt-2 text-4xl font-extrabold leading-none text-brand-black">
@@ -233,7 +233,7 @@ function TopProjectCard({
     <div className="card flex items-center gap-5 !p-7">
       <IconBadge icon={icon} tone={tone} />
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold uppercase tracking-wide text-brand-gray">
+        <p className="truncate text-sm font-semibold tracking-wide text-brand-gray">
           {label}
         </p>
         {top ? (

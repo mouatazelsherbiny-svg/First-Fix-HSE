@@ -147,7 +147,7 @@ function ToolboxTalkDetail() {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="mb-1 text-xs font-medium uppercase tracking-wide text-brand-gray">
+      <dt className="mb-1 text-xs font-medium tracking-wide text-brand-gray">
         {label}
       </dt>
       <dd className="text-sm font-medium text-brand-black">{value}</dd>

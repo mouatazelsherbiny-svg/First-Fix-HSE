@@ -33,6 +33,13 @@ export interface Incident {
   /** Report number / incident number shared by the FICC row and its IIR
    *  detail row (see incident_number above) — the link the user asked for
    *  ("هيكون المميز بينهم رقم التقرير"). */
+
+  /** The completed IIR document, attached as a file instead of filled in
+   *  through the in-app form (see components/ficc/IirFileAttach.tsx).
+   *  Stored as a base64 data URL, same convention as observation photos —
+   *  no Supabase Storage bucket in this app. */
+  iirFileUrl: string | null;
+  iirFileName: string | null;
 }
 
 /** A FICC submission — the subset of Incident fields the "Add FICC" form

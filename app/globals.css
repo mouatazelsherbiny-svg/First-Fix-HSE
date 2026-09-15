@@ -7,27 +7,30 @@
   /* Single source of truth for the app's page canvas color. Applied once
      below on html/body, so every page inherits it automatically — no page
      or component should ever set its own background color/hex value.
-     (The Login page is the one deliberate exception: it paints a full-screen
-     photo background of its own instead of a flat color.)
-     Dark charcoal + safety-orange theme — a dark, low-glare canvas. */
-  --background-app: #1F2226;
+     (The Login/Signup pages are the deliberate exception: they paint a
+     full-screen photo/video background of their own instead of a flat
+     color.)
+     Light theme matching the "First Fix" logo — white canvas, gray + safety
+     orange as accents, dark text. Replaces the earlier dark-charcoal look. */
+  --background-app: #F5F5F3;
 
   /* ---- Brand color tokens (Appearance → Color theme) ----
      Every value is "R G B" (space-separated, no rgb() wrapper) so
      tailwind.config.ts can compose it as `rgb(var(--x) / <alpha-value>)`
      and keep supporting opacity modifiers like `bg-brand-surface/40`.
      Only the three accent tokens (orange / orangeDark / orangeLight)
-     change per theme below — the neutral charcoal/text/border tokens stay
-     identical across themes so the app's overall look stays cohesive. */
-  --brand-orange-rgb: 232 89 12; /* primary accent — buttons, active nav, focus rings, links */
-  --brand-orange-dark-rgb: 194 74 9; /* accent hover/darker shade */
-  --brand-orange-light-rgb: 58 36 22; /* accent tint — icon-chip bg, subtle highlight */
-  --brand-gray-rgb: 139 146 160; /* muted/tertiary text — placeholders, hints, meta text */
-  --brand-gray-dark-rgb: 199 203 209; /* secondary text — field labels, sub-text */
-  --brand-gray-light-rgb: 52 57 64; /* elevated/hover surface — chip/hover bg, table header bg */
-  --brand-black-rgb: 243 244 246; /* primary text — headings/body copy (near-white, not pure white) */
-  --brand-surface-rgb: 41 45 50; /* card/surface background */
-  --brand-border-rgb: 62 67 75; /* shared border color */
+     change per theme below — the neutral white/gray/text tokens stay
+     identical across themes so the app's overall look stays cohesive.
+     orange/orangeDark are sampled straight from the logo (#F36F24). */
+  --brand-orange-rgb: 243 111 36; /* primary accent — buttons, active nav, focus rings, links */
+  --brand-orange-dark-rgb: 210 87 22; /* accent hover/darker shade */
+  --brand-orange-light-rgb: 255 235 220; /* accent tint — icon-chip bg, subtle highlight */
+  --brand-gray-rgb: 156 163 175; /* muted/tertiary text — placeholders, hints, meta text */
+  --brand-gray-dark-rgb: 71 85 105; /* secondary text — field labels, sub-text */
+  --brand-gray-light-rgb: 243 244 246; /* elevated/hover surface — chip/hover bg, table header bg */
+  --brand-black-rgb: 17 24 39; /* primary text — headings/body copy (near-black, matches the logo wordmark) */
+  --brand-surface-rgb: 255 255 255; /* card/surface background — matches the logo's white background */
+  --brand-border-rgb: 229 231 235; /* shared border color */
   --brand-gold-rgb: 201 162 39; /* secondary accent — used sparingly, constant across themes */
   --brand-on-accent-rgb: 255 255 255; /* text/icon color on top of a solid accent fill */
 }
@@ -40,22 +43,22 @@
 :root[data-theme="blue"] {
   --brand-orange-rgb: 37 99 235;
   --brand-orange-dark-rgb: 29 78 216;
-  --brand-orange-light-rgb: 27 36 54;
+  --brand-orange-light-rgb: 219 234 254;
 }
 :root[data-theme="green"] {
   --brand-orange-rgb: 22 163 74;
   --brand-orange-dark-rgb: 21 128 61;
-  --brand-orange-light-rgb: 22 40 28;
+  --brand-orange-light-rgb: 220 252 231;
 }
 :root[data-theme="red"] {
   --brand-orange-rgb: 220 38 38;
   --brand-orange-dark-rgb: 185 28 28;
-  --brand-orange-light-rgb: 58 27 27;
+  --brand-orange-light-rgb: 254 226 226;
 }
 :root[data-theme="purple"] {
   --brand-orange-rgb: 124 58 237;
   --brand-orange-dark-rgb: 109 40 217;
-  --brand-orange-light-rgb: 39 28 58;
+  --brand-orange-light-rgb: 243 232 255;
 }
 
 html,
@@ -65,7 +68,7 @@ body {
   padding: 0;
   overflow-x: hidden;
   background-color: var(--background-app);
-  color: #F3F4F6;
+  color: #111827;
 }
 
 /* App-wide background image (the "First Fix" brand photo) for every
@@ -91,7 +94,7 @@ body.app-bg-image {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #4B5058 transparent;
+  scrollbar-color: #CBD5E1 transparent;
 }
 
 .input-field {

@@ -356,7 +356,7 @@ function SummaryPerformanceReport() {
           </div>
 
           <div>
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+            <h3 className="mb-3 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.summaryReport.statsTitle}
             </h3>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -420,7 +420,7 @@ function InfoField({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-gray">{label}</p>
+      <p className="text-xs font-semibold tracking-wide text-brand-gray">{label}</p>
       <p className="mt-1 text-base font-semibold text-brand-black">
         {value || <span className="font-normal text-brand-gray">{placeholder}</span>}
       </p>

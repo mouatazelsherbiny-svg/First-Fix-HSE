@@ -111,7 +111,7 @@ function PpeContent() {
           <div className="card overflow-x-auto !p-0">
             <table className="w-full min-w-[820px] text-start text-sm">
               <thead>
-                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.description}</th>
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.received}</th>
                   <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.dateReceived}</th>
@@ -293,7 +293,7 @@ function AddPpeForm({
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4">
-      <h3 className="text-sm font-bold uppercase tracking-wide text-brand-grayDark">
+      <h3 className="text-sm font-bold tracking-wide text-brand-grayDark">
         {t.hse.ppe.addTitle}
       </h3>
       {error && (
@@ -305,7 +305,7 @@ function AddPpeForm({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-start text-sm">
           <thead>
-            <tr className="border-b border-brand-border text-xs font-semibold uppercase tracking-wide text-brand-gray">
+            <tr className="border-b border-brand-border text-xs font-semibold tracking-wide text-brand-gray">
               <th className="px-2 py-2 text-start">{t.hse.ppe.description}</th>
               <th className="px-2 py-2 text-start">{t.hse.ppe.received}</th>
               <th className="px-2 py-2 text-start">{t.hse.ppe.dateReceived}</th>

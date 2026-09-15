@@ -3,7 +3,7 @@ import { getBadgeClasses } from "@/lib/statusColors";
 export default function Badge({
   value,
   label,
-  dark = true,
+  dark = false,
   className = "",
 }: {
   /** The semantic (always-English) word used to look up the color. */

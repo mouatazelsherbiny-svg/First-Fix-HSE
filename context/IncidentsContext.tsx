@@ -25,6 +25,14 @@ interface IncidentsContextValue {
   submitFicc: (input: FiccInput) => Promise<Incident>;
   /** Marks the parent incident's IIR as filed once the IIR form is saved. */
   markIirSubmitted: (incidentId: string) => Promise<void>;
+  /** Attaches a completed IIR document (as a base64 data URL) to the
+   *  incident and closes out its IIR — the FICC page's "Attach IIR" flow,
+   *  replacing the old in-app IIR form for this button. */
+  attachIirFile: (
+    incidentId: string,
+    fileUrl: string,
+    fileName: string
+  ) => Promise<void>;
 }
 
 const IncidentsContext = createContext<IncidentsContextValue | undefined>(
@@ -62,6 +70,8 @@ function mapRow(row: any): Incident {
     ficcSubmittedBy: row.ficc_submitted_by,
     iirDueAt: row.iir_due_at,
     ficcDeadlineEmailSent: !!row.ficc_deadline_email_sent,
+    iirFileUrl: row.iir_file_url ?? null,
+    iirFileName: row.iir_file_name ?? null,
   };
 }
 
@@ -190,6 +200,27 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
           .single();
         if (error || !data) {
           throw new Error(error?.message ?? "Failed to update IIR status");
+        }
+        const updated = mapRow(data);
+        setIncidents((prev) =>
+          prev.map((i) => (i.id === incidentId ? updated : i))
+        );
+      },
+
+      attachIirFile: async (incidentId: string, fileUrl: string, fileName: string) => {
+        const { data, error } = await supabase
+          .from("incidents")
+          .update({
+            iir_file_url: fileUrl,
+            iir_file_name: fileName,
+            iir_status: "Closed",
+            iir_submission_date: new Date().toISOString().slice(0, 10),
+          })
+          .eq("id", incidentId)
+          .select()
+          .single();
+        if (error || !data) {
+          throw new Error(error?.message ?? "Failed to attach IIR file");
         }
         const updated = mapRow(data);
         setIncidents((prev) =>

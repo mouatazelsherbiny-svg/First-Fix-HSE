@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -33,7 +33,6 @@ import { usePermits } from "@/context/PermitContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import Logo from "./Logo";
 import LanguageToggle from "./LanguageToggle";
-import Avatar from "./Avatar";
 
 interface NavLinkItem {
   href: string;
@@ -162,10 +161,9 @@ function PillGroup({ label, icon: Icon, basePath, count, children }: NavGroupIte
  *  collapses to a slim top bar with a hamburger-triggered slide-in drawer;
  *  from `lg` up it is always visible as a fixed-width column. */
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t, dir } = useLanguage();
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const { observations } = useObservations();
@@ -262,11 +260,6 @@ export default function Sidebar() {
     { kind: "link", href: "/project-map", label: t.nav.projectMap, icon: MapPin },
   ];
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
-
   const closedTranslate = dir === "rtl" ? "translate-x-full" : "-translate-x-full";
 
   return (
@@ -338,25 +331,6 @@ export default function Sidebar() {
           )}
         </nav>
 
-        <div className="shrink-0 space-y-3 border-t border-brand-border px-4 py-4">
-          <LanguageToggle className="w-full justify-center" />
-          {user && (
-            <div className="flex items-center gap-2.5 px-1">
-              <Avatar name={user.name} src={user.avatarUrl} size={34} />
-              <div className="min-w-0">
-                <p className="truncate text-xs text-brand-gray">{t.nav.hello}</p>
-                <p className="truncate text-sm font-semibold text-brand-black">{user.name}</p>
-              </div>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="btn-secondary w-full !py-2 text-xs"
-          >
-            {t.nav.logout}
-          </button>
-        </div>
       </aside>
     </>
   );
