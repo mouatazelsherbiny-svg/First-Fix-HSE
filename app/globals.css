@@ -10,9 +10,10 @@
      (The Login/Signup pages are the deliberate exception: they paint a
      full-screen photo/video background of their own instead of a flat
      color.)
-     Light theme matching the "First Fix" logo — white canvas, gray + safety
-     orange as accents, dark text. Replaces the earlier dark-charcoal look. */
-  --background-app: #F5F5F3;
+     Light theme matching the "First Fix" logo — a soft light-gray canvas
+     (slightly darker than pure white so white cards/surfaces still stand
+     out), gray + safety orange as accents, dark text. */
+  --background-app: #E9EAEB;
 
   /* ---- Brand color tokens (Appearance → Color theme) ----
      Every value is "R G B" (space-separated, no rgb() wrapper) so
