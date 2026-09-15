@@ -9,6 +9,15 @@ import { supabase } from "@/lib/supabaseClient";
 import LanguageToggle from "@/components/LanguageToggle";
 import LandingHero from "@/components/LandingHero";
 
+// This page's hero photo (public/brand/landing-hero-v3.jpg) is dark, so
+// the card below uses light/translucent "glass" styling (white text,
+// faint white borders/fills) instead of the app's normal light .card —
+// see the shared globals.css comment on .input-field-glass for the same
+// pattern used on /signup and /reset-password.
+const glassInput =
+  "w-full rounded-lg border border-white/30 bg-white/10 px-3 py-1 text-[10px] text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
+const glassLabel = "mb-0.5 block text-[10px] font-medium text-white/90";
+
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth();
   const { t } = useLanguage();
@@ -76,18 +85,18 @@ export default function LoginPage() {
       </div>
 
       {/* Hero (shared with "/" and /signup) with a real, visible nav row
-          and the compact sign-in card below it — see
-          components/LandingHero. */}
+          and the compact, see-through sign-in card in its lower-right
+          corner — see components/LandingHero. */}
       <LandingHero>
-        <div className="card !bg-white/30 !p-2.5 shadow-cardHover text-sm">
+        <div className="rounded-2xl border border-white/20 bg-black/30 p-2.5 text-sm shadow-cardHover backdrop-blur-md">
           {mode === "login" ? (
             <>
-              <h1 className="text-xs font-bold text-brand-black">{t.login.title}</h1>
-              <p className="mt-0.5 text-[10px] text-brand-gray">{t.login.subtitle}</p>
+              <h1 className="text-xs font-bold text-white">{t.login.title}</h1>
+              <p className="mt-0.5 text-[10px] text-white/80">{t.login.subtitle}</p>
 
               <form onSubmit={handleSubmit} className="mt-1.5 space-y-1">
                 <div>
-                  <label htmlFor="email" className="label-field !mb-0.5 !text-[10px]">
+                  <label htmlFor="email" className={glassLabel}>
                     {t.login.email}
                   </label>
                   <input
@@ -97,13 +106,13 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field !py-1 !text-[10px]"
+                    className={glassInput}
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-field !mb-0.5 !text-[10px]">
+                  <label htmlFor="password" className={glassLabel}>
                     {t.login.password}
                   </label>
                   <input
@@ -113,22 +122,22 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.login.passwordPlaceholder}
-                    className="input-field !py-1 !text-[10px]"
+                    className={glassInput}
                     autoComplete="current-password"
                   />
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-[10px] font-medium text-white">
                     {error}
                   </p>
                 )}
 
                 <div className="flex items-center justify-between text-[10px]">
-                  <label className="flex items-center gap-2 text-brand-grayDark">
+                  <label className="flex items-center gap-2 text-white/90">
                     <input
                       type="checkbox"
-                      className="h-3.5 w-3.5 rounded border-brand-border text-brand-orange focus:ring-brand-orange/40"
+                      className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
                     />
                     {t.login.rememberMe}
                   </label>
@@ -146,25 +155,25 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <p className="mt-1.5 text-center text-[10px] text-brand-gray">
+              <p className="mt-1.5 text-center text-[10px] text-white/80">
                 {t.login.noAccount}{" "}
                 <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-1.5 text-center text-[9px] font-medium text-brand-gray">
+              <p className="mt-1.5 text-center text-[9px] font-medium text-white/70">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-xs font-bold text-brand-black">{t.login.forgotTitle}</h1>
-              <p className="mt-0.5 text-[10px] text-brand-gray">{t.login.forgotSubtitle}</p>
+              <h1 className="text-xs font-bold text-white">{t.login.forgotTitle}</h1>
+              <p className="mt-0.5 text-[10px] text-white/80">{t.login.forgotSubtitle}</p>
 
               <form onSubmit={handleForgotSubmit} className="mt-1.5 space-y-1">
                 <div>
-                  <label htmlFor="forgot-email" className="label-field !mb-0.5 !text-[10px]">
+                  <label htmlFor="forgot-email" className={glassLabel}>
                     {t.login.email}
                   </label>
                   <input
@@ -174,18 +183,18 @@ export default function LoginPage() {
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder={t.login.emailPlaceholder}
-                    className="input-field !py-1 !text-[10px]"
+                    className={glassInput}
                     autoComplete="email"
                   />
                 </div>
 
                 {forgotStatus === "success" && (
-                  <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
+                  <p className="rounded-lg bg-green-600/80 px-3 py-2 text-[10px] font-medium text-white">
                     {t.login.forgotSuccess}
                   </p>
                 )}
                 {forgotStatus === "error" && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                  <p className="rounded-lg bg-red-500/80 px-3 py-2 text-[10px] font-medium text-white">
                     {t.login.forgotError}
                   </p>
                 )}
@@ -197,7 +206,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={backToLogin}
-                  className="w-full text-center text-sm font-medium text-brand-gray hover:text-brand-black hover:underline"
+                  className="w-full text-center text-[10px] font-medium text-white/80 hover:text-white hover:underline"
                 >
                   {t.login.backToLogin}
                 </button>
