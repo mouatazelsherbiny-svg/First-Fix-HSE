@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { PROJECTS } from "@/lib/mockData";
 import LanguageToggle from "@/components/LanguageToggle";
+import LandingHero from "@/components/LandingHero";
 
 export default function SignupPage() {
   const { signUp } = useAuth();
@@ -48,43 +49,23 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#F5F5F3]">
-      {/* Same brand video background as the login page — this is still a
-          pre-login, public page, so it carries the same look. Muted +
-          looping: purely decorative here, unlike the login page which
-          lets the visitor unmute it and freeze on the last frame. */}
-      <video
-        src="/login-bg.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          objectFit: "cover",
-          zIndex: 0,
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-black/40" />
-
+    <div className="min-h-screen bg-app-base">
+      {/* The signup page has no Topbar (that only wraps signed-in pages),
+          so it keeps its own language toggle, pinned to the true
+          top-right screen corner regardless of text direction. */}
       <div className="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
-        <LanguageToggle className="bg-white/85 backdrop-blur-sm" />
+        <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-2xl bg-black/35 p-6 shadow-xl backdrop-blur-md sm:p-8">
+      {/* Full-bleed hero (shared with "/" and /login) with the sign-up
+          card overlaid on top of it, below the illustration — see
+          components/LandingHero. */}
+      <LandingHero>
+        <div className="card !bg-white/95 shadow-cardHover">
           {success ? (
             <div className="text-center">
-              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
-                {t.signup.successTitle}
-              </h1>
-              <p className="mt-3 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-                {t.signup.successMessage}
-              </p>
+              <h1 className="text-xl font-bold text-brand-black">{t.signup.successTitle}</h1>
+              <p className="mt-3 text-sm text-brand-gray">{t.signup.successMessage}</p>
               <Link
                 href="/login"
                 className="btn-primary mt-6 inline-flex w-full items-center justify-center"
@@ -94,16 +75,12 @@ export default function SignupPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-white [text-shadow:0_1px_4px_rgb(0_0_0_/_0.55)]">
-                {t.signup.title}
-              </h1>
-              <p className="mt-1 text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
-                {t.signup.subtitle}
-              </p>
+              <h1 className="text-xl font-bold text-brand-black">{t.signup.title}</h1>
+              <p className="mt-1 text-sm text-brand-gray">{t.signup.subtitle}</p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>
-                  <label htmlFor="fullName" className="label-field-glass">
+                  <label htmlFor="fullName" className="label-field">
                     {t.signup.fullName}
                   </label>
                   <input
@@ -113,14 +90,14 @@ export default function SignupPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={t.signup.fullNamePlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="name"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="employeeCode" className="label-field-glass">
+                    <label htmlFor="employeeCode" className="label-field">
                       {t.signup.employeeCode}
                     </label>
                     <input
@@ -130,29 +107,20 @@ export default function SignupPage() {
                       value={employeeCode}
                       onChange={(e) => setEmployeeCode(e.target.value)}
                       placeholder={t.signup.employeeCodePlaceholder}
-                      className="input-field-glass"
+                      className="input-field"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="project" className="label-field-glass">
+                    <label htmlFor="project" className="label-field">
                       {t.signup.project}
                     </label>
-                    {/* The dropdown itself keeps the "glass" white-on-photo look
-                        (input-field-glass), but its popup list is rendered by the
-                        OS/browser on its own opaque (usually white) background,
-                        ignoring that glass styling entirely. `text-brand-black`
-                        would NOT fix this here — in this app's dark theme
-                        --brand-black-rgb is near-white (see globals.css), so it
-                        reads as near-invisible white-on-white in the popup. Each
-                        <option> below is given an explicit, always-dark color
-                        instead, independent of the app's color theme. */}
                     <select
                       id="project"
                       required
                       value={project}
                       onChange={(e) => setProject(e.target.value)}
-                      className="input-field-glass"
+                      className="input-field"
                     >
                       <option value="" disabled className="bg-white text-gray-900">
                         {t.signup.projectPlaceholder}
@@ -167,7 +135,7 @@ export default function SignupPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="label-field-glass">
+                  <label htmlFor="email" className="label-field">
                     {t.signup.email}
                   </label>
                   <input
@@ -177,13 +145,13 @@ export default function SignupPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t.signup.emailPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="label-field-glass">
+                  <label htmlFor="password" className="label-field">
                     {t.signup.password}
                   </label>
                   <input
@@ -194,13 +162,13 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t.signup.passwordPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="new-password"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="label-field-glass">
+                  <label htmlFor="confirmPassword" className="label-field">
                     {t.signup.confirmPassword}
                   </label>
                   <input
@@ -211,36 +179,32 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t.signup.confirmPasswordPlaceholder}
-                    className="input-field-glass"
+                    className="input-field"
                     autoComplete="new-password"
                   />
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-500/90 px-3 py-2 text-xs font-medium text-white shadow">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
                     {error}
                   </p>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary w-full"
-                >
+                <button type="submit" disabled={submitting} className="btn-primary w-full">
                   {submitting ? t.signup.submitting : t.signup.submit}
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-white/90 [text-shadow:0_1px_3px_rgb(0_0_0_/_0.5)]">
+              <p className="mt-4 text-center text-sm text-brand-gray">
                 {t.signup.haveAccount}{" "}
-                <Link href="/login" className="font-semibold text-white underline hover:no-underline">
+                <Link href="/login" className="font-semibold text-brand-orange hover:underline">
                   {t.signup.loginLink}
                 </Link>
               </p>
             </>
           )}
         </div>
-      </div>
+      </LandingHero>
     </div>
   );
 }

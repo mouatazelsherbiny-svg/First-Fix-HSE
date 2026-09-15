@@ -58,11 +58,13 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-app-base px-3 py-4 sm:px-6 sm:py-8">
+    <div className="min-h-screen bg-app-base">
       {/* Hero: the reference graphic supplied by the client, used as-is
           (heading, illustration, and printed nav row all baked into the
-          image), shared with /login via components/LandingHero — see
-          that file for the hotspot overlay details. */}
+          image), shared with /login and /signup via components/
+          LandingHero — see that file for the hotspot overlay details.
+          Rendered full-bleed (outside the padded sections below) so it
+          spans the page edge to edge. */}
       <LandingHero />
 
       {/* Feature highlights */}

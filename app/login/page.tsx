@@ -67,25 +67,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-app-base px-3 py-4 sm:px-6 sm:py-8">
-      {/* Pinned to the true top-right screen corner via physical `right`/
-          `top` (not the logical `end-*` utilities), so it stays put on the
-          right no matter the page's text direction (English or Arabic).
-          The login page has no Topbar (that only wraps signed-in pages),
-          so it keeps its own language toggle. */}
+    <div className="min-h-screen bg-app-base">
+      {/* The login page has no Topbar (that only wraps signed-in pages),
+          so it keeps its own language toggle, pinned to the true
+          top-right screen corner regardless of text direction. */}
       <div className="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
         <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
-      {/* Hero: the same reference graphic + clickable nav overlay used on
-          the public landing page ("/"), shared via components/LandingHero
-          so both stay in sync. */}
-      <LandingHero />
-
-      {/* Sign-in card, light-themed to match the rest of the app now that
-          this page no longer floats over a dark full-screen photo. */}
-      <div className="mx-auto max-w-sm px-4 py-10 sm:py-14">
-        <div className="card">
+      {/* Full-bleed hero (shared with "/" and /signup) with the sign-in
+          card overlaid on top of it, below the illustration — see
+          components/LandingHero. */}
+      <LandingHero>
+        <div className="card !bg-white/95 shadow-cardHover">
           {mode === "login" ? (
             <>
               <h1 className="text-xl font-bold text-brand-black">{t.login.title}</h1>
@@ -211,7 +205,7 @@ export default function LoginPage() {
             </>
           )}
         </div>
-      </div>
+      </LandingHero>
     </div>
   );
 }
