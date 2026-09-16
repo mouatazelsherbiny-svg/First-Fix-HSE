@@ -172,8 +172,10 @@ const SAMPLE_NEWS: { categoryEn: string; categoryAr: string; titleEn: string; ti
 ];
 
 // Max photos pulled into the rotation — an example cap, not a hard limit
-// on how many Good Practice observations can exist.
-const MAX_CAROUSEL_PHOTOS = 15;
+// on how many Good Practice observations can exist. Kept modest because
+// these photos are inline base64 (see the note below), so every extra one
+// added here is more data this page has to hold in memory.
+const MAX_CAROUSEL_PHOTOS = 8;
 const CAROUSEL_INTERVAL_MS = 4000;
 
 /** Same layout spot as a Yahoo-style "Advertisement" banner, but instead of
@@ -216,17 +218,20 @@ function GoodPracticeCarousel({ label }: { label: string }) {
 
   return (
     <div className="relative h-56 overflow-hidden rounded-2xl border border-brand-border bg-brand-black sm:h-72">
-      {photos.map((src, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={i}
-          src={src}
-          alt=""
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-            i === index ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+      {/* Only the active photo is ever mounted — these come from
+          observation_photos, which this app stores as inline base64
+          (not Storage URLs), so each one is already a large string held
+          in memory. Mounting all of them at once (as an earlier version
+          of this component did) forces the browser to decode and paint
+          every photo simultaneously just to show one — a real weight
+          this page doesn't need to carry. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        key={index}
+        src={photos[index]}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-8">
         <p className="text-[11px] font-bold uppercase tracking-wide text-white/80">{label}</p>
