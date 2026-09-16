@@ -1,10 +1,11 @@
 "use client";
 
 /** Lightweight public placeholder for landing-page nav links that don't
- *  have real content yet (About HSE Department, HSE KPI's, Contact — see
- *  app/page.tsx). Unlike ComingSoonPage (components/ComingSoonPage.tsx)
- *  this renders its own minimal header/back-link instead of relying on
- *  ProtectedRoute, since these pages are reached before signing in. */
+ *  have real content yet (HSE KPI's, Contact — see app/page.tsx; About HSE
+ *  Department has real content now, see app/about/page.tsx). Unlike
+ *  ComingSoonPage (components/ComingSoonPage.tsx) this renders its own
+ *  minimal header/back-link instead of relying on ProtectedRoute, since
+ *  these pages are reached before signing in. */
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";

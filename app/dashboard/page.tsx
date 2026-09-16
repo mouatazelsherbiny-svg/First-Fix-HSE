@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { CalendarDays, Flame, HardHat, MapPin, Newspaper, ShieldAlert, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight, Flame, HardHat, MapPin, Newspaper, ShieldAlert, Trophy } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
@@ -140,7 +140,7 @@ function DashboardContent() {
                 replace SAMPLE_EVENTS / SAMPLE_NEWS below with real content
                 (or wire them to a data source) whenever it's ready. */}
             <div className="mt-8">
-              <AdvertisementBanner label={t.dashboard.advertisementLabel} />
+              <GoodPracticeCarousel label={t.dashboard.advertisementLabel} />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
@@ -170,6 +170,95 @@ const SAMPLE_NEWS: { categoryEn: string; categoryAr: string; titleEn: string; ti
   { categoryEn: "Equipment", categoryAr: "المعدات", titleEn: "Two generators due for periodic maintenance", titleAr: "مولدان مستحقان للصيانة الدورية", sourceEn: "PMV Log", sourceAr: "سجل المركبات والمعدات" },
   { categoryEn: "Announcement", categoryAr: "إعلان", titleEn: "Updated permit-to-work form now live", titleAr: "نموذج تصريح العمل المحدث أصبح متاحًا", sourceEn: "Admin", sourceAr: "الإدارة" },
 ];
+
+// Max photos pulled into the rotation — an example cap, not a hard limit
+// on how many Good Practice observations can exist.
+const MAX_CAROUSEL_PHOTOS = 15;
+const CAROUSEL_INTERVAL_MS = 4000;
+
+/** Same layout spot as a Yahoo-style "Advertisement" banner, but instead of
+ *  a static placeholder it auto-rotates through photos from "Good
+ *  Practice" observations — a slideshow of the team's own good-practice
+ *  moments instead of a real ad. Falls back to the plain placeholder once
+ *  there are no Good Practice photos yet. */
+function GoodPracticeCarousel({ label }: { label: string }) {
+  const { observations } = useObservations();
+
+  const photos = useMemo(
+    () =>
+      observations
+        .filter((o) => o.observationType === "Good Practice")
+        .flatMap((o) => o.observationPhotos)
+        .filter((src): src is string => Boolean(src))
+        .slice(0, MAX_CAROUSEL_PHOTOS),
+    [observations]
+  );
+
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [photos.length]);
+
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % photos.length);
+    }, CAROUSEL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [photos.length]);
+
+  if (photos.length === 0) {
+    return <AdvertisementBanner label={label} />;
+  }
+
+  const goTo = (next: number) => setIndex((next + photos.length) % photos.length);
+
+  return (
+    <div className="relative h-56 overflow-hidden rounded-2xl border border-brand-border bg-brand-black sm:h-72">
+      {photos.map((src, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={src}
+          alt=""
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+            i === index ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-8">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-white/80">{label}</p>
+      </div>
+
+      <div className="absolute end-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-semibold text-white">
+        {index + 1} / {photos.length}
+      </div>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => goTo(index - 1)}
+            aria-label="Previous"
+            className="absolute start-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition hover:bg-black/60"
+          >
+            <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+          </button>
+          <button
+            type="button"
+            onClick={() => goTo(index + 1)}
+            aria-label="Next"
+            className="absolute end-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition hover:bg-black/60"
+          >
+            <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 function AdvertisementBanner({ label }: { label: string }) {
   return (
