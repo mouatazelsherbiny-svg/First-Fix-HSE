@@ -669,6 +669,11 @@ export interface TranslationShape {
     advertisementLabel: string;
     eventsTitle: string;
     recentNewsTitle: string;
+    siteWeatherTitle: string;
+    videoSpotlightTitle: string;
+    incidentFreeDaysTitle: string;
+    daysUnit: string;
+    watchVideoLabel: string;
   };
   pmv: {
     title: string;
@@ -1470,6 +1475,11 @@ export const translations: Record<Locale, TranslationShape> = {
       advertisementLabel: "Advertisement",
       eventsTitle: "Events",
       recentNewsTitle: "Recent News",
+      siteWeatherTitle: "Site Weather",
+      videoSpotlightTitle: "Video Spotlight",
+      incidentFreeDaysTitle: "Days Without a Recorded Incident",
+      daysUnit: "days",
+      watchVideoLabel: "Watch",
     },
     pmv: {
       title: "PMV",
@@ -2269,6 +2279,11 @@ export const translations: Record<Locale, TranslationShape> = {
       advertisementLabel: "إعلان",
       eventsTitle: "الفعاليات",
       recentNewsTitle: "آخر الأخبار",
+      siteWeatherTitle: "طقس الموقع",
+      videoSpotlightTitle: "فيديو مختار",
+      incidentFreeDaysTitle: "أيام بدون حادث مسجل",
+      daysUnit: "يوم",
+      watchVideoLabel: "مشاهدة",
     },
     pmv: {
       title: "المركبات والمعدات",

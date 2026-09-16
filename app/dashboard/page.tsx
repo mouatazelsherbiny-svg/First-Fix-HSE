@@ -1,7 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Flame, HardHat, MapPin, Newspaper, ShieldAlert, Trophy } from "lucide-react";
+import Link from "next/link";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Flame,
+  HardHat,
+  Lightbulb,
+  MapPin,
+  Newspaper,
+  PlayCircle,
+  ShieldAlert,
+  ShieldCheck,
+  Sun,
+  Trophy,
+  Wind,
+} from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,6 +31,7 @@ import { useObservations } from "@/context/ObservationsContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import { useAuth } from "@/context/AuthContext";
+import { getProjectLocation } from "@/lib/projectLocations";
 
 const LSR_VIOLATION_CATEGORY = "LSR Violation";
 
@@ -89,6 +112,17 @@ function DashboardContent() {
           </div>
         ) : (
           <>
+            {/* Days without a recorded incident — a real, computed milestone
+                (not sample data), same "hero" spot Yahoo gives its featured
+                story. Hidden entirely once there's no incident on record to
+                count from. */}
+            <div className="mb-8">
+              <IncidentFreeDaysBanner
+                title={t.dashboard.incidentFreeDaysTitle}
+                daysUnit={t.dashboard.daysUnit}
+              />
+            </div>
+
             {/* Company-wide totals */}
             <h2 className="mb-4 text-sm font-bold tracking-wide text-brand-grayDark">
               {t.dashboard.companyOverview}
@@ -146,6 +180,18 @@ function DashboardContent() {
             <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
               <EventsWidget title={t.dashboard.eventsTitle} viewAllLabel={t.dashboard.viewAll} />
               <RecentNewsWidget title={t.dashboard.recentNewsTitle} viewAllLabel={t.dashboard.viewAll} />
+            </div>
+
+            {/* Three more Yahoo-inspired spots, reworked for HSE: a rotating
+                safety tip, live weather for the current project's site, and
+                a spotlighted training video. */}
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+              <SafetyTipWidget title={t.dashboard.safetyTipTitle} />
+              <SiteWeatherWidget title={t.dashboard.siteWeatherTitle} project={project} />
+              <VideoSpotlightWidget
+                title={t.dashboard.videoSpotlightTitle}
+                watchLabel={t.dashboard.watchVideoLabel}
+              />
             </div>
           </>
         )}
@@ -347,6 +393,230 @@ function RecentNewsWidget({ title, viewAllLabel }: { title: string; viewAllLabel
       <button type="button" className="mt-4 text-sm font-semibold text-brand-orange hover:underline">
         {viewAllLabel}
       </button>
+    </div>
+  );
+}
+
+// ---- Days-without-incident banner ----
+// Unlike the placeholder widgets above, this one is computed from the
+// real incidents already loaded for the dashboard (no sample data): it
+// finds the most recent incident date on record and counts the days
+// since. Renders nothing if there is no incident on record to count from
+// yet, rather than showing a misleading "0 days".
+function IncidentFreeDaysBanner({ title, daysUnit }: { title: string; daysUnit: string }) {
+  const { incidents } = useIncidents();
+
+  const days = useMemo(() => {
+    let latest = 0;
+    for (const incident of incidents) {
+      if (!incident.incidentDate) continue;
+      const time = new Date(incident.incidentDate).getTime();
+      if (Number.isFinite(time) && time > latest) latest = time;
+    }
+    if (latest === 0) return null;
+    return Math.max(0, Math.floor((Date.now() - latest) / (1000 * 60 * 60 * 24)));
+  }, [incidents]);
+
+  if (days === null) return null;
+
+  return (
+    <div className="card flex items-center gap-5 !p-7">
+      <IconBadge icon={<ShieldCheck className="h-8 w-8" />} tone="green" />
+      <div className="min-w-0">
+        <p className="text-4xl font-extrabold leading-none text-brand-black">
+          {days.toLocaleString()}{" "}
+          <span className="text-lg font-semibold text-brand-gray">{daysUnit}</span>
+        </p>
+        <p className="mt-1 text-sm font-semibold tracking-wide text-brand-gray">{title}</p>
+      </div>
+    </div>
+  );
+}
+
+// ---- Safety Tip of the Day ----
+// A curated list that rotates one tip per calendar day (same tip for
+// everyone on a given day, deterministic — no randomness/state needed).
+const SAMPLE_SAFETY_TIPS: { en: string; ar: string }[] = [
+  { en: "Always wear your PPE correctly — a hard hat only protects when it's actually on your head.", ar: "احرص دائمًا على ارتداء معدات الوقاية الشخصية بشكل صحيح — الخوذة لا تحميك إلا إذا كانت على رأسك فعلًا." },
+  { en: "Report near misses even when nobody got hurt — they're the earliest warning of a real incident.", ar: "أبلغ عن حالات \u201cالكاد يحدث\u201d حتى لو لم يتأذَ أحد — فهي أبكر إشارة إنذار لحادث حقيقي." },
+  { en: "Inspect your tools and equipment before every shift, not just at the start of the week.", ar: "افحص أدواتك ومعداتك قبل كل وردية، وليس فقط في بداية الأسبوع." },
+  { en: "Keep walkways and exits clear — housekeeping is a safety control, not just tidiness.", ar: "حافظ على ممرات المرور والمخارج خالية من العوائق — النظافة والترتيب وسيلة سلامة وليست مجرد شكل." },
+  { en: "Never bypass a permit-to-work step to save time — that's exactly when incidents happen.", ar: "لا تتجاوز أي خطوة في تصريح العمل لتوفير الوقت — هذه بالضبط اللحظة التي تحدث فيها الحوادث." },
+  { en: "Test gas detectors and confined-space equipment before, not during, entry.", ar: "اختبر أجهزة كشف الغاز ومعدات الأماكن المغلقة قبل الدخول، وليس أثناءه." },
+  { en: "Stay hydrated and take scheduled breaks in high heat — heat stress builds up before you feel it.", ar: "حافظ على شرب الماء وخذ فترات الراحة المقررة في الحر الشديد — الإجهاد الحراري يتراكم قبل أن تشعر به." },
+  { en: "Barricade and sign every excavation and floor opening — an unmarked hazard is an incident waiting to happen.", ar: "ضع حواجز ولافتات حول كل حفر أو فتحة أرضية — الخطر غير الموضح عليه علامات هو حادث ينتظر أن يقع." },
+  { en: "Lock out and tag out energy sources before maintenance — every time, no exceptions.", ar: "افصل مصادر الطاقة وضع عليها بطاقة تنبيه قبل الصيانة — في كل مرة، بلا استثناء." },
+  { en: "Double-check load ratings and rigging before every lift — don't assume yesterday's setup is still safe today.", ar: "تأكد من معدلات الحمولة والتجهيزات قبل كل عملية رفع — لا تفترض أن إعداد الأمس لا يزال آمنًا اليوم." },
+  { en: "Speak up if you see an unsafe act — a five-second word can prevent a lifelong injury.", ar: "تحدث فورًا إذا رأيت تصرفًا غير آمن — كلمة تستغرق خمس ثوانٍ قد تمنع إصابة تدوم العمر." },
+  { en: "Fit-check your fall protection harness every time — a loose strap defeats the whole system.", ar: "تأكد من ملاءمة حزام الحماية من السقوط في كل مرة — الحزام غير المشدود يفقد النظام كله فائدته." },
+];
+
+function SafetyTipWidget({ title }: { title: string }) {
+  const { locale } = useLanguage();
+
+  const tip = useMemo(() => {
+    const dayOfYear = Math.floor(
+      (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return SAMPLE_SAFETY_TIPS[dayOfYear % SAMPLE_SAFETY_TIPS.length];
+  }, []);
+
+  return (
+    <div className="card flex flex-col !p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-brand-black">
+        <Lightbulb className="h-5 w-5 text-brand-orange" />
+        {title}
+      </h2>
+      <p className="text-sm leading-relaxed text-brand-grayDark">
+        {locale === "ar" ? tip.ar : tip.en}
+      </p>
+    </div>
+  );
+}
+
+// ---- Site Weather ----
+// Live current-conditions for the signed-in user's project site, from
+// Open-Meteo (open, no API key). Uses the real project coordinates
+// already collected in lib/projectLocations.ts. Fails quietly to a
+// simple "unavailable" state — this is a nice-to-have, never something
+// that should block or clutter the rest of the dashboard.
+function weatherCodeToDisplay(code: number): { Icon: typeof Sun; en: string; ar: string } {
+  if (code === 0) return { Icon: Sun, en: "Clear sky", ar: "سماء صافية" };
+  if (code === 1 || code === 2) return { Icon: CloudSun, en: "Partly cloudy", ar: "غائم جزئيًا" };
+  if (code === 3) return { Icon: Cloud, en: "Overcast", ar: "غائم" };
+  if (code === 45 || code === 48) return { Icon: CloudFog, en: "Fog", ar: "ضباب" };
+  if (code >= 51 && code <= 67) return { Icon: CloudRain, en: "Rain", ar: "أمطار" };
+  if (code >= 71 && code <= 77) return { Icon: CloudSnow, en: "Snow", ar: "ثلوج" };
+  if (code >= 80 && code <= 82) return { Icon: CloudRain, en: "Rain showers", ar: "زخات مطر" };
+  if (code >= 95) return { Icon: CloudLightning, en: "Thunderstorm", ar: "عاصفة رعدية" };
+  return { Icon: CloudSun, en: "—", ar: "—" };
+}
+
+interface SiteWeatherReading {
+  temperatureC: number;
+  windKmh: number;
+  code: number;
+}
+
+function SiteWeatherWidget({ title, project }: { title: string; project: string }) {
+  const { locale } = useLanguage();
+  const location = useMemo(() => getProjectLocation(project), [project]);
+  const [reading, setReading] = useState<SiteWeatherReading | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!location) {
+      setFailed(true);
+      return;
+    }
+    let cancelled = false;
+    setFailed(false);
+    setReading(null);
+
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lng}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`;
+
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("weather request failed"))))
+      .then((data) => {
+        if (cancelled) return;
+        const current = data?.current;
+        if (
+          !current ||
+          typeof current.temperature_2m !== "number" ||
+          typeof current.wind_speed_10m !== "number"
+        ) {
+          throw new Error("unexpected weather response shape");
+        }
+        setReading({
+          temperatureC: current.temperature_2m,
+          windKmh: current.wind_speed_10m,
+          code: current.weather_code ?? 0,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location]);
+
+  const display = reading ? weatherCodeToDisplay(reading.code) : null;
+
+  return (
+    <div className="card flex flex-col !p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-brand-black">
+        <CloudSun className="h-5 w-5 text-brand-orange" />
+        {title}
+      </h2>
+      {reading && display ? (
+        <div className="flex items-center gap-4">
+          <display.Icon className="h-10 w-10 shrink-0 text-brand-orange" />
+          <div className="min-w-0">
+            <p className="text-3xl font-extrabold leading-none text-brand-black">
+              {Math.round(reading.temperatureC)}°C
+            </p>
+            <p className="mt-1 text-sm font-medium text-brand-gray">
+              {locale === "ar" ? display.ar : display.en}
+            </p>
+            <p className="mt-1 flex items-center gap-1 text-xs text-brand-gray">
+              <Wind className="h-3.5 w-3.5" />
+              {Math.round(reading.windKmh)} km/h
+            </p>
+          </div>
+        </div>
+      ) : failed ? (
+        <p className="text-sm font-medium text-brand-gray">
+          {locale === "ar" ? "تعذر تحميل بيانات الطقس حاليًا" : "Weather data unavailable right now"}
+        </p>
+      ) : (
+        <p className="text-sm font-medium text-brand-gray">
+          {locale === "ar" ? "جارِ التحميل..." : "Loading..."}
+        </p>
+      )}
+      <p className="mt-3 truncate text-xs font-semibold uppercase tracking-wide text-brand-gray">
+        {project}
+      </p>
+    </div>
+  );
+}
+
+// ---- Video Spotlight ----
+// Sample placeholder — swap SAMPLE_SPOTLIGHT_VIDEO for a real featured
+// video once one is chosen. The "Watch" button links into the app's
+// Training section rather than nowhere, so it's useful even as-is.
+const SAMPLE_SPOTLIGHT_VIDEO = {
+  titleEn: "Working at Height: Fall Protection Essentials",
+  titleAr: "العمل في الأماكن المرتفعة: أساسيات الحماية من السقوط",
+  durationEn: "6 min",
+  durationAr: "6 دقائق",
+};
+
+function VideoSpotlightWidget({ title, watchLabel }: { title: string; watchLabel: string }) {
+  const { locale } = useLanguage();
+  return (
+    <div className="card flex flex-col !p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-brand-black">
+        <PlayCircle className="h-5 w-5 text-brand-orange" />
+        {title}
+      </h2>
+      <div className="relative mb-4 flex h-28 items-center justify-center rounded-xl bg-brand-black/90">
+        <PlayCircle className="h-10 w-10 text-white/90" />
+        <span className="absolute bottom-2 end-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">
+          {locale === "ar" ? SAMPLE_SPOTLIGHT_VIDEO.durationAr : SAMPLE_SPOTLIGHT_VIDEO.durationEn}
+        </span>
+      </div>
+      <p className="text-sm font-semibold text-brand-black">
+        {locale === "ar" ? SAMPLE_SPOTLIGHT_VIDEO.titleAr : SAMPLE_SPOTLIGHT_VIDEO.titleEn}
+      </p>
+      <Link
+        href="/hse-passport/training"
+        className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-semibold text-brand-orange hover:underline"
+      >
+        <PlayCircle className="h-4 w-4" />
+        {watchLabel}
+      </Link>
     </div>
   );
 }
