@@ -32,9 +32,12 @@ export default function LandingHero({ children }: LandingHeroProps) {
       {/* Real, visible nav row, on its own translucent bar rather than
           floating directly on the busy photo — keeps it readable no
           matter what part of the artwork sits behind it. About HSE
-          Department has real content now (app/about/page.tsx), so it's a
-          real link; Home/HSE KPI's/Contact are still placeholders for
-          pages that aren't built yet, so they carry no command. */}
+          Department has real content now (app/about/page.tsx); the old
+          "Contact" placeholder (t.landing.navContact) was repurposed into
+          a second link to that same page, labeled "About", rather than
+          building a separate Contact page — Home/HSE KPI's are still
+          placeholders for pages that aren't built yet, so they carry no
+          command. */}
       <div className="bg-black/35 backdrop-blur-sm">
         <nav
           aria-label="Primary"
@@ -48,7 +51,9 @@ export default function LandingHero({ children }: LandingHeroProps) {
           <span className="text-white/40">–</span>
           <span>{t.landing.navKpis}</span>
           <span className="text-white/40">–</span>
-          <span>{t.landing.navContact}</span>
+          <Link href="/about" className="hover:text-brand-orange">
+            {t.landing.navContact}
+          </Link>
           <span className="text-white/40">–</span>
           <Link href="/login" className="font-semibold text-white hover:text-brand-orange">
             {t.landing.ctaLogin}

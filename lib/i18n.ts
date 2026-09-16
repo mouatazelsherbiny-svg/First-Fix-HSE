@@ -959,7 +959,7 @@ export const translations: Record<Locale, TranslationShape> = {
       navHome: "Home",
       navAbout: "About HSE Department",
       navKpis: "HSE KPI's",
-      navContact: "Contact",
+      navContact: "About", // repurposed: was the unbuilt Contact placeholder, now a second link to the About page (app/about) per user request
       featuresTitle: "Everything your HSE team needs, in one place",
       featuresSubtitle: "Observations, incidents, permits, training and performance — tracked and reported from a single system.",
       footerTagline: "Protect People. Protect Projects. Protect Future. — One Team. One Standard. Zero Harm.",
@@ -1764,7 +1764,7 @@ export const translations: Record<Locale, TranslationShape> = {
       navHome: "الرئيسية",
       navAbout: "عن قسم السلامة والصحة",
       navKpis: "مؤشرات الأداء",
-      navContact: "تواصل معنا",
+      navContact: "عن",
       featuresTitle: "كل ما يحتاجه فريق السلامة لديك، في مكان واحد",
       featuresSubtitle: "الملاحظات، الحوادث، تصاريح العمل، التدريب والأداء — يتم تتبعها والإبلاغ عنها من نظام واحد.",
       footerTagline: "حماية الأفراد. حماية المشاريع. حماية المستقبل. — فريق واحد. معيار واحد. صفر إصابات.",
