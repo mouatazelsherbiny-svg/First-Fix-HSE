@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sun,
+  TrendingUp,
   Trophy,
   Wind,
 } from "lucide-react";
@@ -167,13 +168,13 @@ function DashboardContent() {
               />
             </div>
 
-            {/* Advertisement / Events / Recent News — same layout spot as
-                the reference (a Yahoo-style homepage): a full-width ad
-                banner, then an Events list and a Recent News feed side by
-                side. This is a placeholder layout with sample rows —
-                replace SAMPLE_EVENTS / SAMPLE_NEWS below with real content
-                (or wire them to a data source) whenever it's ready. */}
-            <div className="mt-8">
+            {/* Yahoo-style layout: a "Trending" list beside the featured
+                carousel (mirrors Yahoo's top section), then an Events list
+                and a "For You"-style feed side by side below. Events/News
+                use sample rows — replace SAMPLE_EVENTS / SAMPLE_NEWS with
+                real content (or wire them to a data source) when ready. */}
+            <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_2fr]">
+              <TrendingTopicsWidget title={t.dashboard.trendingTitle} />
               <GoodPracticeCarousel label={t.dashboard.advertisementLabel} />
             </div>
 
@@ -311,6 +312,53 @@ function GoodPracticeCarousel({ label }: { label: string }) {
   );
 }
 
+// ---- Trending (real data) ----
+// Mirrors the numbered "Trending" list on Yahoo's homepage, but instead of
+// trending news topics it ranks observation classifications by how often
+// they've actually been logged — computed live from ObservationsContext,
+// not sample data.
+function TrendingTopicsWidget({ title }: { title: string }) {
+  const { t } = useLanguage();
+  const { observations } = useObservations();
+
+  const topClassifications = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const o of observations) {
+      if (!o.classification) continue;
+      counts.set(o.classification, (counts.get(o.classification) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+  }, [observations]);
+
+  return (
+    <div className="card flex flex-col !p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-brand-black">
+        <TrendingUp className="h-5 w-5 text-brand-orange" />
+        {title}
+      </h2>
+      {topClassifications.length === 0 ? (
+        <p className="text-sm font-medium text-brand-gray">{t.dashboard.noDataYet}</p>
+      ) : (
+        <ol className="space-y-3">
+          {topClassifications.map(([classification, count], i) => (
+            <li key={classification} className="flex items-center gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-orange/15 text-xs font-bold text-brand-orange">
+                {i + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-black">
+                {classification}
+              </span>
+              <span className="shrink-0 text-xs font-medium text-brand-gray">{count}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 function AdvertisementBanner({ label }: { label: string }) {
   return (
     <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-brand-border bg-brand-grayLight/40 text-sm font-semibold tracking-wide text-brand-gray">
@@ -360,6 +408,8 @@ function EventsWidget({ title, viewAllLabel }: { title: string; viewAllLabel: st
   );
 }
 
+// Styled as a "For You"-style feed grid (Yahoo's homepage card feed) —
+// each item is its own thumbnail card rather than a plain list row.
 function RecentNewsWidget({ title, viewAllLabel }: { title: string; viewAllLabel: string }) {
   const { locale } = useLanguage();
   return (
@@ -370,26 +420,29 @@ function RecentNewsWidget({ title, viewAllLabel }: { title: string; viewAllLabel
           {title}
         </h2>
       </div>
-      <ul className="divide-y divide-brand-border">
+      <div className="grid gap-4 sm:grid-cols-2">
         {SAMPLE_NEWS.map((item, i) => (
-          <li key={i} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-grayLight/60 text-brand-gray">
-              <Newspaper className="h-6 w-6" />
+          <div
+            key={i}
+            className="flex flex-col overflow-hidden rounded-xl border border-brand-border transition hover:shadow-cardHover"
+          >
+            <div className="flex h-24 items-center justify-center bg-brand-grayLight/60 text-brand-gray">
+              <Newspaper className="h-8 w-8" />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex flex-1 flex-col p-3">
               <p className="text-[11px] font-bold uppercase tracking-wide text-brand-orange">
                 {locale === "ar" ? item.categoryAr : item.categoryEn}
               </p>
-              <p className="mt-0.5 truncate text-sm font-semibold text-brand-black">
+              <p className="mt-1 text-sm font-semibold leading-snug text-brand-black">
                 {locale === "ar" ? item.titleAr : item.titleEn}
               </p>
-              <p className="mt-0.5 text-xs text-brand-gray">
+              <p className="mt-auto pt-2 text-xs text-brand-gray">
                 {locale === "ar" ? item.sourceAr : item.sourceEn}
               </p>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
       <button type="button" className="mt-4 text-sm font-semibold text-brand-orange hover:underline">
         {viewAllLabel}
       </button>

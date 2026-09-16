@@ -674,6 +674,7 @@ export interface TranslationShape {
     incidentFreeDaysTitle: string;
     daysUnit: string;
     watchVideoLabel: string;
+    trendingTitle: string;
   };
   pmv: {
     title: string;
@@ -1480,6 +1481,7 @@ export const translations: Record<Locale, TranslationShape> = {
       incidentFreeDaysTitle: "Days Without a Recorded Incident",
       daysUnit: "days",
       watchVideoLabel: "Watch",
+      trendingTitle: "Trending",
     },
     pmv: {
       title: "PMV",
@@ -2284,6 +2286,7 @@ export const translations: Record<Locale, TranslationShape> = {
       incidentFreeDaysTitle: "أيام بدون حادث مسجل",
       daysUnit: "يوم",
       watchVideoLabel: "مشاهدة",
+      trendingTitle: "الأكثر تداولًا",
     },
     pmv: {
       title: "المركبات والمعدات",
