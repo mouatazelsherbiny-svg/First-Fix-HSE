@@ -49,14 +49,16 @@ export default function AboutPage() {
           {t.landing.navAbout}
         </h1>
 
-        {/* Director photo — medium size, centered above the bio */}
+        {/* Director photo — the real photo shown large and uncropped
+            (a rounded-corner rectangle at its own aspect ratio), not a
+            small circular avatar */}
         <div className="mb-8 flex justify-center">
           <Image
             src={HSE_DIRECTOR.photoUrl}
             alt={HSE_DIRECTOR.name}
-            width={220}
-            height={220}
-            className="h-48 w-48 rounded-full border-4 border-brand-surface object-cover shadow-cardHover sm:h-56 sm:w-56"
+            width={400}
+            height={400}
+            className="h-auto w-64 rounded-2xl border-4 border-brand-surface object-cover shadow-cardHover sm:w-80"
           />
         </div>
 
