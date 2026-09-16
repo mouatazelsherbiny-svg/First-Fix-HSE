@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchAllRows } from "@/lib/supabaseClient";
+import { PMV_CATEGORY_TO_BUCKET } from "@/lib/pmvLogs";
 import type {
   ExpiringDocumentRow,
   InspectionStatus,
@@ -26,30 +27,9 @@ import type {
 
 type CategoryBucket = PmvTypeBreakdown["key"];
 
-// The PMV Log workbook's Equipment Category list has no dedicated "Loader"
-// or "Dump Truck" entry, so those two buckets fold in the closest real
-// category (Crane for loading/lifting gear, Truck for heavy trucks) rather
-// than sitting permanently empty. Everything not explicitly listed lands
-// in "otherEquipment".
-const CATEGORY_TO_BUCKET: Record<string, CategoryBucket> = {
-  Vehicle: "vehicles",
-  Pickup: "vehicles",
-  "Mini Van": "vehicles",
-  Bus: "vehicles",
-  Excavator: "excavators",
-  Crane: "loaders",
-  Forklift: "forklifts",
-  Truck: "dumpTrucks",
-  Generator: "generators",
-  Compressor: "otherEquipment",
-  Pump: "otherEquipment",
-  Lighting: "otherEquipment",
-  "Welding Machine": "otherEquipment",
-  "Concrete Mixer": "otherEquipment",
-  Scaffolding: "otherEquipment",
-  "Scissor Lift": "otherEquipment",
-  Other: "otherEquipment",
-};
+// Category -> photo-bucket mapping now lives in lib/pmvLogs.ts (shared
+// with the Equipment Tracker's cards, which need the exact same mapping).
+const CATEGORY_TO_BUCKET: Record<string, CategoryBucket> = PMV_CATEGORY_TO_BUCKET;
 
 const ROAD_CATEGORIES = new Set(["Vehicle", "Pickup", "Mini Van", "Bus", "Truck"]);
 const MACHINERY_CATEGORIES = new Set([

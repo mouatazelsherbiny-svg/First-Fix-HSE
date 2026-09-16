@@ -9,72 +9,27 @@
  * and what state is it in right now". It can also add a new asset or open
  * an existing one for editing — both go through the same generic
  * PmvLogFormModal the Asset Register tab itself uses, so there is still
- * exactly one form definition for this table.
+ * exactly one form definition for this table. app/pmv/page.tsx renders
+ * this beside the Asset Register log (the same data, in table form) so
+ * both views sit side by side.
  *
- * Equipment photos: the app only has real product photos for 7 broad
- * equipment-type buckets (public/pmv/*.png, used by the PMV dashboard),
- * while this table's equipment_category is much more specific (16
- * values). Collapsing all 16 down to those 7 photos would make most cards
- * show the same generic "otherEquipment" picture, losing the "tell it
- * apart at a glance" purpose of an image. A distinct icon per category
- * (below) keeps every type visually unique instead; swap CATEGORY_ICONS
- * for real per-category photos later if/when those become available.
+ * Equipment photos: each card shows a real product photo (public/pmv/*.png)
+ * rather than a generic icon, via the same equipment_category -> photo
+ * bucket mapping the PMV Dashboard's "by Type" chart uses (lib/pmvLogs.ts)
+ * — the 16 specific categories fold into 7 broad photo buckets, so every
+ * card matches the equipment's real look at a glance.
  */
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import {
-  Search,
-  Plus,
-  ChevronRight,
-  MapPin,
-  Calendar,
-  type LucideIcon,
-  Forklift,
-  Construction,
-  Zap,
-  Wind,
-  Droplet,
-  Lightbulb,
-  Car,
-  Flame,
-  Container,
-  Grid3x3,
-  Scissors,
-  Truck,
-  Bus,
-  Van,
-  Wrench,
-} from "lucide-react";
+import { Search, Plus, ChevronRight, MapPin, Calendar } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePmvLogRecords, type PmvLogRow } from "@/lib/usePmvLogRecords";
-import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
+import { PMV_LOG_DEFINITIONS, PMV_CATEGORY_TO_BUCKET, PMV_BUCKET_IMAGES } from "@/lib/pmvLogs";
 import PmvLogFormModal from "./PmvLogFormModal";
 
 const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "assetRegister")!;
-
-// One icon per equipment_category (see PMV_OPTIONS_EQUIPMENT_CATEGORY in
-// lib/pmvLogs.ts) so each card is recognizable at a glance. Falls back to
-// a generic wrench for anything else.
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  Generator: Zap,
-  Compressor: Wind,
-  Pump: Droplet,
-  Forklift: Forklift,
-  Excavator: Construction,
-  Lighting: Lightbulb,
-  Vehicle: Car,
-  "Welding Machine": Flame,
-  "Concrete Mixer": Container,
-  Crane: Construction,
-  Scaffolding: Grid3x3,
-  "Scissor Lift": Scissors,
-  Truck: Truck,
-  Bus: Bus,
-  Pickup: Truck,
-  "Mini Van": Van,
-};
 
 const DUE_SOON_DAYS = 14;
 
@@ -182,7 +137,7 @@ export default function EquipmentTracker() {
             <p className="py-8 text-center text-sm text-slate-400">{t.common.noDataYet}</p>
           ) : (
             filtered.map((row) => {
-              const Icon = CATEGORY_ICONS[row.equipment_category as string] ?? Wrench;
+              const bucket = PMV_CATEGORY_TO_BUCKET[row.equipment_category as string] ?? "otherEquipment";
               const dueSoon = isDueForService(row);
               return (
                 <button
@@ -191,8 +146,13 @@ export default function EquipmentTracker() {
                   onClick={() => setModalRow(row)}
                   className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 text-start shadow-sm transition hover:bg-slate-50"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600">
-                    <Icon className="h-5 w-5" strokeWidth={1.75} />
+                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-50">
+                    <Image
+                      src={PMV_BUCKET_IMAGES[bucket]}
+                      alt={row.equipment_category as string ?? ""}
+                      fill
+                      className="object-contain p-1.5"
+                    />
                   </div>
 
                   <div className="min-w-0 flex-1">

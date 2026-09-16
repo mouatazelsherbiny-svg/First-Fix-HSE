@@ -10,6 +10,8 @@
  * exist first (see the matching migration).
  */
 
+import type { PmvTypeBreakdown } from "@/types/pmv";
+
 export type PmvFieldType = "text" | "number" | "date" | "select";
 
 export interface PmvLogColumn {
@@ -355,3 +357,48 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
     ],
   },
 ];
+
+
+// ---- Shared equipment-category -> photo mapping ----
+// The PMV Dashboard's "by Type" chart and the Equipment Tracker's cards
+// both need to turn an asset's equipment_category into one of the same 7
+// broad photo buckets, so the mapping and the image paths live here once
+// instead of in each page/component separately.
+export type PmvEquipmentBucket = PmvTypeBreakdown["key"];
+
+// The Equipment Category list (PMV_OPTIONS_EQUIPMENT_CATEGORY above) has
+// no dedicated "Loader" or "Dump Truck" entry, so those two buckets fold
+// in the closest real category (Crane for loading/lifting gear, Truck for
+// heavy trucks) rather than sitting permanently empty. Everything not
+// explicitly listed lands in "otherEquipment".
+export const PMV_CATEGORY_TO_BUCKET: Record<string, PmvEquipmentBucket> = {
+  Vehicle: "vehicles",
+  Pickup: "vehicles",
+  "Mini Van": "vehicles",
+  Bus: "vehicles",
+  Excavator: "excavators",
+  Crane: "loaders",
+  Forklift: "forklifts",
+  Truck: "dumpTrucks",
+  Generator: "generators",
+  Compressor: "otherEquipment",
+  Pump: "otherEquipment",
+  Lighting: "otherEquipment",
+  "Welding Machine": "otherEquipment",
+  "Concrete Mixer": "otherEquipment",
+  Scaffolding: "otherEquipment",
+  "Scissor Lift": "otherEquipment",
+  Other: "otherEquipment",
+};
+
+// Real product photos (background removed) for each bucket, served from
+// /public/pmv. Swap the file to change a picture; no code change needed.
+export const PMV_BUCKET_IMAGES: Record<PmvEquipmentBucket, string> = {
+  vehicles: "/pmv/vehicles.png",
+  excavators: "/pmv/excavators.png",
+  loaders: "/pmv/loaders.png",
+  forklifts: "/pmv/forklifts.png",
+  dumpTrucks: "/pmv/dumpTrucks.png",
+  generators: "/pmv/generators.png",
+  otherEquipment: "/pmv/otherEquipment.png",
+};

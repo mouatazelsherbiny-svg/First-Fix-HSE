@@ -23,7 +23,7 @@ import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { getChartColor } from "@/lib/statusColors";
 import { usePmvDashboard } from "@/lib/usePmvDashboard";
-import { PMV_LOG_DEFINITIONS } from "@/lib/pmvLogs";
+import { PMV_LOG_DEFINITIONS, PMV_BUCKET_IMAGES } from "@/lib/pmvLogs";
 import PmvLogTable from "@/components/pmv/PmvLogTable";
 import EquipmentTracker from "@/components/pmv/EquipmentTracker";
 import type { PmvTypeBreakdown } from "@/types/pmv";
@@ -68,17 +68,9 @@ const TYPE_BAR_COLORS: Record<PmvTypeBreakdown["key"], string> = {
   otherEquipment: "#F43F5E",
 };
 
-// Real product photos (background removed) for each equipment type, served
-// from /public/pmv. Swap the file to change a picture; no code change needed.
-const EQUIPMENT_IMAGES: Record<PmvTypeBreakdown["key"], string> = {
-  vehicles: "/pmv/vehicles.png",
-  excavators: "/pmv/excavators.png",
-  loaders: "/pmv/loaders.png",
-  forklifts: "/pmv/forklifts.png",
-  dumpTrucks: "/pmv/dumpTrucks.png",
-  generators: "/pmv/generators.png",
-  otherEquipment: "/pmv/otherEquipment.png",
-};
+// Real product photos — now shared with the Equipment Tracker's cards via
+// lib/pmvLogs.ts, so both use the exact same pictures for the same asset.
+const EQUIPMENT_IMAGES = PMV_BUCKET_IMAGES;
 
 // Max bar height in px (tallest category, currently Vehicles) and the fixed
 // box every equipment photo scales to fit inside (object-contain keeps each
@@ -182,7 +174,7 @@ function PmvPageContent() {
         ) : tab === "log" ? (
           <PmvLogSection />
         ) : (
-          <EquipmentTracker />
+          <EquipmentTrackerSection />
         )}
       </div>
     </div>
@@ -218,6 +210,21 @@ function PmvLogSection() {
       </div>
 
       {activeDefinition && <PmvLogTable definition={activeDefinition} />}
+    </div>
+  );
+}
+
+// Equipment Tracker tab: the Asset Register log on the left (the same
+// pmv_asset_register table, in its normal spreadsheet-style view) beside
+// the mobile-app-style tracker screen on the right, so both views of the
+// same equipment sit side by side.
+const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "assetRegister");
+
+function EquipmentTrackerSection() {
+  return (
+    <div className="grid gap-6 lg:grid-cols-[3fr_2fr] lg:items-start">
+      {ASSET_REGISTER_DEFINITION && <PmvLogTable definition={ASSET_REGISTER_DEFINITION} />}
+      <EquipmentTracker />
     </div>
   );
 }
