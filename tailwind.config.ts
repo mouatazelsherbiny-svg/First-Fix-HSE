@@ -41,6 +41,9 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", "Segoe UI", "Tahoma", "sans-serif"],
+        // Condensed display face (Anton, loaded in app/layout.tsx) for the
+        // dashboard headline only — see the .ref-display utility.
+        display: ["var(--font-display)", "Arial Narrow", "Impact", "sans-serif"],
       },
       borderRadius: {
         xl: "1rem",

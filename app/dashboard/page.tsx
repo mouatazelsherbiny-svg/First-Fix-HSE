@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
+import HsePulseSection from "@/components/dashboard/HsePulseSection";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
@@ -168,32 +169,13 @@ function DashboardContent() {
               />
             </div>
 
-            {/* Yahoo-style layout: a "Trending" list beside the featured
-                carousel (mirrors Yahoo's top section), then an Events list
-                and a "For You"-style feed side by side below. Events/News
-                use sample rows — replace SAMPLE_EVENTS / SAMPLE_NEWS with
-                real content (or wire them to a data source) when ready. */}
-            <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_2fr]">
-              <TrendingTopicsWidget title={t.dashboard.trendingTitle} />
-              <GoodPracticeCarousel label={t.dashboard.advertisementLabel} />
-            </div>
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
-              <EventsWidget title={t.dashboard.eventsTitle} viewAllLabel={t.dashboard.viewAll} />
-              <RecentNewsWidget title={t.dashboard.recentNewsTitle} viewAllLabel={t.dashboard.viewAll} />
-            </div>
-
-            {/* Three more Yahoo-inspired spots, reworked for HSE: a rotating
-                safety tip, live weather for the current project's site, and
-                a spotlighted training video. */}
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
-              <SafetyTipWidget title={t.dashboard.safetyTipTitle} />
-              <SiteWeatherWidget title={t.dashboard.siteWeatherTitle} project={project} />
-              <VideoSpotlightWidget
-                title={t.dashboard.videoSpotlightTitle}
-                watchLabel={t.dashboard.watchVideoLabel}
-              />
-            </div>
+            {/* "HSE Pulse" — rebuilt to design/reference.png.jpeg. Replaces
+                the former Yahoo-style widget stack (trending list, carousel,
+                events, news feed, safety tip, weather, video spotlight),
+                which mixed real data with hard-coded SAMPLE_EVENTS /
+                SAMPLE_NEWS rows. Everything here reads real Supabase data,
+                with any unsourced figure explicitly chipped as a sample. */}
+            <HsePulseSection />
           </>
         )}
       </div>

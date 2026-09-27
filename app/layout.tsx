@@ -1,5 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Anton } from "next/font/google";
 import "./globals.css";
+
+// Condensed display face, used ONLY for the dashboard's big headline (see
+// the .ref-display utility in globals.css). Exposed as a CSS variable so
+// Tailwind's `font-display` utility can reach it; body copy keeps
+// --font-sans and is unaffected.
+const anton = Anton({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-display",
+  display: "swap",
+});
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeSettingsProvider } from "@/context/ThemeSettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -38,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr">
+    <html lang="en" dir="ltr" className={anton.variable}>
       <body className="bg-app-base font-sans antialiased">
         <PwaRegister />
         <ThemeSettingsProvider>

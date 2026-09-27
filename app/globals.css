@@ -165,6 +165,155 @@ html[data-morphism="solid"] [class*="bg-black/"] {
   background-color: #000000 !important;
 }
 
+/* =====================================================================
+   Reference design system  (design/reference.png.jpeg)
+   ---------------------------------------------------------------------
+   Scoped tokens + utilities for the two surfaces rebuilt to the mockup:
+   the icon rail (components/Sidebar.tsx) and the dashboard's HSE Pulse
+   section (components/dashboard/*). Deliberately additive — the app's
+   existing `.card`, `--background-app` and `.btn-*` styles are left
+   untouched so no other page changes appearance.
+
+   Palette sampled directly from the reference JPEG: the accent clustered
+   at #F86A0A, which the brand token (#F36F24) already matches, so the
+   accent here intentionally reuses --brand-orange-rgb and keeps following
+   the Appearance colour-theme switcher.
+   ===================================================================== */
+:root {
+  --ref-canvas: #f8f5f2; /* warm off-white section canvas (#FAF6F3 in ref) */
+  --ref-ink: #121212; /* dark cards + icon rail */
+  --ref-ink-2: #1e1c1b; /* raised surface inside a dark card */
+  --ref-text: #17150f; /* near-black headings */
+  --ref-muted: #8b8580; /* meta / secondary copy */
+  --ref-hairline: #ece7e2; /* card border */
+  --ref-track: #f0ebe6; /* progress-bar + ring track */
+  --ref-radius: 20px;
+  --ref-radius-sm: 14px;
+  --ref-shadow: 0 1px 2px rgba(23, 21, 15, 0.04), 0 12px 32px -12px rgba(23, 21, 15, 0.1);
+  --ref-shadow-lift: 0 2px 6px rgba(23, 21, 15, 0.06), 0 20px 48px -16px rgba(23, 21, 15, 0.16);
+}
+
+.ref-canvas {
+  background-color: var(--ref-canvas);
+  border-radius: var(--ref-radius);
+}
+
+.ref-card {
+  background-color: #fff;
+  border: 1px solid var(--ref-hairline);
+  border-radius: var(--ref-radius);
+  box-shadow: var(--ref-shadow);
+}
+
+.ref-card-dark {
+  background-color: var(--ref-ink);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--ref-radius);
+  box-shadow: var(--ref-shadow-lift);
+  color: #fff;
+}
+
+/* Tiny letterspaced accent label above a card title ("• NEXT LESSON"). */
+.ref-eyebrow {
+  @apply inline-flex items-center gap-1.5 text-[10px] font-bold uppercase leading-none tracking-[0.16em] text-brand-orange;
+}
+
+.ref-eyebrow-muted {
+  @apply inline-flex items-center gap-1.5 text-[10px] font-bold uppercase leading-none tracking-[0.16em];
+  color: var(--ref-muted);
+}
+
+/* Condensed display face — headline only, never body copy. */
+.ref-display {
+  font-family: var(--font-display), "Arial Narrow", Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.ref-muted {
+  color: var(--ref-muted);
+}
+
+.ref-text {
+  color: var(--ref-text);
+}
+
+/* Full-round pill buttons, light and dark variants. */
+.ref-pill {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition;
+  border: 1px solid var(--ref-hairline);
+  background: #fff;
+  color: var(--ref-text);
+}
+.ref-pill:hover {
+  background: var(--ref-track);
+}
+
+.ref-pill-dark {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white transition;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+}
+.ref-pill-dark:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ref-pill-accent {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-brand-onAccent transition;
+  background: rgb(var(--brand-orange-rgb));
+}
+.ref-pill-accent:hover {
+  background: rgb(var(--brand-orange-dark-rgb));
+}
+
+/* Orange rounded-square icon tile used by the bottom action cards. */
+.ref-tile {
+  @apply flex h-11 w-11 shrink-0 items-center justify-center text-brand-onAccent;
+  border-radius: var(--ref-radius-sm);
+  background: linear-gradient(
+    145deg,
+    rgb(var(--brand-orange-rgb)),
+    rgb(var(--brand-orange-dark-rgb))
+  );
+  box-shadow: 0 6px 16px -6px rgb(var(--brand-orange-rgb) / 0.7);
+}
+
+/* Thin rounded progress bar (Skill Mastery rows in the reference). */
+.ref-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ref-track);
+  overflow: hidden;
+}
+.ref-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(var(--brand-orange-rgb));
+}
+
+/* ---- Icon rail (components/Sidebar.tsx) ----
+   Icons-only, so every item needs an accessible name on hover/focus. The
+   tooltip is CSS-only (no JS, no portal) and is hidden from assistive tech
+   because the trigger already carries an aria-label. */
+.ref-rail-tip {
+  @apply pointer-events-none absolute start-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 transition-opacity duration-150;
+  background: var(--ref-ink);
+  box-shadow: var(--ref-shadow-lift);
+}
+.group:hover > .ref-rail-tip,
+.group:focus-visible > .ref-rail-tip {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ref-rail-tip {
+    transition: none;
+  }
+}
+
 /* Scroll/navigation fade-in (see components/ScrollReveal.tsx). Cards start
    fully visible by default — JS opts individual cards into the hidden
    starting state, so a script error can never leave content invisible. */

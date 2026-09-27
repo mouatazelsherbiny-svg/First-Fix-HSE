@@ -47,9 +47,11 @@ export default function ProtectedRoute({
   return (
     <div className="min-h-screen">
       <Sidebar />
-      {/* pt-14 clears the mobile top bar; lg:ps-64 clears the fixed
-          sidebar's width once it's always-visible from `lg` up. */}
-      <main className="min-h-screen pt-14 lg:ps-64 lg:pt-0">
+      {/* pt-14 clears the mobile top bar; from `lg` up the padding clears
+          the floating icon rail — its inset, its width, and a matching gap
+          on the content side (see RAIL_WIDTH / RAIL_INSET in Sidebar). */}
+      {/* 108px = RAIL_INSET(16) + RAIL_WIDTH(76) + a 16px gap. */}
+      <main className="min-h-screen pt-14 lg:ps-[108px] lg:pt-0">
         <div className="px-4 py-8 sm:px-6 lg:px-8">
           <Topbar />
           <ScrollReveal>{children}</ScrollReveal>
