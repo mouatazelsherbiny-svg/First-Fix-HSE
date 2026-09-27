@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -102,9 +102,78 @@ const RAIL_ITEM =
 interface RailOverlay {
   /** Viewport Y of the trigger's vertical centre. */
   top: number;
+  /** Viewport X of the trigger's leading edge (left in LTR, right in RTL),
+   *  so the hover pill sits exactly on top of the icon it grows out of. */
+  edge: number;
   label: string;
-  /** Present for the group entry — renders a flyout instead of a tooltip. */
+  /** Present for the group entry — renders a flyout instead of a pill. */
   items?: { href: string; label: string }[];
+  /** Pill contents: the link it navigates to, and the leading visual. */
+  href?: string;
+  icon?: ReactNode;
+  active?: boolean;
+}
+
+type ShowPill = (
+  el: HTMLElement,
+  pill: { label: string; href?: string; icon: ReactNode; active?: boolean }
+) => void;
+
+/** Duration of the hover pill's expand / collapse, in ms. */
+const PILL_MS = 200;
+
+/**
+ * Hover pill: starts as a 44px circle directly over the rail icon, then
+ * slides its label out past the rail edge. It lives in the fixed overlay
+ * layer, so it floats above page content and never affects layout.
+ */
+function RailPill({ overlay, open }: { overlay: RailOverlay; open: boolean }) {
+  // Mount collapsed, expand on the next frame so the transition runs.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const expanded = mounted && open;
+
+  const className = `flex h-11 items-center rounded-full pe-[7px] ps-[7px] whitespace-nowrap ${
+    overlay.active ? "bg-brand-orange text-brand-onAccent" : "text-white"
+  }`;
+  const style: CSSProperties = {
+    backgroundColor: overlay.active ? undefined : "var(--ref-ink)",
+    boxShadow: "var(--ref-shadow-lift)",
+  };
+  const content = (
+    <>
+      <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center">
+        {overlay.icon}
+      </span>
+      <span
+        className="overflow-hidden text-sm font-semibold motion-reduce:transition-none"
+        style={{
+          maxWidth: expanded ? 280 : 0,
+          opacity: expanded ? 1 : 0,
+          paddingInlineStart: expanded ? 8 : 0,
+          paddingInlineEnd: expanded ? 10 : 0,
+          transition: `max-width ${PILL_MS}ms ease-out, opacity ${PILL_MS}ms ease-out, padding ${PILL_MS}ms ease-out`,
+        }}
+      >
+        {overlay.label}
+      </span>
+    </>
+  );
+
+  // The real rail link stays the focusable/announced element; this copy is
+  // only a larger mouse target, so it is hidden from AT and the tab order.
+  return overlay.href ? (
+    <Link href={overlay.href} tabIndex={-1} aria-hidden className={className} style={style}>
+      {content}
+    </Link>
+  ) : (
+    <span aria-hidden className={className} style={style}>
+      {content}
+    </span>
+  );
 }
 
 function RailLink({
@@ -114,14 +183,20 @@ function RailLink({
   count,
   active,
   onShow,
-}: NavLinkItem & { active: boolean; onShow: (el: HTMLElement, label: string) => void }) {
+}: NavLinkItem & { active: boolean; onShow: ShowPill }) {
+  const pill = {
+    label,
+    href,
+    active,
+    icon: <Icon className="h-[19px] w-[19px]" strokeWidth={2} />,
+  };
   return (
     <Link
       href={href}
       aria-label={label}
       aria-current={active ? "page" : undefined}
-      onMouseEnter={(e) => onShow(e.currentTarget, label)}
-      onFocus={(e) => onShow(e.currentTarget, label)}
+      onMouseEnter={(e) => onShow(e.currentTarget, pill)}
+      onFocus={(e) => onShow(e.currentTarget, pill)}
       className={`${RAIL_ITEM} ${
         active ? "bg-brand-orange/12 text-brand-orange" : "text-white/45 hover:bg-white/8 hover:text-white"
       }`}
@@ -184,8 +259,10 @@ export default function Sidebar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  // --- Rail tooltip / flyout overlay ---
+  // --- Rail hover pill / flyout overlay ---
   const [overlay, setOverlay] = useState<RailOverlay | null>(null);
+  // True while the pill plays its collapse animation before unmounting.
+  const [closing, setClosing] = useState(false);
   // A short close delay lets the pointer travel the 10px gap from a group
   // icon into its flyout without the panel vanishing underneath it.
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -193,29 +270,47 @@ export default function Sidebar() {
   const cancelHide = useCallback(() => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
     hideTimer.current = null;
+    setClosing(false);
   }, []);
 
   const hideOverlay = useCallback(() => {
     cancelHide();
-    hideTimer.current = setTimeout(() => setOverlay(null), 120);
+    hideTimer.current = setTimeout(() => {
+      setClosing(true);
+      hideTimer.current = setTimeout(() => {
+        setOverlay(null);
+        setClosing(false);
+      }, PILL_MS);
+    }, 120);
   }, [cancelHide]);
 
-  const showTooltip = useCallback(
-    (el: HTMLElement, label: string) => {
+  const measure = (el: HTMLElement) => {
+    // Anchor on the trigger's centre so the pill's 44px leading circle lands
+    // exactly on it, whatever the trigger's own size (icons, the avatar).
+    const rect = el.getBoundingClientRect();
+    const centre = rect.left + rect.width / 2;
+    return {
+      top: rect.top + rect.height / 2,
+      edge: dir === "rtl" ? window.innerWidth - centre - 22 : centre - 22,
+    };
+  };
+
+  const showPill: ShowPill = useCallback(
+    (el, pill) => {
       cancelHide();
-      const rect = el.getBoundingClientRect();
-      setOverlay({ top: rect.top + rect.height / 2, label });
+      setOverlay({ ...measure(el), ...pill });
     },
-    [cancelHide]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cancelHide, dir]
   );
 
   const showFlyout = useCallback(
     (el: HTMLElement, label: string, items: { href: string; label: string }[]) => {
       cancelHide();
-      const rect = el.getBoundingClientRect();
-      setOverlay({ top: rect.top + rect.height / 2, label, items });
+      setOverlay({ ...measure(el), label, items });
     },
-    [cancelHide]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cancelHide, dir]
   );
 
   // Never leave a stale overlay pinned after a route change.
@@ -434,7 +529,7 @@ export default function Sidebar() {
                 key={entry.href}
                 {...entry}
                 active={pathname === entry.href}
-                onShow={showTooltip}
+                onShow={showPill}
               />
             ) : (
               <RailGroup key={entry.children[0].href} {...entry} onShow={showFlyout} />
@@ -447,7 +542,7 @@ export default function Sidebar() {
               key={link.href}
               {...link}
               active={pathname === link.href}
-              onShow={showTooltip}
+              onShow={showPill}
             />
           ))}
         </nav>
@@ -455,7 +550,19 @@ export default function Sidebar() {
         {user && (
           <div
             className="mb-5 shrink-0"
-            onMouseEnter={(e) => showTooltip(e.currentTarget, displayName)}
+            onMouseEnter={(e) =>
+              showPill(e.currentTarget, {
+                label: displayName,
+                icon: (
+                  <Avatar
+                    name={displayName}
+                    src={user.avatarUrl}
+                    size={38}
+                    className="ring-2 ring-white/15"
+                  />
+                ),
+              })
+            }
           >
             <Avatar
               name={displayName}
@@ -467,53 +574,60 @@ export default function Sidebar() {
         )}
       </aside>
 
-      {/* ---- Fixed overlay layer: tooltips + the group flyout ---- */}
-      {overlay && (
+      {/* ---- Fixed overlay layer: the group flyout ---- */}
+      {overlay?.items && !closing && (
         <div
-          className="fixed z-50 hidden lg:block"
+          className="fixed z-[60] hidden lg:block"
           style={{
             top: overlay.top,
             [dir === "rtl" ? "right" : "left"]: RAIL_INSET + RAIL_WIDTH + 10,
             transform: "translateY(-50%)",
-            pointerEvents: overlay.items ? "auto" : "none",
           }}
           onMouseEnter={cancelHide}
           onMouseLeave={hideOverlay}
         >
-          {overlay.items ? (
-            <div
-              className="min-w-[196px] rounded-2xl border border-white/10 p-1.5"
-              style={{ backgroundColor: "var(--ref-ink)", boxShadow: "var(--ref-shadow-lift)" }}
-            >
-              <p className="px-2.5 pb-1.5 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/35">
-                {overlay.label}
-              </p>
-              {overlay.items.map((c) => {
-                const childActive = pathname === c.href;
-                return (
-                  <Link
-                    key={c.href}
-                    href={c.href}
-                    className={`flex items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-sm transition-colors ${
-                      childActive
-                        ? "bg-brand-orange/15 font-semibold text-brand-orange"
-                        : "text-white/70 hover:bg-white/8 hover:text-white"
-                    }`}
-                  >
-                    {c.label}
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50 rtl:rotate-180" />
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <span
-              className="block whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white"
-              style={{ backgroundColor: "var(--ref-ink)", boxShadow: "var(--ref-shadow-lift)" }}
-            >
+          <div
+            className="min-w-[196px] rounded-2xl border border-white/10 p-1.5"
+            style={{ backgroundColor: "var(--ref-ink)", boxShadow: "var(--ref-shadow-lift)" }}
+          >
+            <p className="px-2.5 pb-1.5 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/35">
               {overlay.label}
-            </span>
-          )}
+            </p>
+            {overlay.items.map((c) => {
+              const childActive = pathname === c.href;
+              return (
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className={`flex items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-sm transition-colors ${
+                    childActive
+                      ? "bg-brand-orange/15 font-semibold text-brand-orange"
+                      : "text-white/70 hover:bg-white/8 hover:text-white"
+                  }`}
+                >
+                  {c.label}
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50 rtl:rotate-180" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ---- Fixed overlay layer: hover pill (above page content, out of
+           the layout flow, so it never shifts anything) ---- */}
+      {overlay && !overlay.items && (
+        <div
+          className="fixed z-[60] hidden lg:block"
+          style={{
+            top: overlay.top,
+            [dir === "rtl" ? "right" : "left"]: overlay.edge,
+            transform: "translateY(-50%)",
+          }}
+          onMouseEnter={cancelHide}
+          onMouseLeave={hideOverlay}
+        >
+          <RailPill key={`${overlay.href ?? ""}|${overlay.label}`} overlay={overlay} open={!closing} />
         </div>
       )}
     </>
