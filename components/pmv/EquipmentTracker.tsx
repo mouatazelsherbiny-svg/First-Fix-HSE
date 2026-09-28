@@ -81,11 +81,9 @@ export default function EquipmentTracker() {
   ];
 
   return (
-    <div className="relative mx-auto flex h-[680px] w-full max-w-sm flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-cardHover">
-      {/* Header — deliberately its own dark navy treatment (not the app's
-          orange brand color) so this tab reads as a dedicated mobile-app
-          screen, per the reference design. */}
-      <div className="flex shrink-0 items-center gap-3 bg-[#102A4C] px-5 py-4">
+    <div className="relative mx-auto flex h-[680px] w-full max-w-sm flex-col lg:me-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-cardHover">
+      {/* Header — brand orange, matching the app's accent colour. */}
+      <div className="flex shrink-0 items-center gap-3 bg-brand-orange px-5 py-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15">
           <Image src="/logo-icon.png" alt="" width={22} height={22} className="object-contain" />
         </div>

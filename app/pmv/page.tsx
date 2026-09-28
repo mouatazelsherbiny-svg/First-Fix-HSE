@@ -222,8 +222,12 @@ const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "ass
 
 function EquipmentTrackerSection() {
   return (
-    <div className="grid gap-6 lg:grid-cols-[3fr_2fr] lg:items-start">
-      {ASSET_REGISTER_DEFINITION && <PmvLogTable definition={ASSET_REGISTER_DEFINITION} />}
+    // Log takes all the remaining width; the tracker keeps its phone-sized
+    // column pinned to the far right, with a small gap between the two.
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+      <div className="min-w-0">
+        {ASSET_REGISTER_DEFINITION && <PmvLogTable definition={ASSET_REGISTER_DEFINITION} />}
+      </div>
       <EquipmentTracker />
     </div>
   );
