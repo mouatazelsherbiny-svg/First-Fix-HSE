@@ -49,7 +49,13 @@ export const TOPBAR_HEIGHT = 64;
 
 /** Shell colours taken from the mockup. */
 export const SHELL_BG = "#0e0e0f";
-const SIDEBAR_BG = "linear-gradient(180deg, #151516 0%, #111112 60%, #0c0c0d 100%)";
+/** The safety photo covers the whole sidebar; the dark gradient on top keeps
+ *  the menu readable and lets the photo show through most at the bottom. */
+const SIDEBAR_BG = [
+  "linear-gradient(180deg, rgba(14,14,15,0.96) 0%, rgba(14,14,15,0.9) 40%, rgba(14,14,15,0.62) 70%, rgba(14,14,15,0.9) 100%)",
+  "url('/brand/sidebar-bg.jpg') center / cover no-repeat",
+  "#0e0e0f",
+].join(", ");
 
 interface NavLinkItem {
   href: string;
@@ -146,28 +152,19 @@ function NavGroup({ label, icon: Icon, basePath, count, children }: NavGroupItem
   );
 }
 
-/** Bottom photo panel with the safety message, as in the mockup. */
-function SafetyPanel() {
+/** Safety message at the bottom of the sidebar, over the background photo. */
+function SafetyMessage() {
   return (
-    <div className="relative mx-3 mb-3 mt-4 h-48 shrink-0 overflow-hidden rounded-xl [@media(max-height:820px)]:hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/sidebar-safety.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(180deg, rgba(14,14,15,0.35) 0%, rgba(14,14,15,0.7) 45%, rgba(14,14,15,0.96) 100%)" }}
-      />
-      <div className="absolute inset-x-0 bottom-0 p-4">
-        <span className="block font-display text-4xl leading-none text-brand-orange">&ldquo;</span>
-        <p className="text-[17px] font-bold leading-snug text-white">
-          Safety
-          <br />
-          is everyone&rsquo;s
-          <br />
-          responsibility.
-        </p>
-        <span className="mt-2 block h-0.5 w-8 rounded bg-brand-orange" />
-      </div>
+    <div className="shrink-0 px-5 pb-4 pt-6 [@media(max-height:760px)]:hidden">
+      <span className="block font-display text-4xl leading-none text-brand-orange">&ldquo;</span>
+      <p className="text-[18px] font-bold leading-snug text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+        Safety
+        <br />
+        is everyone&rsquo;s
+        <br />
+        responsibility.
+      </p>
+      <span className="mt-2 block h-0.5 w-8 rounded bg-brand-orange" />
     </div>
   );
 }
@@ -278,9 +275,9 @@ export default function Sidebar({
           ))}
         </nav>
 
-        <SafetyPanel />
+        <SafetyMessage />
 
-        <p className="shrink-0 border-t border-white/10 px-4 py-2.5 font-script text-lg text-brand-orange">
+        <p className="shrink-0 border-t border-white/10 px-5 py-2.5 font-script text-lg text-brand-orange">
           Build a Safer Tomorrow
         </p>
       </aside>
