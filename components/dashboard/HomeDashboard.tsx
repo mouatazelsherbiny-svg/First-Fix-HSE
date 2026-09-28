@@ -224,7 +224,13 @@ function HeroStat({
 function Hero({ data }: { data: HomeDashboardData["hero"] }) {
   const days = (n: number | null) => (n === null ? "—" : String(n).padStart(2, "0"));
   return (
-    <section className="relative overflow-hidden rounded-2xl shadow-card" style={{ background: "#120d0a" }}>
+    // Full-bleed: negative margins cancel ProtectedRoute's content padding
+    // (px-4 / sm:px-6 / lg:px-8, py-6) so the banner sits flush against the
+    // top bar and the sidebar, as in the mockup.
+    <section
+      className="relative -mx-4 -mt-6 overflow-hidden sm:-mx-6 lg:-mx-8"
+      style={{ background: "#120d0a" }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={HERO_IMAGE}
@@ -245,7 +251,7 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
         style={{ background: "linear-gradient(0deg, rgba(243,111,36,0.18), transparent 60%)" }}
       />
 
-      <div className="relative flex flex-col gap-6 p-6 sm:p-8 xl:flex-row xl:items-center xl:justify-between">
+      <div className="relative flex flex-col gap-6 px-6 py-8 sm:px-8 lg:px-10 xl:flex-row xl:items-center xl:justify-between">
         <div className="max-w-xl shrink-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">Welcome to First Fix</p>
           <h1 className="mt-2 font-display uppercase leading-[0.9] tracking-wide">
@@ -611,10 +617,15 @@ function TopObservations({ items }: { items: HomeDashboardData["topObservations"
 // ---------------------------------------------------------------------------
 
 export default function HomeDashboard({ data }: { data: HomeDashboardData }) {
+  // The banner renders straight away (its figures fill in as data arrives);
+  // only the sections below wait behind the spinner.
   if (data.isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+      <div className="space-y-6">
+        <Hero data={data.hero} />
+        <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+        </div>
       </div>
     );
   }
