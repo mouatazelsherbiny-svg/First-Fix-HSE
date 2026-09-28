@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useThemeSettings } from "@/context/ThemeSettingsContext";
@@ -16,6 +16,9 @@ export default function ProtectedRoute({
   const { user, isLoading } = useAuth();
   const { morphism } = useThemeSettings();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const openMenu = useCallback(() => setMenuOpen(true), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -46,14 +49,12 @@ export default function ProtectedRoute({
 
   return (
     <div className="min-h-screen">
-      <Sidebar />
-      {/* pt-14 clears the mobile top bar; from `lg` up the padding clears
-          the floating icon rail — its inset, its width, and a matching gap
-          on the content side (see RAIL_WIDTH / RAIL_INSET in Sidebar). */}
-      {/* 108px = RAIL_INSET(16) + RAIL_WIDTH(76) + a 16px gap. */}
-      <main className="min-h-screen pt-14 lg:ps-[108px] lg:pt-0">
-        <div className="px-4 py-8 sm:px-6 lg:px-8">
-          <Topbar />
+      <Topbar onMenu={openMenu} />
+      <Sidebar mobileOpen={menuOpen} onClose={closeMenu} />
+      {/* Clears the fixed 64px top bar and, from `lg` up, the 256px sidebar
+          (TOPBAR_HEIGHT / SIDEBAR_WIDTH in Sidebar.tsx). */}
+      <main className="min-h-screen pt-16 lg:ps-64">
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
           <ScrollReveal>{children}</ScrollReveal>
         </div>
       </main>

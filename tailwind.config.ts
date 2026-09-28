@@ -44,6 +44,8 @@ const config: Config = {
         // Condensed display face (Anton, loaded in app/layout.tsx) for the
         // dashboard headline only — see the .ref-display utility.
         display: ["var(--font-display)", "Arial Narrow", "Impact", "sans-serif"],
+        // Sidebar sign-off only (Dancing Script, loaded in app/layout.tsx).
+        script: ["var(--font-script)", "cursive"],
       },
       borderRadius: {
         xl: "1rem",

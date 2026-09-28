@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Anton } from "next/font/google";
+import { Anton, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
 // Condensed display face, used ONLY for the dashboard's big headline (see
@@ -10,6 +10,13 @@ const anton = Anton({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-display",
+  display: "swap",
+});
+// Script face for the sidebar's "Build a Safer Tomorrow" sign-off only.
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  weight: "600",
+  variable: "--font-script",
   display: "swap",
 });
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -50,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className={anton.variable}>
+    <html lang="en" dir="ltr" className={`${anton.variable} ${dancingScript.variable}`}>
       <body className="bg-app-base font-sans antialiased">
         <PwaRegister />
         <ThemeSettingsProvider>
