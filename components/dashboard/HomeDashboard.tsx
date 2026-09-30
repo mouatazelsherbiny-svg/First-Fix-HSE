@@ -27,7 +27,10 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
-  Droplets,
+  CloudSunRain,
+  CloudMoonRain,
+  CloudMoon,
+  Moon,
   GraduationCap,
   HardHat,
   Lightbulb,
@@ -39,7 +42,6 @@ import {
   Sun,
   Thermometer,
   TriangleAlert,
-  Wind,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -518,107 +520,166 @@ function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) 
 }
 
 // ---------------------------------------------------------------------------
-// Site weather (Open-Meteo, no API key) for the signed-in user's project
+// Weather by region (Open-Meteo, no API key) — one live reading per region,
+// fetched in a single request. The region that holds the signed-in user's
+// project is highlighted and listed first.
 // ---------------------------------------------------------------------------
 
-function weatherDisplay(code: number): { Icon: LucideIcon; label: string } {
-  if (code === 0) return { Icon: Sun, label: "Clear sky" };
-  if (code === 1 || code === 2) return { Icon: CloudSun, label: "Partly cloudy" };
-  if (code === 3) return { Icon: Cloud, label: "Overcast" };
+const WEATHER_REGIONS: { name: string; lat: number; lng: number }[] = [
+  { name: "Riyadh", lat: 24.7136, lng: 46.6753 },
+  { name: "Jeddah", lat: 21.5433, lng: 39.1728 },
+  { name: "Makkah", lat: 21.3891, lng: 39.8579 },
+  { name: "Madinah", lat: 24.4672, lng: 39.6111 },
+  { name: "KAEC", lat: 22.4847, lng: 39.1534 },
+  { name: "AMAALA (Red Sea)", lat: 25.5, lng: 36.9 },
+];
+
+function weatherDisplay(code: number, isDay: boolean): { Icon: LucideIcon; label: string } {
+  if (code === 0) return isDay ? { Icon: Sun, label: "Sunny" } : { Icon: Moon, label: "Clear night" };
+  if (code === 1 || code === 2)
+    return { Icon: isDay ? CloudSun : CloudMoon, label: "Partly cloudy" };
+  if (code === 3) return { Icon: Cloud, label: "Cloudy" };
   if (code === 45 || code === 48) return { Icon: CloudFog, label: "Fog" };
   if (code >= 51 && code <= 67) return { Icon: CloudRain, label: "Rain" };
   if (code >= 71 && code <= 77) return { Icon: CloudSnow, label: "Snow" };
-  if (code >= 80 && code <= 82) return { Icon: CloudRain, label: "Rain showers" };
+  if (code >= 80 && code <= 82)
+    return { Icon: isDay ? CloudSunRain : CloudMoonRain, label: "Rain showers" };
   if (code >= 95) return { Icon: CloudLightning, label: "Thunderstorm" };
-  return { Icon: CloudSun, label: "—" };
+  return { Icon: isDay ? Sun : Moon, label: "—" };
 }
 
-interface WeatherReading {
+interface RegionWeather {
+  name: string;
   temperatureC: number;
   feelsLikeC: number;
-  humidity: number;
-  windKmh: number;
   code: number;
+  isDay: boolean;
+}
+
+function nearestRegion(project: string): string | null {
+  const loc = getProjectLocation(project);
+  if (!loc) return null;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const r of WEATHER_REGIONS) {
+    const d = (r.lat - loc.lat) ** 2 + (r.lng - loc.lng) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = r.name;
+    }
+  }
+  return best;
 }
 
 function SiteWeather({ project }: { project: string }) {
-  const location = useMemo(() => getProjectLocation(project), [project]);
-  const [reading, setReading] = useState<WeatherReading | null>(null);
+  const [readings, setReadings] = useState<RegionWeather[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const home = useMemo(() => nearestRegion(project), [project]);
 
   useEffect(() => {
-    if (!location) {
-      setFailed(true);
-      return;
-    }
     let cancelled = false;
-    setFailed(false);
-    setReading(null);
+    const lat = WEATHER_REGIONS.map((r) => r.lat).join(",");
+    const lng = WEATHER_REGIONS.map((r) => r.lng).join(",");
     const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lng}` +
-      "&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto";
-    fetch(url)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("weather request failed"))))
-      .then((json) => {
-        if (cancelled) return;
-        const c = json?.current;
-        if (!c || typeof c.temperature_2m !== "number") throw new Error("unexpected weather response");
-        setReading({
-          temperatureC: c.temperature_2m,
-          feelsLikeC: c.apparent_temperature ?? c.temperature_2m,
-          humidity: c.relative_humidity_2m ?? 0,
-          windKmh: c.wind_speed_10m ?? 0,
-          code: c.weather_code ?? 0,
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+      "&current=temperature_2m,apparent_temperature,weather_code,is_day&timezone=auto";
+
+    const load = () =>
+      fetch(url)
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error("weather request failed"))))
+        .then((json) => {
+          if (cancelled) return;
+          // One location returns an object, several return an array.
+          const list = Array.isArray(json) ? json : [json];
+          const rows = WEATHER_REGIONS.map((r, i) => {
+            const c = list[i]?.current;
+            if (!c || typeof c.temperature_2m !== "number") return null;
+            return {
+              name: r.name,
+              temperatureC: c.temperature_2m,
+              feelsLikeC: c.apparent_temperature ?? c.temperature_2m,
+              code: c.weather_code ?? 0,
+              isDay: c.is_day === 1,
+            };
+          }).filter((r): r is RegionWeather => r !== null);
+          if (rows.length === 0) throw new Error("no weather data");
+          setReadings(rows);
+          setFailed(false);
+        })
+        .catch(() => {
+          if (!cancelled) setFailed(true);
         });
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      });
+
+    load();
+    // Refresh every 15 minutes so day/night and conditions stay current.
+    const id = setInterval(load, 15 * 60 * 1000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
-  }, [location]);
+  }, []);
 
-  const display = reading ? weatherDisplay(reading.code) : null;
-  const hot = reading ? reading.feelsLikeC >= 40 : false;
+  const ordered = useMemo(
+    () =>
+      readings
+        ? [...readings].sort((a, b) => (a.name === home ? -1 : b.name === home ? 1 : 0))
+        : null,
+    [readings, home]
+  );
 
   return (
-    <Panel title="Site Weather" icon={<CloudSun className="h-5 w-5 text-brand-orange" />}>
-      {reading && display ? (
-        <>
-          <div className="flex items-center gap-4">
-            <display.Icon className="h-14 w-14 shrink-0 text-brand-orange" strokeWidth={1.5} />
-            <div className="min-w-0">
-              <p className="text-4xl font-extrabold leading-none text-brand-black tabular-nums">
-                {Math.round(reading.temperatureC)}°C
-              </p>
-              <p className="mt-1 text-sm font-medium text-brand-grayDark">{display.label}</p>
-            </div>
-            <p className="ms-auto flex shrink-0 items-center gap-1 self-start rounded-full bg-brand-grayLight px-2.5 py-1 text-xs font-semibold text-brand-grayDark">
-              <MapPin className="h-3.5 w-3.5 text-brand-orange" />
-              {project}
-            </p>
-          </div>
-          <div className="mt-4 grid grid-cols-3 divide-x divide-brand-border rounded-xl bg-brand-grayLight py-2.5 text-center rtl:divide-x-reverse">
-            {[
-              { Icon: Thermometer, label: "Feels like", value: `${Math.round(reading.feelsLikeC)}°C` },
-              { Icon: Droplets, label: "Humidity", value: `${Math.round(reading.humidity)}%` },
-              { Icon: Wind, label: "Wind", value: `${Math.round(reading.windKmh)} km/h` },
-            ].map(({ Icon, label, value }) => (
-              <div key={label} className="px-1">
-                <Icon className="mx-auto h-4 w-4 text-brand-orange" />
-                <p className="mt-1 text-sm font-bold text-brand-black tabular-nums">{value}</p>
-                <p className="text-[11px] text-brand-gray">{label}</p>
-              </div>
-            ))}
-          </div>
-          {hot && (
-            <p className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-700" style={{ background: "#fef2f2" }}>
-              <TriangleAlert className="h-4 w-4 shrink-0" />
-              Heat stress risk — hydrate and follow the work/rest schedule.
-            </p>
-          )}
-        </>
+    <Panel title="Weather by Region" icon={<CloudSun className="h-5 w-5 text-brand-orange" />}>
+      {ordered ? (
+        <ul className="divide-y divide-brand-border">
+          {ordered.map((r) => {
+            const { Icon, label } = weatherDisplay(r.code, r.isDay);
+            const isHome = r.name === home;
+            const hot = r.feelsLikeC >= 40;
+            return (
+              <li
+                key={r.name}
+                className={`flex items-center gap-3 py-2.5 ${isHome ? "-mx-2 rounded-xl px-2" : ""}`}
+                style={isHome ? { background: "rgb(var(--brand-orange-light-rgb))" } : undefined}
+              >
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                  style={{ background: r.isDay ? "#fff4e6" : "#1e293b" }}
+                >
+                  <Icon
+                    className="h-6 w-6"
+                    strokeWidth={1.8}
+                    style={{ color: r.isDay ? "#f59e0b" : "#e2e8f0" }}
+                  />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-brand-black">
+                    {r.name}
+                    {isHome && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-brand-orange px-1.5 py-0.5 text-[9px] font-bold uppercase text-brand-onAccent">
+                        <MapPin className="h-2.5 w-2.5" />
+                        {project}
+                      </span>
+                    )}
+                  </p>
+                  <p className="flex items-center gap-1 text-xs text-brand-grayDark">
+                    {label}
+                    {hot && (
+                      <span className="inline-flex items-center gap-0.5 font-semibold text-red-600" title="Heat stress risk">
+                        · <Thermometer className="h-3 w-3" /> Heat risk
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="shrink-0 text-end">
+                  <p className="text-lg font-extrabold leading-none text-brand-black tabular-nums">
+                    {Math.round(r.temperatureC)}°C
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-brand-gray">feels {Math.round(r.feelsLikeC)}°</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       ) : failed ? (
         <EmptyState text="Weather data unavailable right now" />
       ) : (
