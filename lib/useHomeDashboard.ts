@@ -10,14 +10,19 @@ import { useMemo } from "react";
 import { useObservations } from "@/context/ObservationsContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
+import { useHsePassport } from "@/context/HsePassportContext";
 import type { Observation } from "@/types/observation";
 import type { Incident } from "@/types/incident";
 import type { WeeklyKpiRecord } from "@/types/weeklyKpi";
+import type { TrainingCourseRecord } from "@/types/hsePassport";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const GOOD_PRACTICE = "Good Practice";
 const LTI_LABELS = ["Lost Time Incident", "Lost Time Injury", "LTI"];
 const MTC_RWC_LABELS = ["Medical Treatment Case", "Restricted Work Case"];
+const LSR_VIOLATION = "LSR Violation";
+/** Projects shown on each "by project" bar chart. */
+const TOP_PROJECTS = 8;
 
 /** Months shown on the HSE Performance Trends chart. */
 const TREND_MONTHS = 8;
@@ -32,6 +37,7 @@ export const LTIFR_TARGET = 0.1;
 export interface HeroStats {
   totalSafeWorkHours: number;
   safeHoursAsOf: string | null;
+  totalTrainingHours: number;
   daysSinceLti: number | null;
   daysSinceMtcRwc: number | null;
 }
@@ -84,6 +90,8 @@ export interface HomeDashboardData {
   projects: ProjectSlide[];
   goodPractices: GoodPracticeCard[];
   trends: TrendPoint[];
+  observationsByProject: CountRow[];
+  lsrByProject: CountRow[];
 }
 
 function toTime(value: string | null | undefined): number | null {
@@ -135,7 +143,8 @@ function countBy<T>(items: T[], key: (item: T) => string | null | undefined): Co
 export function computeHomeDashboard(
   observations: Observation[],
   incidents: Incident[],
-  kpi: WeeklyKpiRecord[]
+  kpi: WeeklyKpiRecord[],
+  training: TrainingCourseRecord[] = []
 ): Omit<HomeDashboardData, "isLoading"> {
   // ---- Hero stats ----------------------------------------------------------
   const totalSafeWorkHours = kpi.reduce((s, r) => s + (r.totalSafeWorkHours || 0), 0);
@@ -273,10 +282,18 @@ export function computeHomeDashboard(
     }
   }
 
+  // ---- "Most ... by project" bar charts -------------------------------------
+  const observationsByProject = countBy(observations, (o) => o.projectName).slice(0, TOP_PROJECTS);
+  const lsrByProject = countBy(
+    incidents.filter((i) => i.incidentCategory === LSR_VIOLATION),
+    (i) => i.projectName
+  ).slice(0, TOP_PROJECTS);
+
   return {
     hero: {
       totalSafeWorkHours,
       safeHoursAsOf,
+      totalTrainingHours: Math.round(training.reduce((s, r) => s + (r.hours || 0), 0)),
       daysSinceLti: daysSince(lastLti),
       daysSinceMtcRwc: daysSince(lastMtcRwc),
     },
@@ -286,6 +303,8 @@ export function computeHomeDashboard(
     projects,
     goodPractices,
     trends,
+    observationsByProject,
+    lsrByProject,
   };
 }
 
@@ -293,11 +312,12 @@ export function useHomeDashboard(): HomeDashboardData {
   const { observations, isLoading: obsLoading } = useObservations();
   const { incidents, isLoading: incLoading } = useIncidents();
   const { records, isLoading: kpiLoading } = useWeeklyKpi();
+  const { trainingRecords, isLoading: passportLoading } = useHsePassport();
 
   const data = useMemo(
-    () => computeHomeDashboard(observations, incidents, records),
-    [observations, incidents, records]
+    () => computeHomeDashboard(observations, incidents, records, trainingRecords),
+    [observations, incidents, records, trainingRecords]
   );
 
-  return { isLoading: obsLoading || incLoading || kpiLoading, ...data };
+  return { isLoading: obsLoading || incLoading || kpiLoading || passportLoading, ...data };
 }

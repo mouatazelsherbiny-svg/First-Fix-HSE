@@ -14,42 +14,37 @@
  * use inline rgba styles instead.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  Anchor,
   ArrowRight,
-  ArrowUpFromLine,
-  BrushCleaning,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  ClipboardCheck,
-  Construction,
-  Container,
-  FileCheck2,
-  Flame,
-  Forklift,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Droplets,
   GraduationCap,
   HardHat,
-  Leaf,
-  Lock,
-  Package,
+  Lightbulb,
+  MapPin,
   Pause,
   Play,
-  Shield,
   ShieldCheck,
-  Shovel,
   Sparkles,
-  TrafficCone,
+  Sun,
+  Thermometer,
   TriangleAlert,
-  Truck,
-  Users,
-  Wrench,
-  Zap,
+  Wind,
   type LucideIcon,
 } from "lucide-react";
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   LabelList,
   Line,
@@ -66,9 +61,11 @@ import {
   type HomeDashboardData,
   type ProjectSlide,
 } from "@/lib/useHomeDashboard";
+import { getProjectLocation } from "@/lib/projectLocations";
 
 const ACCENT = "rgb(var(--brand-orange-rgb))";
 const LTIFR_COLOR = "#1f4e79";
+const LSR_COLOR = "#1f4e79";
 const HERO_IMAGE = "/brand/dashboard-hero.jpg";
 const SLIDE_INTERVAL_MS = 6000;
 
@@ -99,34 +96,6 @@ function timeAgo(value: string | null) {
   if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
   const years = Math.floor(days / 365);
   return `${years} year${years > 1 ? "s" : ""} ago`;
-}
-
-const OBSERVATION_ICONS: [RegExp, LucideIcon][] = [
-  [/height|fall/i, ArrowUpFromLine],
-  [/permit/i, FileCheck2],
-  [/lifting/i, Anchor],
-  [/mobile|mepi/i, Forklift],
-  [/heavy equipment/i, Truck],
-  [/loto|isolation/i, Lock],
-  [/electrical/i, Zap],
-  [/fire/i, Flame],
-  [/housekeeping/i, BrushCleaning],
-  [/ppe/i, HardHat],
-  [/barricade|sign/i, TrafficCone],
-  [/excavation|edge/i, Shovel],
-  [/scaffold/i, Construction],
-  [/tools|machine/i, Wrench],
-  [/training|qualification/i, GraduationCap],
-  [/environment/i, Leaf],
-  [/welfare/i, Users],
-  [/dropped|falling object/i, Package],
-  [/confined/i, Container],
-  [/document/i, ClipboardCheck],
-  [/protection/i, Shield],
-];
-
-function observationIcon(label: string): LucideIcon {
-  return OBSERVATION_ICONS.find(([re]) => re.test(label))?.[1] ?? TriangleAlert;
 }
 
 const INCIDENT_IMAGES: [RegExp, string][] = [
@@ -264,7 +233,7 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
         </div>
 
         <div
-          className="grid grid-cols-2 gap-y-5 rounded-2xl border p-5 sm:grid-cols-4 sm:divide-x sm:divide-white/15 rtl:sm:divide-x-reverse"
+          className="grid grid-cols-2 gap-y-5 rounded-2xl border p-5 sm:grid-cols-5 sm:divide-x sm:divide-white/15 rtl:sm:divide-x-reverse"
           style={{ background: "rgba(10,8,7,0.72)", borderColor: "rgba(255,255,255,0.12)" }}
         >
           <HeroStat
@@ -273,9 +242,14 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
             label="Total Safe Work Hours"
             sub={data.safeHoursAsOf ? `as of ${formatDate(data.safeHoursAsOf)}` : undefined}
           />
+          <HeroStat
+            icon={GraduationCap}
+            value={data.totalTrainingHours.toLocaleString("en-US")}
+            label="Total Training Hours"
+          />
           <HeroStat icon={CalendarDays} value={days(data.daysSinceLti)} label="Days Since Last LTI" />
           <HeroStat icon={ShieldCheck} value={days(data.daysSinceMtcRwc)} label="Days Since Last MTC / RWC" />
-          <div className="col-span-2 flex flex-col justify-center px-3 sm:col-span-1">
+          <div className="flex flex-col justify-center px-3 sm:px-4">
             <p className="text-xl font-extrabold uppercase leading-tight text-white">
               Zero Harm
               <span className="block text-sm font-bold tracking-wide">is possible</span>
@@ -316,41 +290,6 @@ function LatestIncidents({ items }: { items: HomeDashboardData["latestIncidents"
                   <p className="text-xs text-brand-grayDark">{formatDate(i.date, true)}</p>
                   {i.place && <p className="truncate text-xs text-brand-gray">{i.place}</p>}
                 </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-function TrendingAlerts({ items }: { items: HomeDashboardData["trendingAlerts"] }) {
-  return (
-    <Panel
-      title="Trending HSE Alerts"
-      icon={<Flame className="h-5 w-5 text-brand-orange" />}
-      href="/observations"
-    >
-      {items.length === 0 ? (
-        <EmptyState text="No recent observations" />
-      ) : (
-        <ul className="divide-y divide-brand-border">
-          {items.map((row) => {
-            const Icon = observationIcon(row.label);
-            return (
-              <li key={row.label}>
-                <Link
-                  href="/observations"
-                  className="group flex items-center gap-3 py-2.5 text-sm transition hover:text-brand-orange"
-                >
-                  <Icon className="h-5 w-5 shrink-0 text-brand-orange" strokeWidth={1.9} />
-                  <span className="min-w-0 flex-1 truncate font-medium text-brand-black group-hover:text-brand-orange">
-                    {row.label}
-                  </span>
-                  <span className="font-semibold tabular-nums text-brand-black">{row.count}</span>
-                  <ArrowRight className="h-4 w-4 text-brand-orange rtl:rotate-180" />
-                </Link>
               </li>
             );
           })}
@@ -411,7 +350,7 @@ function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
         <div className="flex items-start justify-between gap-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
             <span className="h-4 w-1 rounded bg-brand-orange" />
-            Projects
+            HSE News
           </p>
           {slides.length > 1 && (
             <div className="flex items-center gap-2">
@@ -474,7 +413,7 @@ function GoodPractices({ items }: { items: HomeDashboardData["goodPractices"] })
               href={`/observations/${g.id}`}
               className="group flex flex-col overflow-hidden rounded-xl border border-brand-border transition hover:shadow-cardHover"
             >
-              <div className="flex h-32 items-center justify-center overflow-hidden bg-brand-grayLight">
+              <div className="flex h-48 items-center justify-center overflow-hidden bg-brand-grayLight">
                 {g.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={g.photo} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
@@ -505,13 +444,12 @@ function GoodPractices({ items }: { items: HomeDashboardData["goodPractices"] })
 
 function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) {
   return (
-    <Panel title="HSE Performance Trends" href="/weekly-kpi" linkLabel="View Details">
+    <Panel title="HSE Incident Frequency Rates" href="/weekly-kpi" linkLabel="View Details">
       {points.length === 0 ? (
         <EmptyState text="Trends appear once Weekly KPI data is recorded" />
       ) : (
         <>
-          <p className="mb-1 text-center text-sm font-semibold text-brand-grayDark">Incident Frequency Rates</p>
-          <div className="h-56 w-full">
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={points} margin={{ top: 18, right: 16, bottom: 0, left: -12 }}>
                 <CartesianGrid stroke="#eceff3" vertical={false} />
@@ -537,7 +475,7 @@ function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) 
             </ResponsiveContainer>
           </div>
           <div className="mt-2 overflow-x-auto">
-            <table className="w-full min-w-[480px] text-center text-xs tabular-nums">
+            <table className="w-full min-w-[560px] text-center text-xs tabular-nums">
               <thead>
                 <tr className="text-[11px] text-brand-gray">
                   <th />
@@ -579,33 +517,226 @@ function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) 
   );
 }
 
-function TopObservations({ items }: { items: HomeDashboardData["topObservations"] }) {
+// ---------------------------------------------------------------------------
+// Site weather (Open-Meteo, no API key) for the signed-in user's project
+// ---------------------------------------------------------------------------
+
+function weatherDisplay(code: number): { Icon: LucideIcon; label: string } {
+  if (code === 0) return { Icon: Sun, label: "Clear sky" };
+  if (code === 1 || code === 2) return { Icon: CloudSun, label: "Partly cloudy" };
+  if (code === 3) return { Icon: Cloud, label: "Overcast" };
+  if (code === 45 || code === 48) return { Icon: CloudFog, label: "Fog" };
+  if (code >= 51 && code <= 67) return { Icon: CloudRain, label: "Rain" };
+  if (code >= 71 && code <= 77) return { Icon: CloudSnow, label: "Snow" };
+  if (code >= 80 && code <= 82) return { Icon: CloudRain, label: "Rain showers" };
+  if (code >= 95) return { Icon: CloudLightning, label: "Thunderstorm" };
+  return { Icon: CloudSun, label: "—" };
+}
+
+interface WeatherReading {
+  temperatureC: number;
+  feelsLikeC: number;
+  humidity: number;
+  windKmh: number;
+  code: number;
+}
+
+function SiteWeather({ project }: { project: string }) {
+  const location = useMemo(() => getProjectLocation(project), [project]);
+  const [reading, setReading] = useState<WeatherReading | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!location) {
+      setFailed(true);
+      return;
+    }
+    let cancelled = false;
+    setFailed(false);
+    setReading(null);
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lng}` +
+      "&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto";
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("weather request failed"))))
+      .then((json) => {
+        if (cancelled) return;
+        const c = json?.current;
+        if (!c || typeof c.temperature_2m !== "number") throw new Error("unexpected weather response");
+        setReading({
+          temperatureC: c.temperature_2m,
+          feelsLikeC: c.apparent_temperature ?? c.temperature_2m,
+          humidity: c.relative_humidity_2m ?? 0,
+          windKmh: c.wind_speed_10m ?? 0,
+          code: c.weather_code ?? 0,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [location]);
+
+  const display = reading ? weatherDisplay(reading.code) : null;
+  const hot = reading ? reading.feelsLikeC >= 40 : false;
+
   return (
-    <Panel title="Top 3 Observations" href="/observations">
-      {items.length === 0 ? (
-        <EmptyState text="No observations recorded yet" />
-      ) : (
-        <div className="grid flex-1 grid-cols-3 gap-4">
-          {items.map((o, i) => {
-            const Icon = observationIcon(o.label);
-            return (
-              <div key={o.label} className="flex flex-col">
-                <div className="relative mb-6 flex aspect-[4/3] items-center justify-center rounded-xl bg-brand-grayLight">
-                  {o.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={o.photo} alt="" className="h-full w-full rounded-xl object-cover" />
-                  ) : (
-                    <Icon className="h-10 w-10 text-brand-orange" strokeWidth={1.6} />
-                  )}
-                  <span className="absolute -bottom-4 start-3 flex h-9 w-9 items-center justify-center rounded-full border-2 border-brand-surface bg-brand-orange text-base font-extrabold text-brand-onAccent shadow">
-                    {i + 1}
-                  </span>
-                </div>
-                <p className="text-sm font-bold leading-tight text-brand-black">{o.label}</p>
-                <p className="text-sm font-bold text-brand-grayDark">({o.count.toLocaleString("en-US")})</p>
+    <Panel title="Site Weather" icon={<CloudSun className="h-5 w-5 text-brand-orange" />}>
+      {reading && display ? (
+        <>
+          <div className="flex items-center gap-4">
+            <display.Icon className="h-14 w-14 shrink-0 text-brand-orange" strokeWidth={1.5} />
+            <div className="min-w-0">
+              <p className="text-4xl font-extrabold leading-none text-brand-black tabular-nums">
+                {Math.round(reading.temperatureC)}°C
+              </p>
+              <p className="mt-1 text-sm font-medium text-brand-grayDark">{display.label}</p>
+            </div>
+            <p className="ms-auto flex shrink-0 items-center gap-1 self-start rounded-full bg-brand-grayLight px-2.5 py-1 text-xs font-semibold text-brand-grayDark">
+              <MapPin className="h-3.5 w-3.5 text-brand-orange" />
+              {project}
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-3 divide-x divide-brand-border rounded-xl bg-brand-grayLight py-2.5 text-center rtl:divide-x-reverse">
+            {[
+              { Icon: Thermometer, label: "Feels like", value: `${Math.round(reading.feelsLikeC)}°C` },
+              { Icon: Droplets, label: "Humidity", value: `${Math.round(reading.humidity)}%` },
+              { Icon: Wind, label: "Wind", value: `${Math.round(reading.windKmh)} km/h` },
+            ].map(({ Icon, label, value }) => (
+              <div key={label} className="px-1">
+                <Icon className="mx-auto h-4 w-4 text-brand-orange" />
+                <p className="mt-1 text-sm font-bold text-brand-black tabular-nums">{value}</p>
+                <p className="text-[11px] text-brand-gray">{label}</p>
               </div>
-            );
-          })}
+            ))}
+          </div>
+          {hot && (
+            <p className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-700" style={{ background: "#fef2f2" }}>
+              <TriangleAlert className="h-4 w-4 shrink-0" />
+              Heat stress risk — hydrate and follow the work/rest schedule.
+            </p>
+          )}
+        </>
+      ) : failed ? (
+        <EmptyState text="Weather data unavailable right now" />
+      ) : (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tips of the day (Training) — one tip per calendar day, same for everyone
+// ---------------------------------------------------------------------------
+
+const TRAINING_TIPS: { topic: string; tip: string }[] = [
+  { topic: "PPE", tip: "Always wear your PPE correctly — a hard hat only protects when it's actually on your head." },
+  { topic: "Near Miss Reporting", tip: "Report near misses even when nobody got hurt — they're the earliest warning of a real incident." },
+  { topic: "Tools & Equipment", tip: "Inspect your tools and equipment before every shift, not just at the start of the week." },
+  { topic: "Housekeeping", tip: "Keep walkways and exits clear — housekeeping is a safety control, not just tidiness." },
+  { topic: "Permit to Work", tip: "Never bypass a permit-to-work step to save time — that's exactly when incidents happen." },
+  { topic: "Confined Space", tip: "Test gas detectors and confined-space equipment before, not during, entry." },
+  { topic: "Heat Stress", tip: "Stay hydrated and take scheduled breaks in high heat — heat stress builds up before you feel it." },
+  { topic: "Excavations", tip: "Barricade and sign every excavation and floor opening — an unmarked hazard is an incident waiting to happen." },
+  { topic: "LOTO", tip: "Lock out and tag out energy sources before maintenance — every time, no exceptions." },
+  { topic: "Lifting Operations", tip: "Double-check load ratings and rigging before every lift — don't assume yesterday's setup is still safe today." },
+  { topic: "Stop Work Authority", tip: "Speak up if you see an unsafe act — a five-second word can prevent a lifelong injury." },
+  { topic: "Working at Height", tip: "Fit-check your fall protection harness every time — a loose strap defeats the whole system." },
+];
+
+function TipsOfTheDay() {
+  const [offset, setOffset] = useState(0);
+  const dayOfYear = useMemo(
+    () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000),
+    []
+  );
+  const tip = TRAINING_TIPS[(dayOfYear + offset) % TRAINING_TIPS.length];
+
+  return (
+    <Panel
+      title="Tips of the day (Training)"
+      icon={<Lightbulb className="h-5 w-5 text-brand-orange" />}
+      href="/hse-passport/training"
+      linkLabel="Training"
+      className="h-full"
+    >
+      <div className="flex flex-1 flex-col rounded-xl p-5" style={{ background: "rgb(var(--brand-orange-light-rgb))" }}>
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-orange">
+          <GraduationCap className="h-4 w-4" />
+          {tip.topic}
+        </p>
+        <p className="mt-3 flex-1 text-lg font-semibold leading-snug text-brand-black">&ldquo;{tip.tip}&rdquo;</p>
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <p className="text-xs text-brand-grayDark">
+            Tip {((dayOfYear + offset) % TRAINING_TIPS.length) + 1} of {TRAINING_TIPS.length}
+          </p>
+          <button
+            type="button"
+            onClick={() => setOffset((o) => o + 1)}
+            className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-3 py-1.5 text-xs font-semibold text-brand-grayDark shadow-sm transition hover:text-brand-orange"
+          >
+            Next tip
+            <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+          </button>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// "Most ... by project" bar charts
+// ---------------------------------------------------------------------------
+
+function ByProjectBarChart({
+  title,
+  rows,
+  unit,
+  href,
+  color,
+  emptyText,
+}: {
+  title: string;
+  rows: { label: string; count: number }[];
+  unit: string;
+  href: string;
+  color: string;
+  emptyText: string;
+}) {
+  return (
+    <Panel title={title} href={href}>
+      <p className="-mt-2 mb-3 text-xs text-brand-gray">By Project</p>
+      {rows.length === 0 ? (
+        <EmptyState text={emptyText} />
+      ) : (
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={rows} margin={{ top: 18, right: 4, bottom: 0, left: -18 }} barCategoryGap="22%">
+              <CartesianGrid stroke="#eceff3" vertical={false} />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11, fill: "#64748b" }}
+                axisLine={false}
+                tickLine={false}
+                interval={0}
+                tickFormatter={(v: string) => (v.length > 9 ? `${v.slice(0, 8)}…` : v)}
+              />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip
+                cursor={{ fill: "rgba(148,163,184,0.12)" }}
+                formatter={(v) => [`${Number(v).toLocaleString("en-US")} ${unit}`, "Total"]}
+                contentStyle={{ borderRadius: 12, fontSize: 12 }}
+              />
+              <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false}>
+                <LabelList dataKey="count" position="top" fontSize={10} fill="#475569" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
     </Panel>
@@ -616,7 +747,7 @@ function TopObservations({ items }: { items: HomeDashboardData["topObservations"
 // Page layout
 // ---------------------------------------------------------------------------
 
-export default function HomeDashboard({ data }: { data: HomeDashboardData }) {
+export default function HomeDashboard({ data, project }: { data: HomeDashboardData; project: string }) {
   // The banner renders straight away (its figures fill in as data arrives);
   // only the sections below wait behind the spinner.
   if (data.isLoading) {
@@ -634,25 +765,43 @@ export default function HomeDashboard({ data }: { data: HomeDashboardData }) {
     <div className="space-y-6">
       <Hero data={data.hero} />
 
+      {/* Left: HSE News + Good Practices, then the two by-project charts.
+          Right: Site Weather + Latest Incidents, then Tips of the day level
+          with the charts. */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <div className="flex min-w-0 flex-col gap-6 lg:col-span-5 xl:col-span-4">
-          <LatestIncidents items={data.latestIncidents} />
-          <TrendingAlerts items={data.trendingAlerts} />
-        </div>
-        <div className="flex min-w-0 flex-col gap-6 lg:col-span-7 xl:col-span-8">
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
           <ProjectsSpotlight slides={data.projects} />
           <GoodPractices items={data.goodPractices} />
         </div>
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-4">
+          <SiteWeather project={project} />
+          <LatestIncidents items={data.latestIncidents} />
+        </div>
+
+        <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:col-span-8">
+          <ByProjectBarChart
+            title="Most HSE Observation"
+            rows={data.observationsByProject}
+            unit="observations"
+            href="/observations"
+            color={ACCENT}
+            emptyText="No observations recorded yet"
+          />
+          <ByProjectBarChart
+            title="Most LSR Violations"
+            rows={data.lsrByProject}
+            unit="LSR violations"
+            href="/ficc"
+            color={LSR_COLOR}
+            emptyText="No LSR violations recorded"
+          />
+        </div>
+        <div className="flex min-w-0 lg:col-span-4 [&>section]:flex-1">
+          <TipsOfTheDay />
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="min-w-0 lg:col-span-7">
-          <PerformanceTrends points={data.trends} />
-        </div>
-        <div className="flex min-w-0 lg:col-span-5 [&>section]:flex-1">
-          <TopObservations items={data.topObservations} />
-        </div>
-      </div>
+      <PerformanceTrends points={data.trends} />
     </div>
   );
 }

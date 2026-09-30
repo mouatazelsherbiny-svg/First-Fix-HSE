@@ -3,6 +3,7 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import HomeDashboard from "@/components/dashboard/HomeDashboard";
 import { useHomeDashboard } from "@/lib/useHomeDashboard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
   return (
@@ -14,5 +15,6 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const data = useHomeDashboard();
-  return <HomeDashboard data={data} />;
+  const { user } = useAuth();
+  return <HomeDashboard data={data} project={user?.project ?? "KSP"} />;
 }
