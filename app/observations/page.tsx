@@ -9,8 +9,109 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import type { Observation } from "@/types/observation";
+import {
+  CheckCircle2,
+  ClipboardList,
+  FolderOpen,
+  Sparkles,
+  Tag,
+  UserRound,
+  CircleDot,
+  type LucideIcon,
+} from "lucide-react";
 
-export default function MyObservationsPage() {
+const GOOD_PRACTICE = "Good Practice";
+const OPEN_STATUSES = new Set(["Open", "In Progress", "Overdue"]);
+
+function isGoodPractice(o: Observation) {
+  return o.observationType === GOOD_PRACTICE || o.classification === GOOD_PRACTICE;
+}
+
+function typeLabel(o: Observation) {
+  return o.observationType === "Others" && o.observationTypeOther ? o.observationTypeOther : o.observationType;
+}
+
+function top3<T>(items: T[], key: (item: T) => string | null | undefined) {
+  const map = new Map<string, number>();
+  for (const item of items) {
+    const k = key(item)?.trim();
+    if (!k) continue;
+    map.set(k, (map.get(k) ?? 0) + 1);
+  }
+  return Array.from(map, ([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: number;
+  tone: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-brand-border bg-brand-surface p-5 shadow-card">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: `${tone}1f`, color: tone }}>
+        <Icon className="h-6 w-6" strokeWidth={2} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-3xl font-extrabold leading-none text-brand-black tabular-nums">{value.toLocaleString("en-US")}</p>
+        <p className="mt-1 truncate text-sm font-medium text-brand-grayDark">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function TopThreeCard({
+  icon: Icon,
+  title,
+  rows,
+  emptyText,
+}: {
+  icon: LucideIcon;
+  title: string;
+  rows: { label: string; count: number }[];
+  emptyText: string;
+}) {
+  const max = rows[0]?.count ?? 0;
+  return (
+    <div className="rounded-2xl border border-brand-border bg-brand-surface p-5 shadow-card">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-brand-black">
+        <Icon className="h-5 w-5 text-brand-orange" />
+        {title}
+      </h2>
+      {rows.length === 0 ? (
+        <p className="py-4 text-center text-sm text-brand-gray">{emptyText}</p>
+      ) : (
+        <ol className="space-y-3">
+          {rows.map((r, i) => (
+            <li key={r.label}>
+              <div className="mb-1 flex items-center gap-2.5 text-sm">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-orange text-xs font-bold text-brand-onAccent">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1 truncate font-semibold text-brand-black" title={r.label}>
+                  {r.label}
+                </span>
+                <span className="shrink-0 font-bold tabular-nums text-brand-black">{r.count.toLocaleString("en-US")}</span>
+              </div>
+              <div className="ms-8 h-1.5 overflow-hidden rounded-full bg-brand-grayLight">
+                <div className="h-full rounded-full bg-brand-orange" style={{ width: `${max ? (r.count / max) * 100 : 0}%` }} />
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+export default function ObservationsPage() {
   return (
     <ProtectedRoute>
       <ObservationsList />
@@ -24,6 +125,7 @@ function ObservationsList() {
   const { t, locale } = useLanguage();
   const { observations, isLoading, updateObservation } = useObservations();
   const [query, setQuery] = useState("");
+  const [projectFilter, setProjectFilter] = useState("");
   const [page, setPage] = useState(0);
   const [cancelTarget, setCancelTarget] = useState<Observation | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -43,22 +145,48 @@ function ObservationsList() {
     }
   };
 
+  const projects = useMemo(
+    () => Array.from(new Set(observations.map((o) => o.projectName).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+    [observations]
+  );
+
+  // Project filter drives both the summary cards and the table; the text
+  // search only narrows the table.
+  const byProject = useMemo(
+    () => (projectFilter ? observations.filter((o) => o.projectName === projectFilter) : observations),
+    [observations, projectFilter]
+  );
+
+  const summary = useMemo(() => {
+    const active = byProject.filter((o) => o.status !== "Cancelled");
+    const hazards = active.filter((o) => !isGoodPractice(o));
+    return {
+      total: active.length,
+      open: active.filter((o) => OPEN_STATUSES.has(o.status)).length,
+      closed: active.filter((o) => o.status === "Closed").length,
+      goodPractice: active.filter(isGoodPractice).length,
+      topTypes: top3(hazards, typeLabel),
+      topProjects: top3(active, (o) => o.projectName),
+      topObservers: top3(active, (o) => o.inspectedBy),
+    };
+  }, [byProject]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return observations;
-    return observations.filter(
+    if (!q) return byProject;
+    return byProject.filter(
       (o) =>
         String(o.reportNumber).includes(q) ||
         o.projectName.toLowerCase().includes(q) ||
         o.observationType.toLowerCase().includes(q)
     );
-  }, [observations, query]);
+  }, [byProject, query]);
 
   // Keep the rendered table light — page the (already client-filtered)
   // results instead of rendering all matches at once.
   useEffect(() => {
     setPage(0);
-  }, [query]);
+  }, [query, projectFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
@@ -111,7 +239,6 @@ function ObservationsList() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-black">{t.list.title}</h1>
-          <p className="mt-1 text-sm text-brand-gray">{t.list.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={filtered.length === 0} />
@@ -124,7 +251,20 @@ function ObservationsList() {
         </div>
       </div>
 
-      <div className="mb-4">
+      {/* Summary: totals, then the top-3 rankings (follow the project filter) */}
+      <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon={ClipboardList} label="Total No. of Observations" value={summary.total} tone="#475569" />
+        <StatCard icon={CircleDot} label="Open" value={summary.open} tone="#f36f24" />
+        <StatCard icon={CheckCircle2} label="Closed" value={summary.closed} tone="#16a34a" />
+        <StatCard icon={Sparkles} label="Good Practice (G.P)" value={summary.goodPractice} tone="#2563eb" />
+      </div>
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <TopThreeCard icon={Tag} title="Top 3 Observation Types" rows={summary.topTypes} emptyText={t.list.empty} />
+        <TopThreeCard icon={FolderOpen} title="Top 3 Observing Projects" rows={summary.topProjects} emptyText={t.list.empty} />
+        <TopThreeCard icon={UserRound} title="Top 3 Observers" rows={summary.topObservers} emptyText={t.list.empty} />
+      </div>
+
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
           type="text"
           value={query}
@@ -132,6 +272,22 @@ function ObservationsList() {
           placeholder={t.list.search}
           className="input-field max-w-sm"
         />
+        <label className="flex items-center gap-2 text-sm font-medium text-brand-grayDark">
+          <FolderOpen className="h-4 w-4 text-brand-orange" />
+          Project
+          <select
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+            className="input-field !w-auto min-w-[12rem] !py-2"
+          >
+            <option value="">All projects</option>
+            {projects.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       {isLoading ? (

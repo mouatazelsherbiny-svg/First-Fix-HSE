@@ -1033,8 +1033,8 @@ export const translations: Record<Locale, TranslationShape> = {
       other: "Other",
     },
     list: {
-      title: "My Observations",
-      subtitle: "Observations you have submitted",
+      title: "Observations",
+      subtitle: "All HSE observations across projects",
       newBtn: "+ New Observation",
       goodPracticeBtn: "+ Good Practice",
       empty: "No observations yet. Create your first one!",
@@ -1838,8 +1838,8 @@ export const translations: Record<Locale, TranslationShape> = {
       other: "أخرى",
     },
     list: {
-      title: "ملاحظاتي",
-      subtitle: "الملاحظات التي قمت برفعها",
+      title: "الملاحظات",
+      subtitle: "كل ملاحظات السلامة في جميع المشاريع",
       newBtn: "+ ملاحظة جديدة",
       goodPracticeBtn: "+ ممارسة جيدة",
       empty: "لا توجد ملاحظات بعد. أضف أول ملاحظة لك!",
