@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Info, Paperclip, Save } from "lucide-react";
+import { Paperclip, Save } from "lucide-react";
 import ProjectFilter from "@/components/ProjectFilter";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
@@ -180,17 +180,6 @@ export default function DailyKpiGrid() {
         </div>
       </div>
 
-      <div
-        className="mb-4 flex items-start gap-2 rounded-xl border px-4 py-3 text-sm text-brand-black"
-        style={{ background: "#fef9c3", borderColor: "#fde047" }}
-      >
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-        <span>
-          Daily entries feed the <strong>KPI</strong> page — each week (Sunday to Saturday) is totalled automatically
-          for this project. Use the <Paperclip className="inline h-3.5 w-3.5" /> on <strong>2.2 HSE Meetings</strong>{" "}
-          to upload the weekly meeting minutes between PD/PM and Safety.
-        </span>
-      </div>
 
       <input
         ref={fileRef}
