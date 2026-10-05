@@ -68,16 +68,11 @@ function FiccPageContent() {
     }
   };
 
-  // Only rows created through this workflow (they always carry an
-  // iir_due_at) — the 986 legacy-imported incidents/injuries have neither
-  // and belong to the Incidents/Injury pages instead. Not restricted to
-  // the viewer's own project — FICC/IIR reports can be filed for any
-  // project (see the Project field in the Add FICC form), same as the
-  // Injury page's own list, which is unfiltered by project too and just
-  // offers a search box.
+  // Every FICC record in the incidents table — the records imported from
+  // SharePoint plus the ones added here — newest first. The app-wide
+  // project filter (top of the page) already narrows `incidents`.
   const ficcRecords = useMemo(() => {
-    const all = incidents
-      .filter((i) => !!i.iirDueAt)
+    const all = [...incidents]
       .sort((a, b) => (b.incidentDate ?? "").localeCompare(a.incidentDate ?? ""));
     const q = query.trim().toLowerCase();
     if (!q) return all;
@@ -195,10 +190,10 @@ function FiccPageContent() {
                           : "—"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-6">
-                        <Badge value={incident.iirStatus ?? "Open"} />
+                        {incident.iirStatus ? <Badge value={incident.iirStatus} /> : "—"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-6">
-                        {isOpen ? (
+                        {isOpen && remaining !== null ? (
                           overdue ? (
                             <span className="text-xs font-semibold text-red-400">
                               {t.ficc.deadlinePassed}
