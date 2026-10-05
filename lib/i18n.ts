@@ -1307,7 +1307,7 @@ export const translations: Record<Locale, TranslationShape> = {
       editInfoError: "Couldn't save these changes. Please try again.",
     },
     injury: {
-      title: "Injury (FICC)",
+      title: "Injury",
       subtitle: "Injury records from the FICC log, with a body-part breakdown.",
       bodyMapTitle: "Injuries by Body Part",
       bodyMapEmpty: "No body-part data to show yet.",
@@ -2112,7 +2112,7 @@ export const translations: Record<Locale, TranslationShape> = {
       editInfoError: "تعذر حفظ التعديلات. حاول مرة أخرى.",
     },
     injury: {
-      title: "الإصابات (FICC)",
+      title: "الإصابات",
       subtitle: "سجلات الإصابات من ملف FICC، مع توزيع حسب منطقة الإصابة في الجسم.",
       bodyMapTitle: "الإصابات حسب منطقة الجسم",
       bodyMapEmpty: "لا توجد بيانات كافية لعرض توزيع الإصابات بعد.",
