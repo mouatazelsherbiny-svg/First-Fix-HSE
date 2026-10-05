@@ -11,6 +11,7 @@ import {
 import { ChecklistSubmission } from "@/types/checklistSubmission";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface ChecklistSubmissionContextValue {
   submissions: ChecklistSubmission[];
@@ -78,9 +79,11 @@ export function ChecklistSubmissionProvider({
     };
   }, [user]);
 
+  const scopedSubmissions = useProjectScoped(submissions, (s) => s.projectName);
+
   const value = useMemo<ChecklistSubmissionContextValue>(
     () => ({
-      submissions,
+      submissions: scopedSubmissions,
       isLoading,
       addSubmission: async (s) => {
         const created_by = await getCurrentUserId();
@@ -114,7 +117,7 @@ export function ChecklistSubmissionProvider({
         return created;
       },
     }),
-    [submissions, isLoading]
+    [submissions, scopedSubmissions, isLoading]
   );
 
   return (

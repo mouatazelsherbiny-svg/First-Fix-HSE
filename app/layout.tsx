@@ -22,6 +22,7 @@ const dancingScript = Dancing_Script({
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeSettingsProvider } from "@/context/ThemeSettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ProjectFilterProvider } from "@/context/ProjectFilterContext";
 import { ObservationsProvider } from "@/context/ObservationsContext";
 import { HsePassportProvider } from "@/context/HsePassportContext";
 import { WeeklyKpiProvider } from "@/context/WeeklyKpiContext";
@@ -63,6 +64,7 @@ export default function RootLayout({
         <ThemeSettingsProvider>
           <LanguageProvider>
             <AuthProvider>
+              <ProjectFilterProvider>
               <ObservationsProvider>
                 <HsePassportProvider>
                   <WeeklyKpiProvider>
@@ -76,6 +78,7 @@ export default function RootLayout({
                   </WeeklyKpiProvider>
                 </HsePassportProvider>
               </ObservationsProvider>
+              </ProjectFilterProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeSettingsProvider>

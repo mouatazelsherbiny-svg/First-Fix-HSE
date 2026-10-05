@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute hideProjectFilter>
       <DashboardContent />
     </ProtectedRoute>
   );

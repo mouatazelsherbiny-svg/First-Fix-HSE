@@ -125,7 +125,6 @@ function ObservationsList() {
   const { t, locale } = useLanguage();
   const { observations, isLoading, updateObservation } = useObservations();
   const [query, setQuery] = useState("");
-  const [projectFilter, setProjectFilter] = useState("");
   const [page, setPage] = useState(0);
   const [cancelTarget, setCancelTarget] = useState<Observation | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -145,17 +144,9 @@ function ObservationsList() {
     }
   };
 
-  const projects = useMemo(
-    () => Array.from(new Set(observations.map((o) => o.projectName).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
-    [observations]
-  );
-
-  // Project filter drives both the summary cards and the table; the text
-  // search only narrows the table.
-  const byProject = useMemo(
-    () => (projectFilter ? observations.filter((o) => o.projectName === projectFilter) : observations),
-    [observations, projectFilter]
-  );
+  // The app-wide project filter (top of the page) already narrows
+  // `observations`; the text search only narrows the table.
+  const byProject = observations;
 
   const summary = useMemo(() => {
     const active = byProject.filter((o) => o.status !== "Cancelled");
@@ -186,7 +177,7 @@ function ObservationsList() {
   // results instead of rendering all matches at once.
   useEffect(() => {
     setPage(0);
-  }, [query, projectFilter]);
+  }, [query]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
@@ -272,22 +263,7 @@ function ObservationsList() {
           placeholder={t.list.search}
           className="input-field max-w-sm"
         />
-        <label className="flex items-center gap-2 text-sm font-medium text-brand-grayDark">
-          <FolderOpen className="h-4 w-4 text-brand-orange" />
-          Project
-          <select
-            value={projectFilter}
-            onChange={(e) => setProjectFilter(e.target.value)}
-            className="input-field !w-auto min-w-[12rem] !py-2"
-          >
-            <option value="">All projects</option>
-            {projects.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </label>
+
       </div>
 
       {isLoading ? (

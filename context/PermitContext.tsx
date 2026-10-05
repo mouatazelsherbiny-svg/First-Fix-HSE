@@ -11,6 +11,7 @@ import {
 import { PermitToWork } from "@/types/permit";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface PermitContextValue {
   permits: PermitToWork[];
@@ -93,9 +94,11 @@ export function PermitProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  const scopedPermits = useProjectScoped(permits, (p) => p.projectName);
+
   const value = useMemo<PermitContextValue>(
     () => ({
-      permits,
+      permits: scopedPermits,
       isLoading,
       getById: (id: string) => permits.find((p) => p.id === id),
       addPermit: async (permit) => {
@@ -167,7 +170,7 @@ export function PermitProvider({ children }: { children: ReactNode }) {
         setPermits((prev) => prev.map((p) => (p.id === id ? updated : p)));
       },
     }),
-    [permits, isLoading]
+    [permits, scopedPermits, isLoading]
   );
 
   return (

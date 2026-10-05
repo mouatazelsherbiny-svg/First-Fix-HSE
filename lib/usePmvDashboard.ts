@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useProjectFilter } from "@/context/ProjectFilterContext";
 import { fetchAllRows } from "@/lib/supabaseClient";
 import { PMV_CATEGORY_TO_BUCKET } from "@/lib/pmvLogs";
 import type {
@@ -122,18 +123,22 @@ type Row = Record<string, any>;
 export function usePmvDashboard(): PmvDashboardData {
   const [data, setData] = useState<LiveData>(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
+  const { project } = useProjectFilter();
 
   useEffect(() => {
     let active = true;
 
     (async () => {
       try {
-        const [assets, maintenance, ownedOps, rentedOps] = await Promise.all([
+        // App-wide project filter (see context/ProjectFilterContext.tsx).
+        const scope = (rows: Row[]) =>
+          project ? rows.filter((r) => String(r.project_name ?? "").trim() === project) : rows;
+        const [assets, maintenance, ownedOps, rentedOps] = (await Promise.all([
           fetchAllRows<Row>("pmv_asset_register", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_scheduled_maintenance", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_operators_owned", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_operators_rented", (q) => q.select("*")),
-        ]);
+        ])).map(scope);
         if (!active) return;
 
         // --- PMV by Type + vehicles/machinery/equipment split ---
@@ -295,7 +300,7 @@ export function usePmvDashboard(): PmvDashboardData {
     return () => {
       active = false;
     };
-  }, []);
+  }, [project]);
 
   return { ...data, isLoading };
 }

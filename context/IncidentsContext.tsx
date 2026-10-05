@@ -11,6 +11,7 @@ import {
 import { FiccInput, Incident } from "@/types/incident";
 import { fetchAllRows, getCurrentUserId, supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 const IIR_WINDOW_MS = 48 * 60 * 60 * 1000;
 
@@ -109,9 +110,11 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  const scopedIncidents = useProjectScoped(incidents, (i) => i.projectName);
+
   const value = useMemo<IncidentsContextValue>(
     () => ({
-      incidents,
+      incidents: scopedIncidents,
       isLoading,
       getById: (id: string) => incidents.find((i) => i.id === id),
 
@@ -228,7 +231,7 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
         );
       },
     }),
-    [incidents, user]
+    [incidents, scopedIncidents, user]
   );
 
   return (

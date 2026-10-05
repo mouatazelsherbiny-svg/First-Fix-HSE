@@ -7,11 +7,15 @@ import { useThemeSettings } from "@/context/ThemeSettingsContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import ScrollReveal from "./ScrollReveal";
+import ProjectFilter from "./ProjectFilter";
 
 export default function ProtectedRoute({
   children,
+  hideProjectFilter = false,
 }: {
   children: React.ReactNode;
+  /** For pages that place the project filter themselves (the dashboard). */
+  hideProjectFilter?: boolean;
 }) {
   const { user, isLoading } = useAuth();
   const { morphism } = useThemeSettings();
@@ -55,6 +59,12 @@ export default function ProtectedRoute({
           (TOPBAR_HEIGHT / SIDEBAR_WIDTH in Sidebar.tsx). */}
       <main className="min-h-screen pt-16 lg:ps-64">
         <div className="px-4 py-6 sm:px-6 lg:px-8">
+          {/* App-wide project filter — every page's data follows it. */}
+          {!hideProjectFilter && (
+            <div className="relative z-20 mb-4 flex justify-end">
+              <ProjectFilter />
+            </div>
+          )}
           <ScrollReveal>{children}</ScrollReveal>
         </div>
       </main>

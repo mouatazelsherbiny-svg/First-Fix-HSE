@@ -64,6 +64,7 @@ import {
   type ProjectSlide,
 } from "@/lib/useHomeDashboard";
 import { getProjectLocation } from "@/lib/projectLocations";
+import ProjectFilter from "@/components/ProjectFilter";
 
 const ACCENT = "rgb(var(--brand-orange-rgb))";
 const LTIFR_COLOR = "#1f4e79";
@@ -815,6 +816,9 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
     return (
       <div className="space-y-6">
         <Hero data={data.hero} />
+        <div className="flex justify-end">
+          <ProjectFilter />
+        </div>
         <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
         </div>
@@ -825,6 +829,10 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
   return (
     <div className="space-y-6">
       <Hero data={data.hero} />
+
+      <div className="flex justify-end">
+        <ProjectFilter />
+      </div>
 
       {/* Left: HSE News + Good Practices, then the two by-project charts.
           Right: Site Weather + Latest Incidents, then Tips of the day level

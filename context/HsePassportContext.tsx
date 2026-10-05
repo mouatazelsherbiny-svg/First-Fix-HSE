@@ -16,6 +16,7 @@ import {
 import { EmployeeRecord } from "@/lib/mockData";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectFilter, useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface HsePassportContextValue {
   employees: EmployeeRecord[];
@@ -146,12 +147,25 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  // Project filter: employees by their project, records by their employee.
+  const { project } = useProjectFilter();
+  const scopedEmployees = useProjectScoped(employees, (e) => e.project);
+  const scoped = useMemo(() => {
+    if (!project) return { disciplinaryRecords, ppeRecords, trainingRecords };
+    const ids = new Set(scopedEmployees.map((e) => e.id));
+    return {
+      disciplinaryRecords: disciplinaryRecords.filter((r) => ids.has(r.employeeId)),
+      ppeRecords: ppeRecords.filter((r) => ids.has(r.employeeId)),
+      trainingRecords: trainingRecords.filter((r) => ids.has(r.employeeId)),
+    };
+  }, [project, scopedEmployees, disciplinaryRecords, ppeRecords, trainingRecords]);
+
   const value = useMemo<HsePassportContextValue>(
     () => ({
-      employees,
-      disciplinaryRecords,
-      ppeRecords,
-      trainingRecords,
+      employees: scopedEmployees,
+      disciplinaryRecords: scoped.disciplinaryRecords,
+      ppeRecords: scoped.ppeRecords,
+      trainingRecords: scoped.trainingRecords,
       isLoading,
       addDisciplinaryRecord: async (r) => {
         const created_by = await getCurrentUserId();
@@ -216,7 +230,7 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
         setTrainingRecords((prev) => [mapTraining(data), ...prev]);
       },
     }),
-    [employees, disciplinaryRecords, ppeRecords, trainingRecords, isLoading]
+    [scopedEmployees, scoped, isLoading]
   );
 
   return (

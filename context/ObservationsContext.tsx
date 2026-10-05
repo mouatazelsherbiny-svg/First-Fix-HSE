@@ -11,6 +11,7 @@ import {
 import { Observation } from "@/types/observation";
 import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface ObservationsContextValue {
   observations: Observation[];
@@ -83,9 +84,11 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  const scopedObservations = useProjectScoped(observations, (o) => o.projectName);
+
   const value = useMemo<ObservationsContextValue>(
     () => ({
-      observations,
+      observations: scopedObservations,
       isLoading,
       getById: (id: string) => observations.find((o) => o.id === id),
       addObservation: async (obs) => {
@@ -138,7 +141,7 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
         setObservations((prev) => prev.map((o) => (o.id === id ? updated : o)));
       },
     }),
-    [observations, isLoading]
+    [observations, scopedObservations, isLoading]
   );
 
   return (

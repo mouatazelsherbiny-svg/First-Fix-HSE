@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,5 +84,8 @@ export function usePmvLogRecords(table: string) {
     [table]
   );
 
-  return { rows, isLoading, error, refetch, addRow, updateRow };
+  // App-wide project filter (see context/ProjectFilterContext.tsx).
+  const scopedRows = useProjectScoped(rows, (r) => r.project_name);
+
+  return { rows: scopedRows, isLoading, error, refetch, addRow, updateRow };
 }

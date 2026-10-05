@@ -15,6 +15,7 @@ import {
 } from "@/types/weeklyKpi";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface WeeklyKpiContextValue {
   records: WeeklyKpiRecord[];
@@ -92,9 +93,11 @@ export function WeeklyKpiProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  const scopedRecords = useProjectScoped(records, (r) => r.projectName);
+
   const value = useMemo<WeeklyKpiContextValue>(
     () => ({
-      records,
+      records: scopedRecords,
       isLoading,
       getById: (id: string) => records.find((r) => r.id === id),
       addRecord: async (r) => {
@@ -141,7 +144,7 @@ export function WeeklyKpiProvider({ children }: { children: ReactNode }) {
         setRecords((prev) => prev.map((r) => (r.id === id ? updated : r)));
       },
     }),
-    [records, isLoading]
+    [records, scopedRecords, isLoading]
   );
 
   return (
