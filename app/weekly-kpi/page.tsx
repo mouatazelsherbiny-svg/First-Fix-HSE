@@ -7,6 +7,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
+import PerformanceGoals from "@/components/kpi/PerformanceGoals";
 
 export default function WeeklyKpiListPage() {
   return (
@@ -20,6 +21,7 @@ function WeeklyKpiList() {
   const { t, locale } = useLanguage();
   const { records, isLoading } = useWeeklyKpi();
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<"data" | "goals">("data");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -80,6 +82,34 @@ function WeeklyKpiList() {
         </div>
       </div>
 
+      <div className="mb-5 flex gap-1 border-b border-brand-border">
+        {([
+          ["data", "KPI Data"],
+          ["goals", "Performance Goals"],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+              tab === key
+                ? "border-brand-orange text-brand-orange"
+                : "border-transparent text-brand-grayDark hover:text-brand-black"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "goals" ? (
+        isLoading ? (
+          <div className="card py-16 text-center text-sm font-medium text-brand-gray">{t.common.loading}</div>
+        ) : (
+          <PerformanceGoals records={records} />
+        )
+      ) : (
+      <>
       <div className="mb-4">
         <input
           type="text"
@@ -183,6 +213,8 @@ function WeeklyKpiList() {
             </tfoot>
           </table>
         </div>
+      )}
+      </>
       )}
     </div>
   );
