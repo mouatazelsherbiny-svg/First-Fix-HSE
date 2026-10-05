@@ -139,6 +139,15 @@ function WeeklyKpiList() {
                     </td>
                   ))}
                   <td className="px-4 py-3 text-end sm:px-6">
+                    {r.source === "daily" ? (
+                      <Link
+                        href="/reports"
+                        className="whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:underline"
+                        title="Totalled from the daily entries in Reports → Daily"
+                      >
+                        From daily
+                      </Link>
+                    ) : (
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/weekly-kpi/${r.id}`}
@@ -153,6 +162,7 @@ function WeeklyKpiList() {
                         {t.weeklyKpi.edit}
                       </Link>
                     </div>
+                    )}
                   </td>
                 </tr>
               ))}

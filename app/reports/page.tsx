@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import ComingSoonPage from "@/components/ComingSoonPage";
+import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
 import { useLanguage } from "@/context/LanguageContext";
 
-type ReportTab = "daily" | "weekly" | "monthly";
+type ReportTab = "daily" | "monthly";
 
 export default function ReportsPage() {
   return (
@@ -19,7 +19,7 @@ export default function ReportsPage() {
 
 function ReportsContent() {
   const { t } = useLanguage();
-  const [tab, setTab] = useState<ReportTab>("monthly");
+  const [tab, setTab] = useState<ReportTab>("daily");
 
   // The 4 monthly HSE checklist templates — previously their own sidebar
   // group, now surfaced here under Reports → Monthly (see the sidebar
@@ -33,7 +33,6 @@ function ReportsContent() {
 
   const TABS: { key: ReportTab; label: string }[] = [
     { key: "daily", label: t.reports.tabDaily },
-    { key: "weekly", label: t.reports.tabWeekly },
     { key: "monthly", label: t.reports.tabMonthly },
   ];
 
@@ -87,10 +86,7 @@ function ReportsContent() {
           </Link>
         </div>
       ) : (
-        <ComingSoonPage
-          title={tab === "daily" ? t.reports.tabDaily : t.reports.tabWeekly}
-          subtitle={t.common.comingSoon}
-        />
+        <DailyKpiGrid />
       )}
     </div>
   );

@@ -32,11 +32,13 @@ export interface WeeklyKpiRecord {
   lagging: number;
   createdAt: string;
   updatedAt: string;
+  /** "daily" when this week was totalled from Reports → Daily entries. */
+  source?: "weekly" | "daily";
 }
 
 export type WeeklyKpiNumericField = Exclude<
   keyof WeeklyKpiRecord,
-  "id" | "projectName" | "date" | "createdAt" | "updatedAt"
+  "id" | "projectName" | "date" | "createdAt" | "updatedAt" | "source"
 >;
 
 export interface KpiFieldDef {
