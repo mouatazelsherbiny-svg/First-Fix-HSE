@@ -2,7 +2,7 @@
  * Normalizes the free-text "Body Part" values coming from the FICC/Incidents
  * import (e.g. "right-hand middle finger", "Left forearm", "forehead") into
  * a small fixed set of body regions, each with a representative spot on the
- * body diagram (public/brand/body-diagram-v2.png) used on the Injury page.
+ * body diagram (public/brand/body-diagram-v3.png) used on the Injury page.
  *
  * Coordinates are fractions (0-1) of the diagram image's width/height, so
  * they can be used directly as CSS `left`/`top` percentages regardless of
@@ -20,24 +20,24 @@ export interface BodyRegion {
 }
 
 export const BODY_REGIONS: BodyRegion[] = [
-  { id: "head", label: { en: "Head", ar: "الرأس" }, x: 0.5, y: 0.02 },
-  { id: "face", label: { en: "Face / Eye", ar: "الوجه / العين" }, x: 0.5, y: 0.065 },
-  { id: "neck", label: { en: "Neck", ar: "الرقبة" }, x: 0.5, y: 0.105 },
-  { id: "shoulder", label: { en: "Shoulder", ar: "الكتف" }, x: 0.655, y: 0.175 },
-  { id: "chest", label: { en: "Chest", ar: "الصدر" }, x: 0.5, y: 0.21 },
-  { id: "back", label: { en: "Back", ar: "الظهر" }, x: 0.8, y: 0.19 },
-  { id: "arm", label: { en: "Arm", ar: "الذراع" }, x: 0.7, y: 0.29 },
-  { id: "elbow", label: { en: "Elbow", ar: "الكوع" }, x: 0.73, y: 0.365 },
-  { id: "forearm", label: { en: "Forearm", ar: "الساعد" }, x: 0.785, y: 0.415 },
-  { id: "wrist", label: { en: "Wrist", ar: "الرسغ" }, x: 0.83, y: 0.465 },
-  { id: "hand", label: { en: "Hand", ar: "اليد" }, x: 0.865, y: 0.5 },
-  { id: "finger", label: { en: "Finger", ar: "الإصبع" }, x: 0.885, y: 0.525 },
-  { id: "torso", label: { en: "Torso / Abdomen", ar: "الجذع / البطن" }, x: 0.5, y: 0.325 },
-  { id: "hip", label: { en: "Hip", ar: "الورك" }, x: 0.5, y: 0.415 },
-  { id: "leg", label: { en: "Leg / Thigh", ar: "الرجل / الفخذ" }, x: 0.565, y: 0.58 },
-  { id: "knee", label: { en: "Knee", ar: "الركبة" }, x: 0.565, y: 0.655 },
-  { id: "shin", label: { en: "Shin", ar: "الساق" }, x: 0.56, y: 0.775 },
-  { id: "foot", label: { en: "Foot", ar: "القدم" }, x: 0.565, y: 0.93 },
+  { id: "head", label: { en: "Head", ar: "الرأس" }, x: 0.515, y: 0.035 },
+  { id: "face", label: { en: "Face / Eye", ar: "الوجه / العين" }, x: 0.515, y: 0.08 },
+  { id: "neck", label: { en: "Neck", ar: "الرقبة" }, x: 0.515, y: 0.13 },
+  { id: "shoulder", label: { en: "Shoulder", ar: "الكتف" }, x: 0.75, y: 0.19 },
+  { id: "chest", label: { en: "Chest", ar: "الصدر" }, x: 0.515, y: 0.23 },
+  { id: "back", label: { en: "Back", ar: "الظهر" }, x: 0.66, y: 0.27 },
+  { id: "arm", label: { en: "Arm", ar: "الذراع" }, x: 0.79, y: 0.3 },
+  { id: "elbow", label: { en: "Elbow", ar: "الكوع" }, x: 0.84, y: 0.37 },
+  { id: "forearm", label: { en: "Forearm", ar: "الساعد" }, x: 0.88, y: 0.42 },
+  { id: "wrist", label: { en: "Wrist", ar: "الرسغ" }, x: 0.93, y: 0.465 },
+  { id: "hand", label: { en: "Hand", ar: "اليد" }, x: 0.955, y: 0.49 },
+  { id: "finger", label: { en: "Finger", ar: "الإصبع" }, x: 0.94, y: 0.525 },
+  { id: "torso", label: { en: "Torso / Abdomen", ar: "الجذع / البطن" }, x: 0.515, y: 0.34 },
+  { id: "hip", label: { en: "Hip", ar: "الورك" }, x: 0.515, y: 0.45 },
+  { id: "leg", label: { en: "Leg / Thigh", ar: "الرجل / الفخذ" }, x: 0.6, y: 0.6 },
+  { id: "knee", label: { en: "Knee", ar: "الركبة" }, x: 0.6, y: 0.68 },
+  { id: "shin", label: { en: "Shin", ar: "الساق" }, x: 0.59, y: 0.78 },
+  { id: "foot", label: { en: "Foot", ar: "القدم" }, x: 0.62, y: 0.955 },
   { id: "other", label: { en: "Other / Multiple", ar: "أخرى / متعددة" }, x: 0, y: 0 },
 ];
 

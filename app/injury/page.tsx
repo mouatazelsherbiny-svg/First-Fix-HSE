@@ -55,7 +55,7 @@ const CARDS: { key: string; label: string; title: string; icon: LucideIcon; colo
 const BODY_GROUPS: { label: string; icon: LucideIcon; regions: string[] }[] = [
   { label: "Head", icon: Brain, regions: ["head", "face"] },
   { label: "Neck", icon: UserRound, regions: ["neck"] },
-  { label: "Chest / Back", icon: HeartPulse, regions: ["chest", "back", "torso"] },
+  { label: "Chest", icon: HeartPulse, regions: ["chest", "back", "torso"] },
   { label: "Arm", icon: BicepsFlexed, regions: ["shoulder", "arm", "elbow", "forearm"] },
   { label: "Hand", icon: Hand, regions: ["wrist", "hand", "finger"] },
   { label: "Legs", icon: Bone, regions: ["hip", "leg", "shin"] },
@@ -263,11 +263,11 @@ function InjuryOverview() {
             {/* ---- Right: body diagram + body-part list ---- */}
             <section
               className="relative flex min-w-0 overflow-hidden rounded-2xl p-4 shadow-card lg:col-span-5"
-              style={{ background: "linear-gradient(135deg, #0b1f3a 0%, #13294b 55%, #3a1020 100%)" }}
+              style={{ background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)" }}
             >
-              <div className="relative mx-auto h-[400px] w-[207px] shrink-0">
+              <div className="relative mx-auto h-[420px] w-[262px] shrink-0 self-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/body-diagram-v2.png" alt="" className="h-full w-full object-contain" />
+                <img src="/brand/body-diagram-v3.png" alt="" className="h-full w-full object-contain" />
                 {BODY_REGIONS.filter((r) => r.id !== "other").map((r) => {
                   const count = stats.regionCounts.get(r.id) ?? 0;
                   if (!count) return null;
@@ -283,7 +283,7 @@ function InjuryOverview() {
                         width: size,
                         height: size,
                         fontSize: 9,
-                        background: "rgba(56,189,248,0.85)",
+                        background: "#0ea5e9",
                       }}
                     >
                       {count}
@@ -291,27 +291,27 @@ function InjuryOverview() {
                   );
                 })}
               </div>
-              <ul className="flex flex-1 flex-col justify-between py-1 ps-3">
+              <ul className="flex min-w-0 flex-1 flex-col justify-between py-1 ps-3">
                 {stats.groups.map((g) => (
                   <li key={g.label} className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/30 text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 shadow-sm">
                       <g.icon className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-sm font-semibold text-white">{g.label}</span>
-                        <span className="text-lg font-extrabold tabular-nums text-white">{g.value}</span>
+                        <span className="truncate text-sm font-semibold text-slate-800">{g.label}</span>
+                        <span className="text-lg font-extrabold tabular-nums text-slate-900">{g.value}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sky-300/70">
-                        <span className="h-px flex-1 bg-sky-300/40" />
+                      <div className="flex items-center gap-1 text-sky-600">
+                        <span className="h-px flex-1 bg-sky-600/40" />
                         <Activity className="h-3 w-3" />
-                        <span className="h-px w-6 bg-sky-300/40" />
+                        <span className="h-px w-6 bg-sky-600/40" />
                       </div>
                     </div>
                   </li>
                 ))}
                 {stats.other > 0 && (
-                  <li className="text-end text-xs text-white/60">Other / Multiple: {stats.other}</li>
+                  <li className="text-end text-xs text-slate-500">Other / Multiple: {stats.other}</li>
                 )}
               </ul>
             </section>
