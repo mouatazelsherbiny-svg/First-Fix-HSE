@@ -11,6 +11,7 @@ import {
 import { Observation } from "@/types/observation";
 import { supabase, getCurrentUserId, fetchAllRows } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { readCache, writeCache } from "@/lib/rowCache";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 interface ObservationsContextValue {
@@ -68,13 +69,25 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
     }
     let active = true;
     setIsLoading(true);
+    let fresh = false;
+    const cacheKey = `observations:${user.id}`;
+    // Show the copy saved on this device straight away (if any), then
+    // replace it with fresh data from the server.
+    readCache<Observation>(cacheKey).then((cached) => {
+      if (!active || fresh || !cached) return;
+      setObservations(cached);
+      setIsLoading(false);
+    });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchAllRows<any>("observations", (q) =>
-      q.select("*").order("created_at", { ascending: false })
+      q.select("*").order("created_at", { ascending: false }).order("id")
     )
       .then((data) => {
         if (!active) return;
-        setObservations(data.map(mapRow));
+        fresh = true;
+        const rows = data.map(mapRow);
+        setObservations(rows);
+        writeCache(cacheKey, rows);
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -82,7 +95,8 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const scopedObservations = useProjectScoped(observations, (o) => o.projectName);
 

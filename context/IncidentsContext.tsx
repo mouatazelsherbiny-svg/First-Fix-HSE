@@ -11,6 +11,7 @@ import {
 import { FiccInput, Incident } from "@/types/incident";
 import { fetchAllRows, getCurrentUserId, supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { readCache, writeCache } from "@/lib/rowCache";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 
 const IIR_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -94,13 +95,23 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
       return;
     }
     let active = true;
+    let fresh = false;
     setIsLoading(true);
+    const cacheKey = `incidents:${user.id}`;
+    readCache<Incident>(cacheKey).then((cached) => {
+      if (!active || fresh || !cached) return;
+      setIncidents(cached);
+      setIsLoading(false);
+    });
     fetchAllRows<any>("incidents", (q) =>
-      q.select("*").order("incident_date", { ascending: false })
+      q.select("*").order("incident_date", { ascending: false }).order("id")
     )
       .then((data) => {
         if (!active) return;
-        setIncidents(data.map(mapRow));
+        fresh = true;
+        const rows = data.map(mapRow);
+        setIncidents(rows);
+        writeCache(cacheKey, rows);
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -108,7 +119,8 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const scopedIncidents = useProjectScoped(incidents, (i) => i.projectName);
 

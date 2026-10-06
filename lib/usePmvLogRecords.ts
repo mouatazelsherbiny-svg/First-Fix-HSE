@@ -33,7 +33,7 @@ export function usePmvLogRecords(table: string) {
     setIsLoading(true);
     try {
       const data = await fetchAllRows<PmvLogRow>(table, (q) =>
-        q.select("*").order("created_at", { ascending: false })
+        q.select("*").order("created_at", { ascending: false }).order("id")
       );
       setRows(data);
       setError("");

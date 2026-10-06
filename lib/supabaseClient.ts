@@ -40,6 +40,50 @@ export async function fetchAllRows<T>(
   configure: (query: ReturnType<typeof supabase.from>) => any,
   pageSize = 1000
 ): Promise<T[]> {
+  // Ask for the row count first, then fetch every page at the same time
+  // instead of one after another (18k observations = 19 pages: one wait
+  // instead of 19). The count is for the whole table, so it can only
+  // over-estimate — extra pages simply come back empty.
+  const { count, error: countError } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true });
+  if (countError || count == null) return fetchSequential<T>(table, configure, pageSize);
+
+  const pages = Math.max(1, Math.ceil(count / pageSize));
+  const results: T[][] = new Array(pages);
+  const CONCURRENCY = 6;
+  let next = 0;
+  async function worker() {
+    while (next < pages) {
+      const i = next++;
+      const from = i * pageSize;
+      const { data, error } = await configure(supabase.from(table)).range(from, from + pageSize - 1);
+      if (error) throw error;
+      results[i] = (data as T[] | null) ?? [];
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, pages) }, worker));
+  const rows = results.flat();
+  // Rows added between the count and the fetch: pick up anything past the end.
+  if (results[pages - 1]?.length === pageSize) {
+    let from = pages * pageSize;
+    for (;;) {
+      const { data, error } = await configure(supabase.from(table)).range(from, from + pageSize - 1);
+      if (error) throw error;
+      const page = (data as T[] | null) ?? [];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+      from += pageSize;
+    }
+  }
+  return rows;
+}
+
+async function fetchSequential<T>(
+  table: string,
+  configure: (query: ReturnType<typeof supabase.from>) => any,
+  pageSize: number
+): Promise<T[]> {
   const rows: T[] = [];
   let from = 0;
   for (;;) {
