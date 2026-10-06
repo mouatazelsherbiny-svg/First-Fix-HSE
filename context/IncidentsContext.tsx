@@ -30,6 +30,8 @@ interface IncidentsContextValue {
   /** Attaches a completed IIR document (as a base64 data URL) to the
    *  incident and closes out its IIR — the FICC page's "Attach IIR" flow,
    *  replacing the old in-app IIR form for this button. */
+  /** Replace an incident's photo list. */
+  setIncidentPhotos: (incidentId: string, photos: string[]) => Promise<void>;
   attachIirFile: (
     incidentId: string,
     fileUrl: string,
@@ -74,6 +76,7 @@ function mapRow(row: any): Incident {
     ficcDeadlineEmailSent: !!row.ficc_deadline_email_sent,
     iirFileUrl: row.iir_file_url ?? null,
     iirFileName: row.iir_file_name ?? null,
+    incidentPhotos: Array.isArray(row.incident_photos) ? row.incident_photos : [],
   };
 }
 
@@ -222,6 +225,17 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
         );
       },
 
+      setIncidentPhotos: async (incidentId: string, photos: string[]) => {
+        const { data, error } = await supabase
+          .from("incidents")
+          .update({ incident_photos: photos })
+          .eq("id", incidentId)
+          .select()
+          .single();
+        if (error || !data) throw new Error(error?.message ?? "Failed to save photos");
+        const updated = mapRow(data);
+        setIncidents((prev) => prev.map((x) => (x.id === incidentId ? updated : x)));
+      },
       attachIirFile: async (incidentId: string, fileUrl: string, fileName: string) => {
         const { data, error } = await supabase
           .from("incidents")

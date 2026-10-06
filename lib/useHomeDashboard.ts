@@ -48,6 +48,8 @@ export interface LatestIncident {
   date: string | null;
   place: string;
   category: string;
+  /** First site photo, if any were attached in FICC. */
+  photo: string | null;
 }
 
 export interface CountRow {
@@ -185,6 +187,7 @@ export function computeHomeDashboard(
       date: i.incidentDate ?? i.createdAt,
       place: [i.projectName, i.incidentLocation].filter(Boolean).join(" – "),
       category: i.incidentCategory,
+      photo: i.incidentPhotos?.[0] ?? null,
     }));
 
   // ---- Observation rankings -----------------------------------------------

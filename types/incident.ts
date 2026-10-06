@@ -40,6 +40,9 @@ export interface Incident {
    *  no Supabase Storage bucket in this app. */
   iirFileUrl: string | null;
   iirFileName: string | null;
+  /** Site photos (compressed JPEG data URLs), shown in FICC details and on
+   *  the dashboard's Latest Incidents. */
+  incidentPhotos: string[];
 }
 
 /** A FICC submission — the subset of Incident fields the "Add FICC" form

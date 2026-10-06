@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Filter, Paperclip, Plus, X } from "lucide-react";
+import { Camera, Filter, ImagePlus, Paperclip, Plus, X } from "lucide-react";
+import { compressImage } from "@/lib/compressImage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
@@ -34,11 +35,12 @@ export default function FiccPage() {
 
 function FiccPageContent() {
   const { t, locale } = useLanguage();
-  const { incidents, isLoading, submitFicc, attachIirFile } = useIncidents();
+  const { incidents, isLoading, submitFicc, attachIirFile, setIncidentPhotos } = useIncidents();
   const [showAddModal, setShowAddModal] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
-  const [selected, setSelected] = useState<Incident | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = useMemo(() => incidents.find((x) => x.id === selectedId) ?? null, [incidents, selectedId]);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -199,11 +201,22 @@ function FiccPageContent() {
                   return (
                     <tr
                       key={incident.id}
-                      onClick={() => setSelected(incident)}
+                      onClick={() => setSelectedId(incident.id)}
                       className="cursor-pointer border-b border-brand-border transition last:border-0 hover:bg-brand-orange/5"
                     >
                       <td className="whitespace-nowrap px-4 py-3 font-semibold text-brand-black sm:px-6">
-                        {incident.incidentNumber}
+                        <span className="inline-flex items-center gap-1.5">
+                          {incident.incidentNumber}
+                          {(incident.incidentPhotos?.length ?? 0) > 0 && (
+                            <span
+                              title={`${incident.incidentPhotos.length} photo(s)`}
+                              className="inline-flex items-center gap-0.5 rounded-full bg-brand-orange/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-orange"
+                            >
+                              <Camera className="h-3 w-3" />
+                              {incident.incidentPhotos.length}
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark sm:px-6">
                         {incident.projectName}
@@ -285,7 +298,14 @@ function FiccPageContent() {
         />
       )}
 
-      {selected && <FiccDetails incident={selected} locale={locale} onClose={() => setSelected(null)} />}
+      {selected && (
+        <FiccDetails
+          incident={selected}
+          locale={locale}
+          onClose={() => setSelectedId(null)}
+          onPhotosChange={(photos) => setIncidentPhotos(selected.id, photos)}
+        />
+      )}
     </div>
   );
 }
@@ -298,11 +318,43 @@ function FiccDetails({
   incident: i,
   locale,
   onClose,
+  onPhotosChange,
 }: {
   incident: Incident;
   locale: string;
   onClose: () => void;
+  onPhotosChange: (photos: string[]) => Promise<void>;
 }) {
+  const photos = i.incidentPhotos ?? [];
+  const photoInput = useRef<HTMLInputElement>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [viewing, setViewing] = useState<string | null>(null);
+
+  const savePhotos = async (next: string[]) => {
+    setPhotoBusy(true);
+    setPhotoError("");
+    try {
+      await onPhotosChange(next);
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Failed to save photos");
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
+  const addPhotos = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setPhotoBusy(true);
+    try {
+      const added = await Promise.all(Array.from(files).map((f) => compressImage(f)));
+      await savePhotos([...photos, ...added]);
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Failed to read photo");
+      setPhotoBusy(false);
+    }
+  };
+
   const fmt = (v: string | null, withTime = false) => {
     if (!v) return null;
     const d = new Date(v);
@@ -410,6 +462,61 @@ function FiccDetails({
             </p>
           </div>
 
+          <div className="mb-5">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-wide text-brand-grayDark">
+                Photos {photos.length > 0 && `(${photos.length})`}
+              </p>
+              <button
+                type="button"
+                onClick={() => photoInput.current?.click()}
+                disabled={photoBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border px-3 py-1.5 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange/5 disabled:opacity-60"
+              >
+                <ImagePlus className="h-3.5 w-3.5" />
+                {photoBusy ? "Saving…" : "Add photos"}
+              </button>
+              <input
+                ref={photoInput}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  addPhotos(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            {photoError && <p className="mb-2 text-xs font-medium text-red-500">{photoError}</p>}
+            {photos.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-brand-border px-4 py-5 text-center text-xs text-brand-gray">
+                No photos yet
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {photos.map((src, idx) => (
+                  <div key={idx} className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-brand-border">
+                    <button type="button" onClick={() => setViewing(src)} className="h-full w-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={`Photo ${idx + 1}`} className="h-full w-full object-cover" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => savePhotos(photos.filter((_, k) => k !== idx))}
+                      disabled={photoBusy}
+                      aria-label="Remove photo"
+                      className="absolute end-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-white opacity-0 transition group-hover:opacity-100"
+                      style={{ background: "rgba(0,0,0,0.6)" }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="grid gap-5 sm:grid-cols-2">
             {sections.map((sec) => (
               <div key={sec.title}>
@@ -440,6 +547,19 @@ function FiccDetails({
           </p>
         </div>
       </div>
+      {viewing && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.85)" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setViewing(null);
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={viewing} alt="" className="max-h-full max-w-full rounded-lg object-contain" />
+        </div>
+      )}
     </div>
   );
 }

@@ -280,8 +280,11 @@ function LatestIncidents({ items }: { items: HomeDashboardData["latestIncidents"
             const img = incidentImage(i.category);
             return (
               <li key={i.id} className="flex items-center gap-3 py-2.5">
-                <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-grayLight">
-                  {img ? (
+                <div className="flex h-12 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-grayLight">
+                  {i.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={i.photo} alt="" className="h-full w-full object-cover" />
+                  ) : img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt="" className="h-9 w-9 object-contain" />
                   ) : (
