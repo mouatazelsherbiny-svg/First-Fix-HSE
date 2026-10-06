@@ -60,11 +60,10 @@ import {
   LTIFR_TARGET,
   TRIR_TARGET,
   type HomeDashboardData,
-  type ProjectSlide,
 } from "@/lib/useHomeDashboard";
 import { getProjectLocation } from "@/lib/projectLocations";
 import ProjectFilter from "@/components/ProjectFilter";
-import { GOOD_PRACTICE_POSTS, NEWS_PHOTOS } from "@/lib/dashboardContent";
+import { GOOD_PRACTICE_POSTS, NEWS_POSTS } from "@/lib/dashboardContent";
 
 const ACCENT = "rgb(var(--brand-orange-rgb))";
 const LTIFR_COLOR = "#1f4e79";
@@ -87,19 +86,6 @@ function formatDate(value: string | null, withTime = false) {
   return `${date} | ${time} hrs.`;
 }
 
-function timeAgo(value: string | null) {
-  if (!value) return "";
-  const t = new Date(value).getTime();
-  if (!Number.isFinite(t)) return "";
-  const days = Math.floor((Date.now() - t) / 86_400_000);
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 30) return `${days} days ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
-  const years = Math.floor(days / 365);
-  return `${years} year${years > 1 ? "s" : ""} ago`;
-}
 
 const INCIDENT_IMAGES: [RegExp, string][] = [
   [/near miss/i, "/brand/incidents/near-miss.png"],
@@ -309,11 +295,10 @@ function LatestIncidents({ items }: { items: HomeDashboardData["latestIncidents"
 // Right column
 // ---------------------------------------------------------------------------
 
-function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
+function ProjectsSpotlight() {
+  const slides = NEWS_POSTS;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-
-  useEffect(() => setIndex(0), [slides.length]);
 
   useEffect(() => {
     if (paused || slides.length <= 1) return;
@@ -338,10 +323,11 @@ function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
     <section className="relative min-h-[16rem] flex-1 overflow-hidden rounded-2xl shadow-card sm:min-h-[18rem]" style={{ background: "#14202e" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        key={slide.project}
-        src={slide.photo ?? NEWS_PHOTOS[Math.min(index, slides.length - 1) % NEWS_PHOTOS.length] ?? HERO_IMAGE}
+        key={slide.id}
+        src={slide.image}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
+        style={{ objectPosition: slide.position ?? "center" }}
       />
       <div
         aria-hidden
@@ -376,15 +362,15 @@ function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
           )}
         </div>
 
-        <div className="max-w-xl">
-          <h2 className="text-2xl font-extrabold text-white sm:text-3xl">{slide.project}</h2>
-          <p className="mt-2 text-base font-semibold leading-snug text-white/90 sm:text-xl">
-            {slide.safeHours.toLocaleString("en-US")} safe work hours
-            {slide.ltiFree ? " achieved without a Lost Time Injury (LTI)" : " recorded on this project"}
-          </p>
-          {slide.lastUpdate && (
-            <p className="mt-3 text-xs text-white/70">Weekly KPI · updated {timeAgo(slide.lastUpdate)}</p>
-          )}
+        <div className="max-w-xl pe-24">
+          <h2 className="text-xl font-extrabold leading-snug text-white sm:text-2xl">{slide.title}</h2>
+          <div className="mt-2 space-y-0.5">
+            {slide.lines.map((line, k) => (
+              <p key={k} className="text-sm font-medium leading-snug text-white/90 sm:text-base">
+                {line}
+              </p>
+            ))}
+          </div>
         </div>
 
         {slides.length > 1 && (
@@ -857,7 +843,7 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
           with the charts. */}
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
-          <ProjectsSpotlight slides={data.projects} />
+          <ProjectsSpotlight />
           <GoodPractices />
         </div>
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-4">

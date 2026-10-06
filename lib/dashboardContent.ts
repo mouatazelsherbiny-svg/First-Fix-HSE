@@ -41,9 +41,40 @@ export const GOOD_PRACTICE_POSTS: GoodPracticePost[] = [
   },
 ];
 
-/** Background photos for the HSE News slides, used in turn. */
-export const NEWS_PHOTOS = [
-  "/brand/news/walkthrough.jpg",
-  "/brand/news/training-oceanarium.jpg",
-  "/brand/news/eyewash-rosewood.jpg",
+export interface NewsPost {
+  id: string;
+  image: string;
+  title: string;
+  lines: string[];
+  /** CSS object-position for the photo crop. */
+  position?: string;
+}
+
+/** HSE News slides, shown in this order. */
+export const NEWS_POSTS: NewsPost[] = [
+  {
+    id: "walkthrough",
+    image: "/brand/news/walkthrough.jpg",
+    title: "Weekly HSE Site Walkthrough with Construction team Management.",
+    lines: [
+      "Findings and Commitment:",
+      "- Housekeeping and Material Management.",
+      "- Barricading and Warning Signage.",
+      "- PTW Compliance.",
+    ],
+  },
+  {
+    id: "training-oceanarium",
+    image: "/brand/news/training-oceanarium.jpg",
+    position: "center 22%",
+    title: "Onsite training conducted.",
+    lines: ["Project: JCD Oceanarium", "Topic: Near Miss reporting", "Date: 04/10/2026."],
+  },
+  {
+    id: "eyewash-rosewood",
+    image: "/brand/news/eyewash-rosewood.jpg",
+    position: "center 20%",
+    title: "Amaala - Rosewood",
+    lines: ["Good Practice - Provision of Emergency Eyewash Stations at Iconic and Zone 3."],
+  },
 ];
