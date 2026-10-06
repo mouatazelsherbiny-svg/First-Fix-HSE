@@ -32,7 +32,10 @@ export default function ScrollReveal({ children }: { children: React.ReactNode }
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -60px 0px" }
+      // threshold 0 = reveal as soon as any part is on screen. A ratio
+      // (e.g. 0.08) never triggers for very tall cards — a 991-row table
+      // can't be 8% visible at once — which left them invisible.
+      { threshold: 0, rootMargin: "0px 0px -60px 0px" }
     );
 
     const observeNewCards = () => {
