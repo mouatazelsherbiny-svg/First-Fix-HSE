@@ -38,7 +38,6 @@ import {
   Pause,
   Play,
   ShieldCheck,
-  Sparkles,
   Sun,
   Thermometer,
   TriangleAlert,
@@ -65,6 +64,7 @@ import {
 } from "@/lib/useHomeDashboard";
 import { getProjectLocation } from "@/lib/projectLocations";
 import ProjectFilter from "@/components/ProjectFilter";
+import { GOOD_PRACTICE_POSTS, NEWS_PHOTOS } from "@/lib/dashboardContent";
 
 const ACCENT = "rgb(var(--brand-orange-rgb))";
 const LTIFR_COLOR = "#1f4e79";
@@ -339,7 +339,7 @@ function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={slide.project}
-        src={slide.photo ?? HERO_IMAGE}
+        src={slide.photo ?? NEWS_PHOTOS[Math.min(index, slides.length - 1) % NEWS_PHOTOS.length] ?? HERO_IMAGE}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />
@@ -402,44 +402,39 @@ function ProjectsSpotlight({ slides }: { slides: ProjectSlide[] }) {
   );
 }
 
-function GoodPractices({ items }: { items: HomeDashboardData["goodPractices"] }) {
+function GoodPractices() {
   return (
-    <Panel
-      title="Good Practices"
-      icon={<span className="h-5 w-1 rounded bg-brand-orange" />}
-      href="/observations"
-    >
-      {items.length === 0 ? (
-        <EmptyState text="No good practices recorded yet" />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-3">
-          {items.map((g) => (
-            <Link
-              key={g.id}
-              href={`/observations/${g.id}`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-brand-border transition hover:shadow-cardHover"
-            >
-              <div className="flex h-48 items-center justify-center overflow-hidden bg-brand-grayLight">
-                {g.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={g.photo} alt="" className="h-full w-full object-cover transition group-hover:scale-105" />
-                ) : (
-                  <Sparkles className="h-8 w-8 text-brand-orange" />
+    <Panel title="Good Practices" icon={<span className="h-5 w-1 rounded bg-brand-orange" />}>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {GOOD_PRACTICE_POSTS.map((g) => (
+          <a
+            key={g.id}
+            href={g.image}
+            target="_blank"
+            rel="noreferrer"
+            className="group flex flex-col overflow-hidden rounded-xl border border-brand-border transition hover:shadow-cardHover"
+          >
+            <div className="h-48 overflow-hidden bg-brand-grayLight">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={g.image} alt={g.title} className="h-full w-full object-cover transition group-hover:scale-105" />
+            </div>
+            <div className="flex flex-1 flex-col p-3">
+              <p className="text-sm font-bold leading-snug text-brand-black">{g.title}</p>
+              <p className="mt-1 line-clamp-3 text-xs leading-snug text-brand-grayDark">{g.details}</p>
+              <p className="mt-auto flex items-center gap-1.5 pt-3 text-xs text-brand-gray">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brand-orange" />
+                <span className="truncate font-medium text-brand-grayDark">{g.project}</span>
+                {g.date && (
+                  <>
+                    <span>|</span>
+                    <span className="shrink-0">{formatDate(g.date)}</span>
+                  </>
                 )}
-              </div>
-              <div className="flex flex-1 flex-col p-3">
-                <p className="line-clamp-3 text-sm font-semibold leading-snug text-brand-black">{g.details || "Good practice"}</p>
-                <p className="mt-auto flex items-center gap-1.5 pt-3 text-xs text-brand-gray">
-                  <ShieldCheck className="h-3.5 w-3.5 text-brand-orange" />
-                  <span className="truncate font-medium text-brand-grayDark">{g.project}</span>
-                  <span>|</span>
-                  <span className="shrink-0">{timeAgo(g.createdAt)}</span>
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
     </Panel>
   );
 }
@@ -699,19 +694,17 @@ function SiteWeather({ project }: { project: string }) {
 // Tips of the day (Training) — one tip per calendar day, same for everyone
 // ---------------------------------------------------------------------------
 
-const TRAINING_TIPS: { topic: string; tip: string }[] = [
-  { topic: "PPE", tip: "Always wear your PPE correctly — a hard hat only protects when it's actually on your head." },
-  { topic: "Near Miss Reporting", tip: "Report near misses even when nobody got hurt — they're the earliest warning of a real incident." },
-  { topic: "Tools & Equipment", tip: "Inspect your tools and equipment before every shift, not just at the start of the week." },
-  { topic: "Housekeeping", tip: "Keep walkways and exits clear — housekeeping is a safety control, not just tidiness." },
-  { topic: "Permit to Work", tip: "Never bypass a permit-to-work step to save time — that's exactly when incidents happen." },
-  { topic: "Confined Space", tip: "Test gas detectors and confined-space equipment before, not during, entry." },
-  { topic: "Heat Stress", tip: "Stay hydrated and take scheduled breaks in high heat — heat stress builds up before you feel it." },
-  { topic: "Excavations", tip: "Barricade and sign every excavation and floor opening — an unmarked hazard is an incident waiting to happen." },
-  { topic: "LOTO", tip: "Lock out and tag out energy sources before maintenance — every time, no exceptions." },
-  { topic: "Lifting Operations", tip: "Double-check load ratings and rigging before every lift — don't assume yesterday's setup is still safe today." },
-  { topic: "Stop Work Authority", tip: "Speak up if you see an unsafe act — a five-second word can prevent a lifelong injury." },
-  { topic: "Working at Height", tip: "Fit-check your fall protection harness every time — a loose strap defeats the whole system." },
+const TRAINING_TIPS: { topic: string; tip: string; image: string }[] = [
+  { topic: "PPE", tip: "Always wear your PPE correctly — a hard hat only protects when it's actually on your head.", image: "ppe" },
+  { topic: "Near Miss Reporting", tip: "Report near misses even when nobody got hurt — they're the earliest warning of a real incident.", image: "near-miss" },
+  { topic: "Tools & Equipment", tip: "Inspect your tools and equipment before every shift, not just at the start of the week.", image: "tools" },
+  { topic: "Housekeeping", tip: "Keep walkways and exits clear — housekeeping is a safety control, not just tidiness.", image: "housekeeping" },
+  { topic: "Permit to Work", tip: "Never bypass a permit-to-work step to save time — that's exactly when incidents happen.", image: "ptw" },
+  { topic: "Confined Space", tip: "Test the atmosphere with a calibrated gas detector before entry — never assume the air is safe.", image: "confined-space" },
+  { topic: "Heat Stress", tip: "Stay hydrated and take scheduled breaks in high heat — heat stress builds up before you feel it.", image: "heat-stress" },
+  { topic: "LOTO", tip: "Lock out and tag out energy sources before maintenance — every time, no exceptions.", image: "loto" },
+  { topic: "Lifting Operations", tip: "Keep clear of suspended loads and check rigging before every lift — never stand under the load.", image: "lifting" },
+  { topic: "Working at Height", tip: "Use guarded platforms and clip your harness to an approved anchor point — a loose strap defeats the whole system.", image: "work-at-height" },
 ];
 
 function TipsOfTheDay() {
@@ -720,7 +713,9 @@ function TipsOfTheDay() {
     () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000),
     []
   );
-  const tip = TRAINING_TIPS[(dayOfYear + offset) % TRAINING_TIPS.length];
+  const n = TRAINING_TIPS.length;
+  const idx = (((dayOfYear + offset) % n) + n) % n;
+  const tip = TRAINING_TIPS[idx];
 
   return (
     <Panel
@@ -730,24 +725,44 @@ function TipsOfTheDay() {
       linkLabel="Training"
       className="h-full"
     >
-      <div className="flex flex-1 flex-col rounded-xl p-5" style={{ background: "rgb(var(--brand-orange-light-rgb))" }}>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-orange">
-          <GraduationCap className="h-4 w-4" />
-          {tip.topic}
-        </p>
-        <p className="mt-3 flex-1 text-lg font-semibold leading-snug text-brand-black">&ldquo;{tip.tip}&rdquo;</p>
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <p className="text-xs text-brand-grayDark">
-            Tip {((dayOfYear + offset) % TRAINING_TIPS.length) + 1} of {TRAINING_TIPS.length}
+      <div className="flex flex-1 flex-col overflow-hidden rounded-xl" style={{ background: "rgb(var(--brand-orange-light-rgb))" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/brand/tips/${tip.image}.svg`} alt={tip.topic} className="aspect-[16/10] w-full object-cover" />
+        <div className="flex flex-1 flex-col p-5">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-orange">
+            <GraduationCap className="h-4 w-4" />
+            {tip.topic}
           </p>
-          <button
-            type="button"
-            onClick={() => setOffset((o) => o + 1)}
-            className="inline-flex items-center gap-1 rounded-full bg-brand-surface px-3 py-1.5 text-xs font-semibold text-brand-grayDark shadow-sm transition hover:text-brand-orange"
-          >
-            Next tip
-            <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
-          </button>
+          <p className="mt-2 flex-1 text-base font-semibold leading-snug text-brand-black">&ldquo;{tip.tip}&rdquo;</p>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o - 1)}
+              aria-label="Previous tip"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-surface text-brand-grayDark shadow-sm transition hover:text-brand-orange"
+            >
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+            </button>
+            <div className="flex items-center gap-1.5">
+              {TRAINING_TIPS.map((t, k) => (
+                <button
+                  key={t.image}
+                  type="button"
+                  onClick={() => setOffset((o) => o + (k - idx))}
+                  aria-label={`Tip ${k + 1}`}
+                  className={`h-2 rounded-full transition-all ${k === idx ? "w-5 bg-brand-orange" : "w-2 bg-brand-orange/30"}`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o + 1)}
+              aria-label="Next tip"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-surface text-brand-grayDark shadow-sm transition hover:text-brand-orange"
+            >
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+            </button>
+          </div>
         </div>
       </div>
     </Panel>
@@ -843,7 +858,7 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-8">
           <ProjectsSpotlight slides={data.projects} />
-          <GoodPractices items={data.goodPractices} />
+          <GoodPractices />
         </div>
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-4">
           <SiteWeather project={project} />
