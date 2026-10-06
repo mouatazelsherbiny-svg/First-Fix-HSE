@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
+import { useAuth } from "@/context/AuthContext";
 import FiccFormModal from "@/components/ficc/FiccFormModal";
 import type { FiccInput, Incident } from "@/types/incident";
 
@@ -35,7 +36,9 @@ export default function FiccPage() {
 
 function FiccPageContent() {
   const { t, locale } = useLanguage();
-  const { incidents, isLoading, submitFicc, attachIirFile, setIncidentPhotos } = useIncidents();
+  const { incidents, isLoading, submitFicc, attachIirFile, setIncidentPhotos, setIirStatus } = useIncidents();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [showAddModal, setShowAddModal] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
@@ -304,6 +307,7 @@ function FiccPageContent() {
           locale={locale}
           onClose={() => setSelectedId(null)}
           onPhotosChange={(photos) => setIncidentPhotos(selected.id, photos)}
+          onStatusChange={isAdmin ? (status) => setIirStatus(selected.id, status) : undefined}
         />
       )}
     </div>
@@ -319,12 +323,27 @@ function FiccDetails({
   locale,
   onClose,
   onPhotosChange,
+  onStatusChange,
 }: {
   incident: Incident;
   locale: string;
   onClose: () => void;
   onPhotosChange: (photos: string[]) => Promise<void>;
+  /** Only passed for admins. */
+  onStatusChange?: (status: "Open" | "Closed") => Promise<void>;
 }) {
+  const [statusBusy, setStatusBusy] = useState(false);
+  const changeStatus = async (status: "Open" | "Closed") => {
+    if (!onStatusChange || status === i.iirStatus) return;
+    setStatusBusy(true);
+    try {
+      await onStatusChange(status);
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Failed to update status");
+    } finally {
+      setStatusBusy(false);
+    }
+  };
   const photos = i.incidentPhotos ?? [];
   const photoInput = useRef<HTMLInputElement>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -400,7 +419,23 @@ function FiccDetails({
     {
       title: "Investigation (IIR)",
       rows: [
-        ["IIR status", i.iirStatus ? <Badge value={i.iirStatus} /> : null],
+        [
+          "IIR status",
+          onStatusChange ? (
+            <select
+              value={i.iirStatus ?? ""}
+              disabled={statusBusy}
+              onChange={(e) => changeStatus(e.target.value as "Open" | "Closed")}
+              className="rounded-lg border border-brand-border bg-brand-surface px-2 py-1 text-sm font-semibold text-brand-black disabled:opacity-60"
+            >
+              {!i.iirStatus && <option value="">—</option>}
+              <option value="Open">Open</option>
+              <option value="Closed">Closed</option>
+            </select>
+          ) : i.iirStatus ? (
+            <Badge value={i.iirStatus} />
+          ) : null,
+        ],
         ["IIR due", fmt(i.iirDueAt, true)],
         ["IIR submitted", fmt(i.iirSubmissionDate)],
         [

@@ -30,6 +30,8 @@ interface IncidentsContextValue {
   /** Attaches a completed IIR document (as a base64 data URL) to the
    *  incident and closes out its IIR — the FICC page's "Attach IIR" flow,
    *  replacing the old in-app IIR form for this button. */
+  /** Admin: set the IIR status directly (Open / Closed). */
+  setIirStatus: (incidentId: string, status: "Open" | "Closed") => Promise<void>;
   /** Replace an incident's photo list. */
   setIncidentPhotos: (incidentId: string, photos: string[]) => Promise<void>;
   attachIirFile: (
@@ -225,6 +227,22 @@ export function IncidentsProvider({ children }: { children: ReactNode }) {
         );
       },
 
+      setIirStatus: async (incidentId: string, status: "Open" | "Closed") => {
+        const current = incidents.find((x) => x.id === incidentId);
+        const patch: Record<string, unknown> = { iir_status: status };
+        if (status === "Closed" && !current?.iirSubmissionDate) {
+          patch.iir_submission_date = new Date().toISOString().slice(0, 10);
+        }
+        const { data, error } = await supabase
+          .from("incidents")
+          .update(patch)
+          .eq("id", incidentId)
+          .select()
+          .single();
+        if (error || !data) throw new Error(error?.message ?? "Failed to update status");
+        const updated = mapRow(data);
+        setIncidents((prev) => prev.map((x) => (x.id === incidentId ? updated : x)));
+      },
       setIncidentPhotos: async (incidentId: string, photos: string[]) => {
         const { data, error } = await supabase
           .from("incidents")
