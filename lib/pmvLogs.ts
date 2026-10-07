@@ -47,6 +47,8 @@ const PMV_OPTIONS_EQUIPMENT_CLASS: string[] = ["Heavy", "Light"];
 const PMV_OPTIONS_ASSET_FUEL: string[] = ["Benzine", "Diesel"];
 const PMV_OPTIONS_DEPLOYMENT_STATUS: string[] = ["Available for Use", "Breakdown"];
 const PMV_OPTIONS_UTILIZATION_STATUS: string[] = ["In-Use", "Free"];
+const PMV_OPTIONS_SPONSOR: string[] = ["FF", "Rental"];
+const PMV_OPTIONS_LICENSE_CATEGORY: string[] = ["Light Vehicle Driver", "Heavy Vehicle Driver", "Machine Operator"];
 const PMV_OPTIONS_OPERATOR_STATUS: string[] = ["Present", "On Leave", "Suspended"];
 const PMV_OPTIONS_MAINTENANCE_STATUS: string[] = ["Due", "Completed", "Overdue"];
 const PMV_OPTIONS_DOWNTIME_REASON: string[] = ["Preventive", "Breakdown"];
@@ -230,21 +232,16 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "project_code", en: "Project Code", ar: "كود المشروع", type: "text", },
       { key: "employee_id", en: "Employee ID", ar: "رقم الموظف", type: "text", },
       { key: "operator_name", en: "Operator Name", ar: "اسم المشغل", type: "text", },
-      { key: "sponsor", en: "Sponsor", ar: "الكفيل", type: "text", },
+      { key: "sponsor", en: "Sponsor", ar: "الكفيل", type: "select", options: PMV_OPTIONS_SPONSOR, },
       { key: "operator_mobile_no", en: "Operator Mobile No.", ar: "رقم جوال المشغل", type: "text", },
       { key: "iqama_no", en: "Iqama No.", ar: "رقم الإقامة", type: "text", },
       { key: "iqama_profession", en: "Iqama Profession", ar: "مهنة الإقامة", type: "text", },
-      { key: "license_category", en: "License Category", ar: "فئة الرخصة", type: "text", },
+      { key: "license_category", en: "License Category", ar: "فئة الرخصة", type: "select", options: PMV_OPTIONS_LICENSE_CATEGORY, },
       { key: "equipment_type_eligible", en: "Equipment Type Eligible", ar: "نوع المعدة المصرح بتشغيلها", type: "text", },
       { key: "tuv_certification_expiry", en: "TUV Certification Expiry", ar: "انتهاء شهادة TUV", type: "date", },
       { key: "third_party_certification_expiry", en: "3rd Party Certification Expiry", ar: "انتهاء شهادة الطرف الثالث", type: "date", },
-      { key: "designated_asset_id", en: "Designated Asset ID", ar: "رقم الأصل المخصص", type: "text", },
-      { key: "designated_plate_no", en: "Designated Plate No.", ar: "رقم لوحة المعدة المخصصة", type: "text", },
-      { key: "equipment_allocation_date", en: "Equipment Allocation Date", ar: "تاريخ تخصيص المعدة", type: "date", },
-      { key: "equipment_release_date", en: "Equipment Release Date", ar: "تاريخ الإفراج عن المعدة", type: "date", },
       { key: "shift", en: "Shift", ar: "الوردية", type: "select", options: PMV_OPTIONS_SHIFT, },
       { key: "current_status", en: "Current Status", ar: "الحالة الحالية", type: "select", options: PMV_OPTIONS_OPERATOR_STATUS, },
-      { key: "backup_operator", en: "Backup Operator", ar: "المشغل البديل", type: "text", },
     ],
   },
   {

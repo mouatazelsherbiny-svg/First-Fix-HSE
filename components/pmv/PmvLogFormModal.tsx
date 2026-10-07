@@ -154,7 +154,11 @@ export default function PmvLogFormModal({
                       className="input-field"
                     >
                       <option value="">{t.common.select}</option>
-                      {(col.options ?? []).map((opt) => (
+                      {[
+                        ...(col.options ?? []),
+                        // Keep an older value that isn't in the list, so editing never drops it.
+                        ...(values[col.key] && !(col.options ?? []).includes(values[col.key]) ? [values[col.key]] : []),
+                      ].map((opt) => (
                         <option key={opt} value={opt}>
                           {opt}
                         </option>
