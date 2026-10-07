@@ -43,7 +43,7 @@ const PMV_OPTIONS_REPAIR_BY: string[] = ["Internal", "External Contractor", "Man
 export const PMV_OPTIONS_ASSET_STATUS: string[] = ["Active", "Idle", "Under Repair", "Returned to Rental Co.", "Demobilized", "Disposed"];
 const PMV_OPTIONS_DEPLOYMENT_STATUS: string[] = ["Available for Use", "Breakdown"];
 const PMV_OPTIONS_UTILIZATION_STATUS: string[] = ["In-Use", "Free"];
-const PMV_OPTIONS_OPERATOR_STATUS: string[] = ["Present", "On Leave"];
+const PMV_OPTIONS_OPERATOR_STATUS: string[] = ["Present", "On Leave", "Suspended"];
 const PMV_OPTIONS_MAINTENANCE_STATUS: string[] = ["Due", "Completed", "Overdue"];
 const PMV_OPTIONS_DOWNTIME_REASON: string[] = ["Preventive", "Breakdown"];
 const PMV_OPTIONS_DOWNTIME_STATUS: string[] = ["Open", "In Progress", "Closed"];
@@ -78,6 +78,7 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "next_periodic_maintenance_due", en: "Next Periodic Maintenance Due", ar: "موعد الصيانة الدورية القادمة", type: "date", },
       { key: "third_party_inspection_expiry", en: "Third Party Inspection Expiry", ar: "انتهاء فحص الطرف الثالث", type: "date", },
       { key: "insurance_expiry", en: "Insurance Expiry", ar: "انتهاء التأمين", type: "date", },
+      { key: "tuv_certification_expiry", en: "TUV Certification Expiry", ar: "انتهاء شهادة TUV", type: "date", },
       { key: "tank_capacity", en: "Tank Capacity", ar: "سعة الخزان", type: "number", },
       { key: "manufacturer_rate_litre_hour", en: "Manufacturer Rate (Litre/Hour)", ar: "معدل الاستهلاك (لتر/ساعة)", type: "number", },
       { key: "operator_name", en: "Operator Name", ar: "اسم المشغل", type: "text", },
@@ -244,6 +245,7 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "license_category", en: "License Category", ar: "فئة الرخصة", type: "text", },
       { key: "equipment_type_eligible", en: "Equipment Type Eligible", ar: "نوع المعدة المصرح بتشغيلها", type: "text", },
       { key: "tuv_certification_expiry", en: "TUV Certification Expiry", ar: "انتهاء شهادة TUV", type: "date", },
+      { key: "third_party_certification_expiry", en: "3rd Party Certification Expiry", ar: "انتهاء شهادة الطرف الثالث", type: "date", },
       { key: "designated_asset_id", en: "Designated Asset ID", ar: "رقم الأصل المخصص", type: "text", },
       { key: "designated_plate_no", en: "Designated Plate No.", ar: "رقم لوحة المعدة المخصصة", type: "text", },
       { key: "equipment_allocation_date", en: "Equipment Allocation Date", ar: "تاريخ تخصيص المعدة", type: "date", },
@@ -271,6 +273,7 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "license_category", en: "License Category", ar: "فئة الرخصة", type: "text", },
       { key: "equipment_type_eligible", en: "Equipment Type Eligible", ar: "نوع المعدة المصرح بتشغيلها", type: "text", },
       { key: "tuv_certification_expiry", en: "TUV Certification Expiry", ar: "انتهاء شهادة TUV", type: "date", },
+      { key: "third_party_certification_expiry", en: "3rd Party Certification Expiry", ar: "انتهاء شهادة الطرف الثالث", type: "date", },
       { key: "designated_asset_id", en: "Designated Asset ID", ar: "رقم الأصل المخصص", type: "text", },
       { key: "designated_plate_no", en: "Designated Plate No.", ar: "رقم لوحة المعدة المخصصة", type: "text", },
       { key: "equipment_allocation_date", en: "Equipment Allocation Date", ar: "تاريخ تخصيص المعدة", type: "date", },

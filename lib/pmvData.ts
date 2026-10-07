@@ -44,17 +44,17 @@ export const OPERATOR_STATUS: OperatorStatusCounts = {
 };
 
 export const UPCOMING_INSPECTIONS: UpcomingInspection[] = [
-  { pmvId: "V-0142", type: "Truck", description: "Mercedes Actros", dueDate: "2025-09-15", status: "Due Soon" },
-  { pmvId: "E-0038", type: "Excavator", description: "CAT 320D", dueDate: "2025-09-17", status: "Due Soon" },
-  { pmvId: "L-0211", type: "Loader", description: "Volvo L120H", dueDate: "2025-09-20", status: "Due Soon" },
-  { pmvId: "G-0076", type: "Generator", description: "Atlas Copco", dueDate: "2025-09-22", status: "Due Soon" },
-  { pmvId: "V-0045", type: "Truck", description: "Mercedes Actros", dueDate: "2025-09-25", status: "On Time" },
+  { pmvId: "V-0142", type: "Truck", description: "Mercedes Actros", dueDate: "2025-09-15", status: "Due this month" },
+  { pmvId: "E-0038", type: "Excavator", description: "CAT 320D", dueDate: "2025-09-17", status: "Due this month" },
+  { pmvId: "L-0211", type: "Loader", description: "Volvo L120H", dueDate: "2025-09-20", status: "Due this month" },
+  { pmvId: "G-0076", type: "Generator", description: "Atlas Copco", dueDate: "2025-09-22", status: "Due this month" },
+  { pmvId: "V-0045", type: "Truck", description: "Mercedes Actros", dueDate: "2025-09-25", status: "Due this month" },
 ];
 
 export const EXPIRING_DOCUMENTS: ExpiringDocumentRow[] = [
-  { documentType: "Operator License", count: 12 },
-  { documentType: "Vehicle Registration", count: 7 },
-  { documentType: "Insurance", count: 4 },
-  { documentType: "Third-Party Inspection", count: 2 },
-  { documentType: "Equipment Certificate", count: 2 },
+  { documentType: "Operator License", count: 12, logKey: "assetRegister" },
+  { documentType: "Vehicle Registration", count: 7, logKey: "assetRegister" },
+  { documentType: "Insurance", count: 4, logKey: "assetRegister" },
+  { documentType: "Third-Party Inspection", count: 2, logKey: "assetRegister" },
+  { documentType: "Equipment Certificate", count: 2, logKey: "assetRegister" },
 ];

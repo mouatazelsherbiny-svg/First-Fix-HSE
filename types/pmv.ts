@@ -33,7 +33,15 @@ export interface OperatorStatusCounts {
   onLeave: number;
 }
 
-export type InspectionStatus = "Due Soon" | "On Time" | "Overdue";
+/** Red = overdue or due within 2 weeks, orange = due within the month. */
+export type InspectionStatus = "Overdue" | "Due in 2 weeks" | "Due this month";
+
+/** Asset (vehicle / machinery / equipment) counts by status. */
+export interface VehicleStatusCounts {
+  active: number;
+  inactive: number;
+  suspended: number;
+}
 
 export interface UpcomingInspection {
   /** Asset tag, e.g. "V-0142". */
@@ -50,6 +58,8 @@ export interface UpcomingInspection {
 export interface ExpiringDocumentRow {
   documentType: string;
   count: number;
+  /** PMV Log (lib/pmvLogs.ts key) where these documents are recorded. */
+  logKey: string;
 }
 
 /** Top-level KPI numbers shown in the four summary cards. */

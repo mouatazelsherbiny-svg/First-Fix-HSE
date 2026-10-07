@@ -24,7 +24,11 @@ import type {
   PmvSummary,
   PmvTypeBreakdown,
   UpcomingInspection,
+  VehicleStatusCounts,
 } from "@/types/pmv";
+
+/** FF (company-owned) / Rental filter for the whole PMV dashboard. */
+export type PmvOwnershipFilter = "all" | "Owned" | "Rented";
 
 type CategoryBucket = PmvTypeBreakdown["key"];
 
@@ -60,6 +64,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // A document counts as "expiring" once it's within 30 days of its expiry
 // date, or already past it.
 const EXPIRY_WINDOW_DAYS = 30;
+// Inspections listed once they're due within a month (or overdue).
+const INSPECTION_WINDOW_DAYS = 30;
 
 function daysUntil(dateStr: unknown): number | null {
   if (!dateStr || typeof dateStr !== "string") return null;
@@ -77,6 +83,7 @@ export interface PmvDashboardData {
   summary: PmvSummary;
   byType: PmvTypeBreakdown[];
   operatorStatus: OperatorStatusCounts;
+  vehicleStatus: VehicleStatusCounts;
   upcomingInspections: UpcomingInspection[];
   expiringDocuments: ExpiringDocumentRow[];
   isLoading: boolean;
@@ -113,6 +120,7 @@ const EMPTY_DATA: LiveData = {
   summary: EMPTY_SUMMARY,
   byType: EMPTY_BY_TYPE,
   operatorStatus: EMPTY_OPERATOR_STATUS,
+  vehicleStatus: { active: 0, inactive: 0, suspended: 0 },
   upcomingInspections: [],
   expiringDocuments: [],
 };
@@ -120,7 +128,7 @@ const EMPTY_DATA: LiveData = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
-export function usePmvDashboard(): PmvDashboardData {
+export function usePmvDashboard(ownership: PmvOwnershipFilter = "all"): PmvDashboardData {
   const [data, setData] = useState<LiveData>(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const { project } = useProjectFilter();
@@ -133,13 +141,22 @@ export function usePmvDashboard(): PmvDashboardData {
         // App-wide project filter (see context/ProjectFilterContext.tsx).
         const scope = (rows: Row[]) =>
           project ? rows.filter((r) => String(r.project_name ?? "").trim() === project) : rows;
-        const [assets, maintenance, ownedOps, rentedOps] = (await Promise.all([
+        const [allAssets, allMaintenance, allOwnedOps, allRentedOps] = (await Promise.all([
           fetchAllRows<Row>("pmv_asset_register", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_scheduled_maintenance", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_operators_owned", (q) => q.select("*")),
           fetchAllRows<Row>("pmv_operators_rented", (q) => q.select("*")),
         ])).map(scope);
         if (!active) return;
+
+        // FF / Rental filter: assets and maintenance carry an `ownership`
+        // column; operators live in separate owned / rented tables.
+        const byOwnership = (rows: Row[]) =>
+          ownership === "all" ? rows : rows.filter((r) => String(r.ownership ?? "") === ownership);
+        const assets = byOwnership(allAssets);
+        const maintenance = byOwnership(allMaintenance);
+        const ownedOps = ownership === "Rented" ? [] : allOwnedOps;
+        const rentedOps = ownership === "Owned" ? [] : allRentedOps;
 
         // --- PMV by Type + vehicles/machinery/equipment split ---
         const byTypeTotals: Record<CategoryBucket, { total: number; available: number }> =
@@ -173,94 +190,19 @@ export function usePmvDashboard(): PmvDashboardData {
 
         const totalPmv = assets.length;
 
-        // --- Due for inspection ---
-        const dueForInspection = maintenance.filter(
-          (m) =>
-            m.current_maintenance_status === "Due" ||
-            m.current_maintenance_status === "Overdue"
-        ).length;
-
-        // --- Operators ---
-        // pmv_operators_owned tracks Present/On Leave directly.
-        // pmv_operators_rented has no status column in the source workbook,
-        // so a rented operator counts as active unless they've been
-        // released (equipment_release_date set) — there's no "Suspended"
-        // concept anywhere in the schema, so that bucket is always 0.
-        const activeOwned = ownedOps.filter((o) => o.current_status === "Present").length;
-        const onLeaveOwned = ownedOps.filter((o) => o.current_status === "On Leave").length;
-        const activeRented = rentedOps.filter((o) => !o.equipment_release_date).length;
-        const releasedRented = rentedOps.filter((o) => !!o.equipment_release_date).length;
-
-        const operatorStatus: OperatorStatusCounts = {
-          active: activeOwned + activeRented,
-          onLeave: onLeaveOwned,
-          inactive: releasedRented,
-          suspended: 0,
-        };
-        const totalOperators = ownedOps.length + rentedOps.length;
-        const authorizedOperators = operatorStatus.active;
-
-        // --- Expiring documents (within 30 days, or already expired) ---
-        const docCounters: Record<string, number> = {
-          "Third Party Inspection": 0,
-          Insurance: 0,
-          "Rental Agreement": 0,
-          "TUV Certification": 0,
-        };
-        let totalDocuments = 0;
-
-        assets.forEach((row) => {
-          if (row.third_party_inspection_expiry) {
-            totalDocuments += 1;
-            if (isExpiringOrExpired(row.third_party_inspection_expiry)) {
-              docCounters["Third Party Inspection"] += 1;
-            }
-          }
-          if (row.insurance_expiry) {
-            totalDocuments += 1;
-            if (isExpiringOrExpired(row.insurance_expiry)) {
-              docCounters["Insurance"] += 1;
-            }
-          }
-          if (row.rental_agreement_expiry_date) {
-            totalDocuments += 1;
-            if (isExpiringOrExpired(row.rental_agreement_expiry_date)) {
-              docCounters["Rental Agreement"] += 1;
-            }
-          }
-        });
-        [...ownedOps, ...rentedOps].forEach((row) => {
-          if (row.tuv_certification_expiry) {
-            totalDocuments += 1;
-            if (isExpiringOrExpired(row.tuv_certification_expiry)) {
-              docCounters["TUV Certification"] += 1;
-            }
-          }
-        });
-
-        const expiringDocumentsCount = Object.values(docCounters).reduce(
-          (a, b) => a + b,
-          0
-        );
-        const expiringDocuments: ExpiringDocumentRow[] = Object.entries(docCounters)
-          .filter(([, count]) => count > 0)
-          .map(([documentType, count]) => ({ documentType, count }));
-
-        // --- Upcoming inspections (Due/Overdue maintenance, nearest first) ---
-        const upcomingInspections: UpcomingInspection[] = maintenance
+        // --- Inspections due within a month (or overdue) ---
+        // Red = overdue or due within 2 weeks, orange = due within the month.
+        const dueRows: UpcomingInspection[] = maintenance
+          .filter((m) => m.current_maintenance_status !== "Completed")
+          .map((m) => ({ m, days: daysUntil(m.next_maintenance_date) }))
           .filter(
-            (m) =>
-              m.current_maintenance_status === "Due" ||
-              m.current_maintenance_status === "Overdue"
+            ({ m, days }) =>
+              m.current_maintenance_status === "Overdue" || (days !== null && days <= INSPECTION_WINDOW_DAYS)
           )
-          .map((m) => {
-            const days = daysUntil(m.next_maintenance_date);
-            let status: InspectionStatus = "On Time";
-            if (m.current_maintenance_status === "Overdue" || (days !== null && days < 0)) {
-              status = "Overdue";
-            } else if (days !== null && days <= 14) {
-              status = "Due Soon";
-            }
+          .map(({ m, days }) => {
+            let status: InspectionStatus = "Due this month";
+            if (m.current_maintenance_status === "Overdue" || (days !== null && days < 0)) status = "Overdue";
+            else if (days !== null && days <= 14) status = "Due in 2 weeks";
             return {
               pmvId: String(m.asset_id ?? m.plate_no ?? "—"),
               type: String(m.asset_category ?? "—"),
@@ -269,8 +211,59 @@ export function usePmvDashboard(): PmvDashboardData {
               status,
             };
           })
-          .sort((a, b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999"))
-          .slice(0, 10);
+          .sort((x, y) => (x.dueDate || "0000").localeCompare(y.dueDate || "0000"));
+        const dueForInspection = dueRows.length;
+
+        // --- Operators ---
+        // Owned: Present = active, On Leave = inactive, Suspended = suspended.
+        // Rented (no status column): active until released from equipment.
+        const activeOwned = ownedOps.filter((o) => o.current_status === "Present").length;
+        const suspendedOwned = ownedOps.filter((o) => o.current_status === "Suspended").length;
+        const inactiveOwned = ownedOps.length - activeOwned - suspendedOwned;
+        const activeRented = rentedOps.filter((o) => !o.equipment_release_date).length;
+        const releasedRented = rentedOps.length - activeRented;
+
+        const operatorStatus: OperatorStatusCounts = {
+          active: activeOwned + activeRented,
+          inactive: inactiveOwned + releasedRented,
+          suspended: suspendedOwned,
+          onLeave: 0,
+        };
+        const totalOperators = ownedOps.length + rentedOps.length;
+        const authorizedOperators = operatorStatus.active;
+
+        // --- Vehicles / equipment ---
+        // Active = working; Suspended = broken down / under repair;
+        // Inactive = idle, returned, demobilized or disposed.
+        const vehicleStatus: VehicleStatusCounts = { active: 0, inactive: 0, suspended: 0 };
+        assets.forEach((row) => {
+          if (row.deployment_status === "Breakdown" || row.current_status === "Under Repair") vehicleStatus.suspended += 1;
+          else if (row.current_status === "Active" || !row.current_status) vehicleStatus.active += 1;
+          else vehicleStatus.inactive += 1;
+        });
+
+        // --- Expiring documents (within 30 days, or already expired) ---
+        const opsLog = ownership === "Rented" ? "operatorsRented" : "operatorsOwned";
+        const operators = [...ownedOps, ...rentedOps];
+        const docSpecs: { documentType: string; rows: Row[]; field: string; logKey: string }[] = [
+          { documentType: "3rd Party Operator", rows: operators, field: "third_party_certification_expiry", logKey: opsLog },
+          { documentType: "3rd Party Vehicle", rows: assets, field: "third_party_inspection_expiry", logKey: "assetRegister" },
+          { documentType: "TUV Operator", rows: operators, field: "tuv_certification_expiry", logKey: opsLog },
+          { documentType: "TUV Vehicle", rows: assets, field: "tuv_certification_expiry", logKey: "assetRegister" },
+          { documentType: "Insurance", rows: assets, field: "insurance_expiry", logKey: "assetRegister" },
+        ];
+        let totalDocuments = 0;
+        const expiringDocuments: ExpiringDocumentRow[] = docSpecs.map((d) => {
+          const withDate = d.rows.filter((r) => !!r[d.field]);
+          totalDocuments += withDate.length;
+          return {
+            documentType: d.documentType,
+            count: withDate.filter((r) => isExpiringOrExpired(r[d.field])).length,
+            logKey: d.logKey,
+          };
+        });
+        const expiringDocumentsCount = expiringDocuments.reduce((a, r) => a + r.count, 0);
+        const upcomingInspections = dueRows.slice(0, 10);
 
         setData({
           summary: {
@@ -286,6 +279,7 @@ export function usePmvDashboard(): PmvDashboardData {
           },
           byType,
           operatorStatus,
+          vehicleStatus,
           upcomingInspections,
           expiringDocuments,
         });
@@ -300,7 +294,7 @@ export function usePmvDashboard(): PmvDashboardData {
     return () => {
       active = false;
     };
-  }, [project]);
+  }, [project, ownership]);
 
   return { ...data, isLoading };
 }

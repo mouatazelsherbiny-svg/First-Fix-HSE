@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Boxes,
   CalendarClock,
+  ChevronRight,
   ClipboardList,
   Construction,
   Container,
@@ -19,14 +20,13 @@ import {
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardBackground from "@/components/DashboardBackground";
-import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
-import { getChartColor } from "@/lib/statusColors";
-import { usePmvDashboard } from "@/lib/usePmvDashboard";
+import { usePmvDashboard, type PmvOwnershipFilter } from "@/lib/usePmvDashboard";
+import { useProjectFilter } from "@/context/ProjectFilterContext";
 import { PMV_LOG_DEFINITIONS, PMV_BUCKET_IMAGES } from "@/lib/pmvLogs";
 import PmvLogTable from "@/components/pmv/PmvLogTable";
 import EquipmentTracker from "@/components/pmv/EquipmentTracker";
-import type { PmvTypeBreakdown } from "@/types/pmv";
+import type { InspectionStatus, PmvTypeBreakdown } from "@/types/pmv";
 
 export default function PmvPage() {
   return (
@@ -77,7 +77,7 @@ const EQUIPMENT_IMAGES = PMV_BUCKET_IMAGES;
 // photo's own aspect ratio regardless of orientation).
 const MAX_BAR_HEIGHT_PX = 120;
 const IMAGE_BOX_HEIGHT_PX = 104;
-const IMAGE_BOX_WIDTH_PX = 128;
+const IMAGE_BOX_WIDTH_PX = 110;
 
 function IconBadge({ icon, tone }: { icon: React.ReactNode; tone: CardTone }) {
   return (
@@ -121,13 +121,21 @@ function StatCard({
 function PmvPageContent() {
   const { t } = useLanguage();
   const [tab, setTab] = useState<PmvTab>("dashboard");
+  const [logKey, setLogKey] = useState<string>(PMV_LOG_DEFINITIONS[0]?.key ?? "");
+  const openLog = (key: string) => {
+    setLogKey(key);
+    setTab("log");
+  };
 
   return (
     <div className="relative isolate">
       <DashboardBackground />
       <div className="relative z-10">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold text-brand-black">{t.pmv.title}</h1>
+          <h1 className="flex flex-wrap items-baseline gap-x-3 text-2xl font-bold text-brand-black">
+            {t.pmv.title}
+            <span className="text-xl font-semibold text-brand-grayDark">Plant, Machinery, and Vehicles</span>
+          </h1>
 
           <div className="inline-flex rounded-xl border border-brand-border bg-brand-surface/60 p-1 backdrop-blur-md">
             <button
@@ -170,9 +178,9 @@ function PmvPageContent() {
         </div>
 
         {tab === "dashboard" ? (
-          <PmvDashboard />
+          <PmvDashboard onOpenLog={openLog} />
         ) : tab === "log" ? (
-          <PmvLogSection />
+          <PmvLogSection activeKey={logKey} setActiveKey={setLogKey} />
         ) : (
           <EquipmentTrackerSection />
         )}
@@ -181,11 +189,14 @@ function PmvPageContent() {
   );
 }
 
-function PmvLogSection() {
+function PmvLogSection({
+  activeKey,
+  setActiveKey,
+}: {
+  activeKey: string;
+  setActiveKey: (key: string) => void;
+}) {
   const { locale } = useLanguage();
-  const [activeKey, setActiveKey] = useState<string>(
-    PMV_LOG_DEFINITIONS[0]?.key ?? ""
-  );
   const activeDefinition =
     PMV_LOG_DEFINITIONS.find((d) => d.key === activeKey) ??
     PMV_LOG_DEFINITIONS[0];
@@ -233,15 +244,73 @@ function EquipmentTrackerSection() {
   );
 }
 
-function PmvDashboard() {
+const INSPECTION_BADGE: Record<InspectionStatus, { bg: string; fg: string }> = {
+  Overdue: { bg: "#FEE2E2", fg: "#B91C1C" },
+  "Due in 2 weeks": { bg: "#FEE2E2", fg: "#B91C1C" },
+  "Due this month": { bg: "#FFEDD5", fg: "#C2410C" },
+};
+
+const STATUS_COLORS = { Active: "#22C55E", Inactive: "#94A3B8", Suspended: "#EF4444" };
+
+function StatusDonut({
+  title,
+  subtitle,
+  rows,
+}: {
+  title: string;
+  subtitle: string;
+  rows: { key: keyof typeof STATUS_COLORS; value: number }[];
+}) {
+  const total = rows.reduce((a, r) => a + r.value, 0);
+  const active = rows.find((r) => r.key === "Active")?.value ?? 0;
+  const chartRows = total > 0 ? rows : [{ key: "Inactive" as const, value: 1 }];
+  return (
+    <div className="flex min-w-0 flex-1 flex-col">
+      <h2 className="text-base font-bold text-brand-black">{title}</h2>
+      <p className="mt-0.5 text-xs text-brand-gray">{subtitle}</p>
+      <div className="relative mx-auto mt-3 h-36 w-36">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={chartRows} dataKey="value" nameKey="key" innerRadius="66%" outerRadius="100%" paddingAngle={total > 0 ? 2 : 0} stroke="none" isAnimationActive={false}>
+              {chartRows.map((row) => (
+                <Cell key={row.key} fill={total > 0 ? STATUS_COLORS[row.key] : "#E2E8F0"} />
+              ))}
+            </Pie>
+            {total > 0 && <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12 }} />}
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-extrabold text-brand-black">{active}</span>
+          <span className="text-[11px] font-medium text-brand-gray">Active</span>
+        </div>
+      </div>
+      <ul className="mt-4 space-y-1.5">
+        {rows.map((row) => (
+          <li key={row.key} className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-brand-grayDark">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[row.key] }} />
+              {row.key}
+            </span>
+            <span className="font-semibold text-brand-black">{row.value.toLocaleString()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
   const { t, locale } = useLanguage();
+  const { project, setProject, projects } = useProjectFilter();
+  const [ownership, setOwnership] = useState<PmvOwnershipFilter>("all");
   const {
     summary: s,
     byType,
     operatorStatus,
+    vehicleStatus,
     upcomingInspections,
     expiringDocuments,
-  } = usePmvDashboard();
+  } = usePmvDashboard(ownership);
 
   const duePct = s.totalPmv > 0 ? Math.round((s.dueForInspection / s.totalPmv) * 100) : 0;
   const operatorsPct =
@@ -251,13 +320,6 @@ function PmvDashboard() {
 
   // At least 1 so a chart with no data yet doesn't divide by zero.
   const maxTypeTotal = Math.max(1, ...byType.map((row) => row.total));
-
-  const operatorStatusRows = [
-    { key: "Active", value: operatorStatus.active, label: t.pmv.statusActive },
-    { key: "Inactive", value: operatorStatus.inactive, label: t.pmv.statusInactive },
-    { key: "Suspended", value: operatorStatus.suspended, label: t.pmv.statusSuspended },
-    { key: "On Leave", value: operatorStatus.onLeave, label: t.pmv.statusOnLeave },
-  ];
 
   const typeLabel = (key: PmvTypeBreakdown["key"]) =>
     ({
@@ -307,8 +369,45 @@ function PmvDashboard() {
       {/* PMV by Type + Operators Overview */}
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="card lg:col-span-2">
-          <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
-          <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-brand-black">{t.pmv.byTypeTitle}</h2>
+              <p className="mt-1 text-sm text-brand-gray">{t.pmv.byTypeSubtitle}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={project}
+                onChange={(e) => setProject(e.target.value)}
+                className="rounded-lg border border-brand-border bg-brand-surface px-3 py-1.5 text-sm font-medium text-brand-black"
+                aria-label="Project"
+              >
+                <option value="">All projects</option>
+                {projects.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+              <div className="inline-flex rounded-lg border border-brand-border bg-brand-surface p-0.5">
+                {([
+                  ["all", "All"],
+                  ["Owned", "FF"],
+                  ["Rented", "Rental"],
+                ] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setOwnership(key)}
+                    className={`rounded-md px-3 py-1 text-sm font-semibold transition ${
+                      ownership === key ? "bg-brand-orange text-brand-onAccent" : "text-brand-grayDark hover:bg-brand-grayLight/60"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="mt-8 flex items-end justify-between gap-2 overflow-x-auto pb-2">
             {byType.map((row) => {
               const TypeIcon = TYPE_ICONS[row.key];
@@ -317,7 +416,7 @@ function PmvDashboard() {
               const barHeight = Math.max(14, Math.round((row.total / maxTypeTotal) * MAX_BAR_HEIGHT_PX));
               const stackHeight = MAX_BAR_HEIGHT_PX + IMAGE_BOX_HEIGHT_PX;
               return (
-                <div key={row.key} className="flex min-w-[130px] flex-1 flex-col items-center">
+                <div key={row.key} className="flex min-w-[112px] flex-1 flex-col items-center">
                   <span className="text-lg font-extrabold text-brand-black">{row.total}</span>
                   <div
                     className="relative mt-1 w-full"
@@ -358,70 +457,25 @@ function PmvDashboard() {
           </div>
         </div>
 
-        <div className="card flex flex-col">
-          <h2 className="text-lg font-bold text-brand-black">{t.pmv.operatorsOverviewTitle}</h2>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.pmv.totalOperatorsLabel}: {s.totalOperators.toLocaleString()}
-          </p>
-
-          <div className="relative mx-auto mt-2 h-48 w-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={operatorStatusRows}
-                  dataKey="value"
-                  nameKey="label"
-                  innerRadius="65%"
-                  outerRadius="100%"
-                  paddingAngle={2}
-                  stroke="none"
-                >
-                  {operatorStatusRows.map((row) => (
-                    <Cell key={row.key} fill={getChartColor(row.key)} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--brand-surface, #ffffff)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                    boxShadow: "0 6px 20px rgba(20,38,32,0.10)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-extrabold text-brand-black">
-                {s.authorizedOperators}
-              </span>
-              <span className="text-xs font-medium text-brand-gray">{t.pmv.statusActive}</span>
-            </div>
-          </div>
-
-          <h3 className="mt-4 text-sm font-bold tracking-wide text-brand-grayDark">
-            {t.pmv.operatorsStatusTitle}
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {operatorStatusRows.map((row) => (
-              <li key={row.key} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-brand-grayDark">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: getChartColor(row.key) }}
-                  />
-                  {row.label}
-                </span>
-                <span className="font-semibold text-brand-black">
-                  {row.value.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-5 rounded-xl border border-brand-orange/25 bg-brand-orange/10 p-4 text-sm font-medium text-brand-grayDark">
-            {t.pmv.ctaBanner}
-          </div>
+        <div className="card flex flex-col gap-6 sm:flex-row lg:flex-col xl:flex-row">
+          <StatusDonut
+            title="Operator Overview"
+            subtitle={`Total operators: ${s.totalOperators.toLocaleString()}`}
+            rows={[
+              { key: "Active", value: operatorStatus.active },
+              { key: "Inactive", value: operatorStatus.inactive },
+              { key: "Suspended", value: operatorStatus.suspended },
+            ]}
+          />
+          <StatusDonut
+            title="Vehicle Overview"
+            subtitle={`Total PMV: ${s.totalPmv.toLocaleString()}`}
+            rows={[
+              { key: "Active", value: vehicleStatus.active },
+              { key: "Inactive", value: vehicleStatus.inactive },
+              { key: "Suspended", value: vehicleStatus.suspended },
+            ]}
+          />
         </div>
       </div>
 
@@ -471,7 +525,12 @@ function PmvDashboard() {
                         : "—"}
                     </td>
                     <td className="px-4 py-3 sm:px-6">
-                      <Badge value={row.status} />
+                      <span
+                        className="inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold"
+                        style={{ background: INSPECTION_BADGE[row.status].bg, color: INSPECTION_BADGE[row.status].fg }}
+                      >
+                        {row.status}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -504,11 +563,16 @@ function PmvDashboard() {
                 expiringDocuments.map((row) => (
                   <tr
                     key={row.documentType}
-                    className="border-b border-brand-border transition last:border-0 hover:bg-brand-grayLight/30"
+                    onClick={() => onOpenLog(row.logKey)}
+                    title="Open the log"
+                    className="cursor-pointer border-b border-brand-border transition last:border-0 hover:bg-brand-orange/5"
                   >
-                    <td className="px-4 py-3 text-brand-grayDark sm:px-6">{row.documentType}</td>
-                    <td className="px-4 py-3 text-end font-semibold text-brand-black sm:px-6">
-                      {row.count}
+                    <td className="px-4 py-3 font-medium text-brand-grayDark sm:px-6">{row.documentType}</td>
+                    <td className="px-4 py-3 text-end sm:px-6">
+                      <span className="inline-flex items-center gap-1 font-semibold" style={{ color: row.count > 0 ? "#DC2626" : undefined }}>
+                        {row.count}
+                        <ChevronRight className="h-4 w-4 text-brand-gray rtl:rotate-180" />
+                      </span>
                     </td>
                   </tr>
                 ))
