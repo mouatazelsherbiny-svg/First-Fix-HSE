@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PassportTabs from "@/components/hsePassport/PassportTabs";
 import FileUpload from "@/components/FileUpload";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
@@ -93,7 +94,7 @@ function DisciplinaryActionContent() {
 
   const scopeEmployees = useMemo(() => {
     if (selectedEmployee) return [selectedEmployee];
-    if (!project && !department) return [];
+    if (!project && !department) return employees;
     return employees.filter(
       (e) => (!project || e.project === project) && (!department || e.department === department)
     );
@@ -105,7 +106,7 @@ function DisciplinaryActionContent() {
 
   const viewTitle = selectedEmployee
     ? selectedEmployee.name
-    : [project, department].filter(Boolean).join(" · ") || "";
+    : [project, department].filter(Boolean).join(" · ") || "All employees";
 
   const counts: Record<DisciplinaryType, number> = {
     "Verbal Warning": 0,
@@ -163,15 +164,15 @@ function DisciplinaryActionContent() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {t.hse.disciplinary.title}
-        </h1>
+        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
         <ExportExcelButton
           filename={t.hse.disciplinary.title}
           sheets={exportSheets}
           disabled={(hasSelection ? scopedRecords : disciplinaryRecords).length === 0}
         />
       </div>
+
+      <PassportTabs />
 
       {/* Filter bar */}
       <div className="card relative mb-6">

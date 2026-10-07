@@ -11,7 +11,6 @@ import {
   ClipboardCheck,
   FileText,
   FileWarning,
-  GraduationCap,
   House,
   IdCard,
   Network,
@@ -62,6 +61,8 @@ interface NavLinkItem {
   label: string;
   icon: LucideIcon;
   count?: number;
+  /** Also highlighted on any page under this path. */
+  activePrefix?: string;
 }
 
 interface NavGroupItem {
@@ -202,17 +203,13 @@ export default function Sidebar({
     { kind: "link", href: "/pmv", label: t.nav.pmv, icon: Truck },
     { kind: "link", href: "/permit-to-work", label: t.nav.permitToWork, icon: ShieldCheck, count: permits.length },
     {
-      kind: "group",
+      kind: "link",
+      href: "/hse-passport/ppe",
+      activePrefix: "/hse-passport",
       label: t.nav.hsePassport,
       icon: IdCard,
-      basePath: ["/hse-passport/disciplinary", "/hse-passport/ppe"],
-      count: disciplinaryRecords.length + ppeRecords.length,
-      children: [
-        { href: "/hse-passport/disciplinary", label: t.nav.disciplinaryAction },
-        { href: "/hse-passport/ppe", label: t.nav.ppe },
-      ],
+      count: disciplinaryRecords.length + ppeRecords.length + trainingRecords.length,
     },
-    { kind: "link", href: "/hse-passport/training", label: t.nav.training, icon: GraduationCap, count: trainingRecords.length },
     { kind: "link", href: "/summary-performance-report", label: t.nav.summaryPerformanceReport, icon: ChartLine },
     { kind: "link", href: "/hse-team", label: t.nav.hseTeam, icon: Network },
   ];
@@ -263,7 +260,11 @@ export default function Sidebar({
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pt-3 [scrollbar-width:thin]">
           {navEntries.map((entry) =>
             entry.kind === "link" ? (
-              <NavLink key={entry.href} {...entry} active={pathname === entry.href} />
+              <NavLink
+                key={entry.href}
+                {...entry}
+                active={pathname === entry.href || (!!entry.activePrefix && pathname.startsWith(entry.activePrefix))}
+              />
             ) : (
               <NavGroup key={entry.label} {...entry} />
             )

@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PassportTabs from "@/components/hsePassport/PassportTabs";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
 import FileUpload from "@/components/FileUpload";
 import Badge from "@/components/Badge";
@@ -73,7 +74,7 @@ function TrainingContent() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">{t.hse.training.title}</h1>
+        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
         <ExportExcelButton
           filename={t.hse.training.title}
           sheets={exportSheets}
@@ -81,22 +82,24 @@ function TrainingContent() {
         />
       </div>
 
+      <PassportTabs />
+
       <div className="mb-6">
         <EmployeeSearch selected={employee} onSelect={setEmployee} />
       </div>
 
-      {!employee ? (
-        <div className="card flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-sm font-medium text-brand-gray">{t.hse.emptyState}</p>
-        </div>
-      ) : (
+      {(
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-brand-black">{employee.name}</h2>
+            <h2 className="text-lg font-bold text-brand-black">
+              {employee ? employee.name : <span className="text-sm font-medium text-brand-gray">{t.hse.emptyState}</span>}
+            </h2>
             <button
               type="button"
               onClick={() => setShowAddForm((v) => !v)}
-              className="btn-primary"
+              disabled={!employee}
+              title={employee ? undefined : t.hse.emptyState}
+              className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t.hse.addBtn}
             </button>
@@ -205,7 +208,7 @@ function TrainingContent() {
             </ul>
           </div>
 
-          {showAddForm && (
+          {showAddForm && employee && (
             <AddTrainingForm
               employeeId={employee.id}
               onDone={() => setShowAddForm(false)}
