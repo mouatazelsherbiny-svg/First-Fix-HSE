@@ -26,7 +26,7 @@ import { Search, Plus, ChevronRight, MapPin, Calendar } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePmvLogRecords, type PmvLogRow } from "@/lib/usePmvLogRecords";
-import { PMV_LOG_DEFINITIONS, PMV_CATEGORY_TO_BUCKET, PMV_BUCKET_IMAGES } from "@/lib/pmvLogs";
+import { PMV_LOG_DEFINITIONS, PMV_CATEGORY_TO_BUCKET, PMV_BUCKET_IMAGES, assetStatusOf, assetTypeOf } from "@/lib/pmvLogs";
 import PmvLogFormModal from "./PmvLogFormModal";
 
 const ASSET_REGISTER_DEFINITION = PMV_LOG_DEFINITIONS.find((d) => d.key === "assetRegister")!;
@@ -65,10 +65,10 @@ export default function EquipmentTracker() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((row) => {
-      if (filter === "active" && row.current_status !== "Active") return false;
+      if (filter === "active" && assetStatusOf(row) !== "Active") return false;
       if (filter === "due" && !isDueForService(row)) return false;
       if (!q) return true;
-      return [row.asset_id, row.equipment_name, row.plate_serial_no, row.project_code, row.project_name, row.operator_name]
+      return [row.asset_id, row.equipment_name, row.plate_number ?? row.plate_serial_no, row.serial_number, row.project_code, row.project_name, row.operator_name]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
@@ -135,7 +135,7 @@ export default function EquipmentTracker() {
             <p className="py-8 text-center text-sm text-slate-400">{t.common.noDataYet}</p>
           ) : (
             filtered.map((row) => {
-              const bucket = PMV_CATEGORY_TO_BUCKET[row.equipment_category as string] ?? "otherEquipment";
+              const bucket = PMV_CATEGORY_TO_BUCKET[assetTypeOf(row)] ?? "otherEquipment";
               const dueSoon = isDueForService(row);
               return (
                 <button
@@ -147,7 +147,7 @@ export default function EquipmentTracker() {
                   <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-50">
                     <Image
                       src={PMV_BUCKET_IMAGES[bucket]}
-                      alt={row.equipment_category as string ?? ""}
+                      alt={assetTypeOf(row)}
                       fill
                       className="object-contain p-1.5"
                     />
@@ -160,9 +160,9 @@ export default function EquipmentTracker() {
                       </p>
                       {dueSoon ? (
                         <Badge value="Due Soon" label={t.pmv.trackerFilterDueService} />
-                      ) : row.current_status ? (
-                        <Badge value={row.current_status} />
-                      ) : null}
+                      ) : (
+                        <Badge value={assetStatusOf(row)} />
+                      )}
                     </div>
 
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">

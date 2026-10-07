@@ -69,7 +69,8 @@ export default function PmvLogFormModal({
         project_name: projectName || null,
       };
       definition.columns.forEach((col) => {
-        const raw = values[col.key];
+        const hidden = col.showWhen && values[col.showWhen.key] !== col.showWhen.equals;
+        const raw = hidden ? "" : values[col.key];
         if (raw === "" || raw === undefined) {
           payload[col.key] = null;
         } else if (col.type === "number") {
@@ -141,6 +142,7 @@ export default function PmvLogFormModal({
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {definition.columns.map((col) => {
+              if (col.showWhen && values[col.showWhen.key] !== col.showWhen.equals) return null;
               const label = locale === "ar" ? col.ar : col.en;
               if (col.type === "select") {
                 return (

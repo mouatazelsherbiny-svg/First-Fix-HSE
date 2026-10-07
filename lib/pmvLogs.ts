@@ -22,6 +22,8 @@ export interface PmvLogColumn {
   type: PmvFieldType;
   /** For type "select" — the allowed values (same list, both languages). */
   options?: string[];
+  /** Only shown (and saved) when another field has this value. */
+  showWhen?: { key: string; equals: string };
 }
 
 export interface PmvLogDefinition {
@@ -40,7 +42,9 @@ const PMV_OPTIONS_FUEL_TYPE: string[] = ["Diesel", "Petrol", "LPG", "Electric", 
 const PMV_OPTIONS_SHIFT: string[] = ["Day", "Night", "Full Day (24hr)"];
 const PMV_OPTIONS_DOWNTIME_CATEGORY: string[] = ["Mechanical", "Electrical", "Hydraulic", "Scheduled PM", "Operator Error", "Fuel Issue", "Waiting for Parts", "Standby - No Work", "External (Rental Co.)", "Other"];
 const PMV_OPTIONS_REPAIR_BY: string[] = ["Internal", "External Contractor", "Manufacturer Service", "Rental Co. Responsibility"];
-export const PMV_OPTIONS_ASSET_STATUS: string[] = ["Active", "Idle", "Under Repair", "Returned to Rental Co.", "Demobilized", "Disposed"];
+export const PMV_OPTIONS_ASSET_STATUS: string[] = ["Active", "Inactive", "Suspended"];
+const PMV_OPTIONS_EQUIPMENT_CLASS: string[] = ["Heavy", "Light"];
+const PMV_OPTIONS_ASSET_FUEL: string[] = ["Benzine", "Diesel"];
 const PMV_OPTIONS_DEPLOYMENT_STATUS: string[] = ["Available for Use", "Breakdown"];
 const PMV_OPTIONS_UTILIZATION_STATUS: string[] = ["In-Use", "Free"];
 const PMV_OPTIONS_OPERATOR_STATUS: string[] = ["Present", "On Leave", "Suspended"];
@@ -61,19 +65,14 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "asset_id", en: "Asset ID", ar: "رقم الأصل", type: "text", },
       { key: "equipment_name", en: "Equipment Name", ar: "اسم المعدة", type: "text", },
       { key: "project_code", en: "Project Code", ar: "كود المشروع", type: "text", },
-      { key: "equipment_category", en: "Equipment Category", ar: "فئة المعدة", type: "select", options: PMV_OPTIONS_EQUIPMENT_CATEGORY, },
+      { key: "equipment_category", en: "Equipment Category", ar: "فئة المعدة", type: "select", options: PMV_OPTIONS_EQUIPMENT_CLASS, },
+      { key: "equipment_type", en: "Equipment Type", ar: "نوع المعدة", type: "select", options: PMV_OPTIONS_EQUIPMENT_CATEGORY, },
       { key: "ownership", en: "Ownership", ar: "الملكية", type: "select", options: PMV_OPTIONS_OWNERSHIP, },
       { key: "brand", en: "Brand", ar: "الماركة", type: "text", },
       { key: "model", en: "Model", ar: "الموديل", type: "text", },
-      { key: "plate_serial_no", en: "Plate / Serial No.", ar: "رقم اللوحة / التسلسلي", type: "text", },
-      { key: "capacity_power_kw", en: "Capacity / Power (kW)", ar: "القدرة (kW)", type: "number", },
-      { key: "warranty_status", en: "Warranty Status", ar: "حالة الضمان", type: "select", options: PMV_OPTIONS_WARRANTY_STATUS, },
+      { key: "plate_number", en: "Plate Number", ar: "رقم اللوحة", type: "text", },
+      { key: "serial_number", en: "Serial Number (Istimarah)", ar: "الرقم التسلسلي (الاستمارة)", type: "text", },
       { key: "asset_deployment_date", en: "Asset Deployment Date", ar: "تاريخ تشغيل الأصل", type: "date", },
-      { key: "reading_mileage_at_deployment", en: "Reading / Mileage at Deployment", ar: "القراءة عند التشغيل", type: "number", },
-      { key: "asset_decommissioning_date", en: "Asset Decommissioning Date", ar: "تاريخ إيقاف الأصل", type: "date", },
-      { key: "asset_transfer_site", en: "Asset Transfer - Site", ar: "نقل الأصل - الموقع", type: "text", },
-      { key: "consumables_replacement_due_date", en: "Consumables Replacement Due Date", ar: "تاريخ استبدال المستهلكات", type: "date", },
-      { key: "consumables_replacement_type", en: "Consumables Replacement Type", ar: "نوع المستهلكات المستبدلة", type: "text", },
       { key: "last_periodic_maintenance_date", en: "Last Periodic Maintenance Date", ar: "تاريخ آخر صيانة دورية", type: "date", },
       { key: "next_periodic_maintenance_due", en: "Next Periodic Maintenance Due", ar: "موعد الصيانة الدورية القادمة", type: "date", },
       { key: "third_party_inspection_expiry", en: "Third Party Inspection Expiry", ar: "انتهاء فحص الطرف الثالث", type: "date", },
@@ -81,17 +80,10 @@ export const PMV_LOG_DEFINITIONS: PmvLogDefinition[] = [
       { key: "tuv_certification_expiry", en: "TUV Certification Expiry", ar: "انتهاء شهادة TUV", type: "date", },
       { key: "tank_capacity", en: "Tank Capacity", ar: "سعة الخزان", type: "number", },
       { key: "manufacturer_rate_litre_hour", en: "Manufacturer Rate (Litre/Hour)", ar: "معدل الاستهلاك (لتر/ساعة)", type: "number", },
-      { key: "operator_name", en: "Operator Name", ar: "اسم المشغل", type: "text", },
-      { key: "deployment_status", en: "Deployment Status", ar: "حالة التشغيل", type: "select", options: PMV_OPTIONS_DEPLOYMENT_STATUS, },
-      { key: "utilization_status", en: "Utilization Status", ar: "حالة الاستخدام", type: "select", options: PMV_OPTIONS_UTILIZATION_STATUS, },
-      { key: "rental_company", en: "Rental Company", ar: "شركة التأجير", type: "text", },
-      { key: "rental_agreement_expiry_date", en: "Rental Agreement Expiry Date", ar: "انتهاء عقد الإيجار", type: "date", },
-      { key: "rental_rate_sar_day", en: "Rental Rate (SAR/Day)", ar: "سعر الإيجار (ريال/يوم)", type: "number", },
-      { key: "rental_start_date", en: "Rental Start Date", ar: "تاريخ بدء الإيجار", type: "date", },
-      { key: "rental_end_date", en: "Rental End Date", ar: "تاريخ انتهاء الإيجار", type: "date", },
+      { key: "fuel_type", en: "Fuel Type", ar: "نوع الوقود", type: "select", options: PMV_OPTIONS_ASSET_FUEL, },
       { key: "downtime_hrs", en: "Downtime (Hrs)", ar: "التوقف (ساعات)", type: "number", },
-      { key: "monthly_rental_cost_sar", en: "Monthly Rental Cost (SAR)", ar: "تكلفة الإيجار الشهرية", type: "number", },
       { key: "current_status", en: "Current Status", ar: "الحالة الحالية", type: "select", options: PMV_OPTIONS_ASSET_STATUS, },
+      { key: "suspension_reason", en: "Suspension Reason", ar: "سبب الإيقاف", type: "text", showWhen: { key: "current_status", equals: "Suspended" }, },
     ],
   },
   {
@@ -405,3 +397,19 @@ export const PMV_BUCKET_IMAGES: Record<PmvEquipmentBucket, string> = {
   generators: "/pmv/generators.png",
   otherEquipment: "/pmv/otherEquipment.png",
 };
+
+/** Equipment type of an asset row (older rows kept it in equipment_category). */
+export function assetTypeOf(row: Record<string, unknown>): string {
+  const type = String(row.equipment_type ?? "").trim();
+  if (type) return type;
+  const cat = String(row.equipment_category ?? "").trim();
+  return cat === "Heavy" || cat === "Light" ? "" : cat;
+}
+
+/** Active / Inactive / Suspended for an asset row, mapping older status values. */
+export function assetStatusOf(row: Record<string, unknown>): "Active" | "Inactive" | "Suspended" {
+  const status = String(row.current_status ?? "");
+  if (status === "Suspended" || status === "Under Repair" || row.deployment_status === "Breakdown") return "Suspended";
+  if (status === "Active" || status === "") return "Active";
+  return "Inactive";
+}

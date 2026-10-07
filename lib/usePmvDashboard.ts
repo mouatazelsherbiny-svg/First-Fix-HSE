@@ -16,7 +16,7 @@
 import { useEffect, useState } from "react";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
 import { fetchAllRows } from "@/lib/supabaseClient";
-import { PMV_CATEGORY_TO_BUCKET } from "@/lib/pmvLogs";
+import { PMV_CATEGORY_TO_BUCKET, assetStatusOf, assetTypeOf } from "@/lib/pmvLogs";
 import type {
   ExpiringDocumentRow,
   InspectionStatus,
@@ -170,10 +170,10 @@ export function usePmvDashboard(ownership: PmvOwnershipFilter = "all"): PmvDashb
         let equipmentCount = 0;
 
         assets.forEach((row) => {
-          const category = String(row.equipment_category ?? "");
+          const category = assetTypeOf(row);
           const bucket = CATEGORY_TO_BUCKET[category] ?? "otherEquipment";
           byTypeTotals[bucket].total += 1;
-          if (row.deployment_status === "Available for Use") {
+          if (assetStatusOf(row) === "Active") {
             byTypeTotals[bucket].available += 1;
           }
 
@@ -237,8 +237,9 @@ export function usePmvDashboard(ownership: PmvOwnershipFilter = "all"): PmvDashb
         // Inactive = idle, returned, demobilized or disposed.
         const vehicleStatus: VehicleStatusCounts = { active: 0, inactive: 0, suspended: 0 };
         assets.forEach((row) => {
-          if (row.deployment_status === "Breakdown" || row.current_status === "Under Repair") vehicleStatus.suspended += 1;
-          else if (row.current_status === "Active" || !row.current_status) vehicleStatus.active += 1;
+          const st = assetStatusOf(row);
+          if (st === "Suspended") vehicleStatus.suspended += 1;
+          else if (st === "Active") vehicleStatus.active += 1;
           else vehicleStatus.inactive += 1;
         });
 
