@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
+import PtwDashboard from "@/components/ptw/PtwDashboard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
@@ -21,6 +23,7 @@ function PermitList() {
   const { t, locale } = useLanguage();
   const { permits, isLoading } = usePermits();
   const [query, setQuery] = useState("");
+  const router = useRouter();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -34,11 +37,26 @@ function PermitList() {
     );
   }, [permits, query]);
 
+  const navBtn =
+    "flex h-8 w-8 items-center justify-center rounded-lg border border-brand-border bg-brand-surface text-brand-grayDark transition hover:text-brand-orange";
+
   return (
     <div>
+      {!isLoading && <PtwDashboard permits={permits} />}
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-brand-black">{t.ptw.listTitle}</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <button type="button" onClick={() => router.back()} aria-label="Go back" title="Go back" className={navBtn}>
+                <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+              </button>
+              <button type="button" onClick={() => router.forward()} aria-label="Go forward" title="Go forward" className={navBtn}>
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </button>
+            </div>
+            <h1 className="text-2xl font-bold text-brand-black">{t.ptw.listTitle}</h1>
+          </div>
           <p className="mt-1 text-sm text-brand-gray">{t.ptw.listSubtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

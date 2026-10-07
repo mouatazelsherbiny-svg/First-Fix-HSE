@@ -32,6 +32,7 @@ function PermitDetail() {
   const permit = getById(params.id);
 
   const [status, setStatus] = useState<PermitStatus>("Pending Approval");
+  const [issuedBy, setIssuedBy] = useState("");
   const [closeOutDetails, setCloseOutDetails] = useState("");
   const [closeOutPhotos, setCloseOutPhotos] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
@@ -42,6 +43,7 @@ function PermitDetail() {
   useEffect(() => {
     if (permit) {
       setStatus(permit.status);
+      setIssuedBy(permit.issuedBy ?? "");
       setCloseOutDetails(permit.closeOutDetails);
       setCloseOutPhotos(permit.closeOutPhotos);
     }
@@ -72,6 +74,7 @@ function PermitDetail() {
     try {
       await updatePermit(permit.id, {
         status,
+        issuedBy: issuedBy || undefined,
         closeOutDetails,
         closeOutPhotos,
         ...(becameApproved && user
@@ -163,6 +166,7 @@ function PermitDetail() {
           <Field label={t.ptw.projectName} value={permit.projectName} />
           <Field label={t.ptw.workLocation} value={permit.workLocation} />
           <Field label={t.ptw.contractor} value={permit.contractor} />
+          <Field label="Permit Issued By" value={permit.issuedBy === "FF" ? "First Fix (FF)" : permit.issuedBy || "—"} />
           <Field label={t.ptw.numberOfWorkers} value={String(permit.numberOfWorkers)} />
           <Field label={t.ptw.issuerBy} value={permit.requestedBy} />
           <Field label={t.ptw.receiver} value={permit.receiver || "—"} />
@@ -330,6 +334,15 @@ function PermitDetail() {
         <h2 className="text-base font-semibold text-brand-black">
           {t.ptw.updateStatus}
         </h2>
+
+        <div className="max-w-xs">
+          <label className="label-field">Permit Issued By</label>
+          <select value={issuedBy} onChange={(e) => setIssuedBy(e.target.value)} className="input-field">
+            <option value="">—</option>
+            <option value="FF">First Fix (FF)</option>
+            <option value="Client">Client</option>
+          </select>
+        </div>
 
         <div className="max-w-xs">
           <label className="label-field">{t.ptw.status}</label>

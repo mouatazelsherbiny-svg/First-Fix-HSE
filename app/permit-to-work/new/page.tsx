@@ -49,6 +49,7 @@ function NewPermitForm() {
   const [workLocation, setWorkLocation] = useState("");
   const [contractorType, setContractorType] = useState<"First Fix" | "Subcontractor" | "">("");
   const [subcontractorName, setSubcontractorName] = useState("");
+  const [issuedBy, setIssuedBy] = useState<"FF" | "Client" | "">("");
   const [numberOfWorkers, setNumberOfWorkers] = useState("");
   const [workDescription, setWorkDescription] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -132,6 +133,7 @@ function NewPermitForm() {
         issuerSignature,
         receiverSignature,
         permitStatus: "New Permit",
+        issuedBy: issuedBy || undefined,
         closeOutDetails: "",
         closeOutPhotos: [],
       });
@@ -284,6 +286,26 @@ function NewPermitForm() {
                 className="input-field mt-3"
               />
             )}
+          </div>
+
+          <div>
+            <label className="label-field">Permit Issued By</label>
+            <div className="flex gap-3">
+              {(["FF", "Client"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setIssuedBy(v)}
+                  className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    issuedBy === v
+                      ? "bg-brand-orange text-brand-onAccent"
+                      : "border border-brand-border bg-brand-surface/85 text-brand-grayDark hover:bg-brand-grayLight"
+                  }`}
+                >
+                  {v === "FF" ? "First Fix (FF)" : "Client"}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>

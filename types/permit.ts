@@ -4,7 +4,8 @@ export type PermitStatus =
   | "Active"
   | "Closed"
   | "Rejected"
-  | "Expired";
+  | "Expired"
+  | "Suspended";
 
 // The simplified, self-managed lifecycle status shown as "Permit Status" in
 // the UI (separate from the approval-workflow `status` above). The app only
@@ -44,6 +45,8 @@ export interface PermitToWork {
   receiverSignature: string;
   permitStatus: PermitProgressStatus;
   approvedBy?: string;
+  /** Who issued the permit: "FF" (First Fix) or "Client". */
+  issuedBy?: string;
   closeOutDetails: string;
   closeOutPhotos: string[];
   createdAt: string;

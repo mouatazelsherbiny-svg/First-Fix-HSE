@@ -109,6 +109,7 @@ export const PERMIT_STATUSES: PermitToWork["status"][] = [
   "Closed",
   "Rejected",
   "Expired",
+  "Suspended",
 ];
 
 // The simplified, self-managed "Permit Status" pill (separate from the

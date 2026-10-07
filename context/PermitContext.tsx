@@ -58,6 +58,7 @@ function mapRow(row: any): PermitToWork {
     issuerSignature: row.issuer_signature ?? "",
     receiverSignature: row.receiver_signature ?? "",
     permitStatus: row.permit_status ?? "New Permit",
+    issuedBy: row.issued_by ?? undefined,
     approvedBy: row.approved_by ?? undefined,
     closeOutDetails: row.close_out_details ?? "",
     closeOutPhotos: row.close_out_photos ?? [],
@@ -132,6 +133,7 @@ export function PermitProvider({ children }: { children: ReactNode }) {
             issuer_signature: permit.issuerSignature,
             receiver_signature: permit.receiverSignature,
             permit_status: permit.permitStatus,
+            issued_by: permit.issuedBy ?? null,
             close_out_details: permit.closeOutDetails,
             close_out_photos: permit.closeOutPhotos,
             created_by,
@@ -151,6 +153,7 @@ export function PermitProvider({ children }: { children: ReactNode }) {
         if (patch.status !== undefined) payload.status = patch.status;
         if (patch.approvedBy !== undefined) payload.approved_by = patch.approvedBy;
         if (patch.permitStatus !== undefined) payload.permit_status = patch.permitStatus;
+        if (patch.issuedBy !== undefined) payload.issued_by = patch.issuedBy;
         if (patch.closeOutDetails !== undefined)
           payload.close_out_details = patch.closeOutDetails;
         if (patch.closeOutPhotos !== undefined)
