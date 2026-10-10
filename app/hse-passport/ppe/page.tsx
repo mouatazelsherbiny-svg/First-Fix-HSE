@@ -1,18 +1,30 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+/**
+ * HSE Passport → PPE. Every employee's PPE issues from the PPE Passport
+ * sheet (table ppe_passport). An item issued more than once is listed in
+ * Remarks with its dates; a re-issue within 6 months turns the row red.
+ */
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, HardHat, Package, Repeat, Upload, Users, X } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PassportTabs from "@/components/hsePassport/PassportTabs";
-import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
-import FileUpload from "@/components/FileUpload";
-import Badge from "@/components/Badge";
+import SummaryCards from "@/components/SummaryCards";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
-import { useHsePassport } from "@/context/HsePassportContext";
-import { EmployeeRecord, PPE_TYPES, PPE_CONDITIONS } from "@/lib/mockData";
-import { PPECondition, PPERecord } from "@/types/hsePassport";
-import { UploadedFile } from "@/types/toolboxTalk";
+import { useAuth } from "@/context/AuthContext";
+import { useProjectFilter } from "@/context/ProjectFilterContext";
+import { fetchAllRows, getCurrentUserId, supabase } from "@/lib/supabaseClient";
+import {
+  PPE_ITEMS,
+  PpeItem,
+  PpePassportRow,
+  analyzeRow,
+  formatPpeDate,
+  normalizeProject,
+  parsePpeCsv,
+} from "@/lib/ppePassport";
 
 export default function PpePage() {
   return (
@@ -22,384 +34,498 @@ export default function PpePage() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapRow(r: any): PpePassportRow {
+  return {
+    id: r.id,
+    employeeCode: r.employee_code,
+    name: r.name,
+    project: r.project ?? "",
+    designation: r.designation ?? "",
+    sponsor: r.sponsor ?? "",
+    items: r.items ?? {},
+  };
+}
+
+function toDb(r: PpePassportRow, created_by: string | null) {
+  return {
+    employee_code: r.employeeCode,
+    name: r.name,
+    project: r.project || null,
+    designation: r.designation || null,
+    sponsor: r.sponsor || null,
+    items: r.items,
+    created_by,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+const PAGE = 100;
+type View = "all" | "repeat" | "early";
+
 function PpeContent() {
   const { t } = useLanguage();
-  const { ppeRecords, addPPERecord, employees } = useHsePassport();
-  const [employee, setEmployee] = useState<EmployeeRecord | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const { project } = useProjectFilter();
+  const [rows, setRows] = useState<PpePassportRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [view, setView] = useState<View>("all");
+  const [limit, setLimit] = useState(PAGE);
+  const [showAdd, setShowAdd] = useState(false);
+  const [importMsg, setImportMsg] = useState("");
+  const [importing, setImporting] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const employeeRecords = employee
-    ? ppeRecords.filter((r) => r.employeeId === employee.id)
-    : [];
+  useEffect(() => {
+    let active = true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchAllRows<any>("ppe_passport", (q) => q.select("*").order("name").order("id"))
+      .then((data) => active && setRows(data.map(mapRow)))
+      .catch(() => {})
+      .finally(() => active && setIsLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  // Latest record per PPE type
-  const latestByType = new Map<string, (typeof employeeRecords)[number]>();
-  employeeRecords.forEach((r) => {
-    const existing = latestByType.get(r.ppeType);
-    if (!existing || r.createdAt > existing.createdAt) {
-      latestByType.set(r.ppeType, r);
-    }
-  });
+  const analyzed = useMemo(() => rows.map((r) => ({ row: r, a: analyzeRow(r) })), [rows]);
 
-  const totalIssued = PPE_TYPES.filter((tp) => latestByType.get(tp)?.received).length;
+  const inProject = useMemo(
+    () => (project ? analyzed.filter(({ row }) => row.project.split(" / ").includes(project)) : analyzed),
+    [analyzed, project]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return inProject.filter(({ row, a }) => {
+      if (view === "repeat" && a.repeats.length === 0) return false;
+      if (view === "early" && a.earlyItems.length === 0) return false;
+      if (!q) return true;
+      return [row.name, row.employeeCode, row.project, row.designation].some((v) => v.toLowerCase().includes(q));
+    });
+  }, [inProject, query, view]);
+
+  useEffect(() => setLimit(PAGE), [query, view, project]);
+
+  const totals = useMemo(
+    () => ({
+      employees: inProject.length,
+      issues: inProject.reduce((s, x) => s + x.a.totalIssues, 0),
+      repeat: inProject.filter((x) => x.a.repeats.length > 0).length,
+      early: inProject.filter((x) => x.a.earlyItems.length > 0).length,
+    }),
+    [inProject]
+  );
 
   const exportSheets = useMemo(
     () => [
       {
-        name: t.hse.ppe.title,
+        name: "PPE Passport",
         columns: [
-          { header: t.hse.employeeName, key: "employeeName" },
-          { header: t.hse.employeeIdCol, key: "employeeIdCol" },
-          { header: t.hse.projectCol, key: "project" },
-          { header: t.hse.ppe.ppeType, key: "ppeType" },
-          { header: t.hse.ppe.received, key: "received" },
-          { header: t.hse.ppe.dateReceived, key: "dateReceived" },
-          { header: t.hse.ppe.replacementDue, key: "replacementDue" },
-          { header: t.hse.ppe.condition, key: "condition" },
-          { header: t.hse.ppe.remarks, key: "remarks", width: 30 },
+          { header: "Employee ID", key: "code" },
+          { header: "Name", key: "name", width: 28 },
+          { header: "Project", key: "project" },
+          { header: "Designation", key: "designation", width: 24 },
+          ...PPE_ITEMS.map((i) => ({ header: i, key: i, width: 24 })),
+          { header: "Remarks", key: "remarks", width: 50 },
         ],
-        rows: (employee ? employeeRecords : ppeRecords).map((r) => {
-          const emp = employees.find((e) => e.id === r.employeeId);
-          return {
-            employeeName: emp?.name ?? "—",
-            employeeIdCol: emp?.employeeId ?? "—",
-            project: emp?.project ?? "—",
-            ppeType: r.ppeType,
-            received: r.received ? "Yes" : "No",
-            dateReceived: r.dateReceived || "—",
-            replacementDue: r.replacementDueDate || "—",
-            condition: r.conditionAtReturn,
-            remarks: r.remarks || "—",
-          };
-        }),
+        rows: filtered.map(({ row, a }) => ({
+          code: row.employeeCode,
+          name: row.name,
+          project: row.project,
+          designation: row.designation,
+          ...Object.fromEntries(PPE_ITEMS.map((i) => [i, cellText(row, i)])),
+          remarks: remarkText(a),
+        })),
       },
     ],
-    [ppeRecords, employeeRecords, employee, employees, t]
+    [filtered]
   );
+
+  const handleImport = async (file: File | null) => {
+    if (!file) return;
+    setImporting(true);
+    setImportMsg("");
+    try {
+      const parsed = parsePpeCsv(await file.text());
+      if (parsed.length === 0) throw new Error("No rows found — check the file has the PPE Passport columns.");
+      const created_by = await getCurrentUserId();
+      for (let i = 0; i < parsed.length; i += 500) {
+        const { error } = await supabase
+          .from("ppe_passport")
+          .upsert(parsed.slice(i, i + 500).map((r) => toDb(r, created_by)), { onConflict: "employee_code" });
+        if (error) throw new Error(error.message);
+        setImportMsg(`Importing… ${Math.min(i + 500, parsed.length)} / ${parsed.length}`);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fresh = await fetchAllRows<any>("ppe_passport", (q) => q.select("*").order("name").order("id"));
+      setRows(fresh.map(mapRow));
+      setImportMsg(`Imported ${parsed.length.toLocaleString("en-US")} employees.`);
+    } catch (err) {
+      setImportMsg(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const saveIssue = async (input: AddInput) => {
+    const existing = rows.find((r) => r.employeeCode === input.employeeCode);
+    const base: PpePassportRow = existing ?? {
+      employeeCode: input.employeeCode,
+      name: input.name,
+      project: normalizeProject(input.project),
+      designation: input.designation,
+      sponsor: "",
+      items: {},
+    };
+    const prev = base.items[input.item];
+    const dates = Array.from(new Set([...(prev?.dates ?? []), input.date])).sort();
+    const note = [prev?.note, input.note].filter(Boolean).join(", ") || undefined;
+    const next: PpePassportRow = { ...base, items: { ...base.items, [input.item]: { dates, ...(note ? { note } : {}) } } };
+    const { data, error } = await supabase
+      .from("ppe_passport")
+      .upsert(toDb(next, await getCurrentUserId()), { onConflict: "employee_code" })
+      .select()
+      .single();
+    if (error || !data) throw new Error(error?.message ?? "Failed to save");
+    const saved = mapRow(data);
+    setRows((list) => (existing ? list.map((r) => (r.employeeCode === saved.employeeCode ? saved : r)) : [saved, ...list]));
+  };
+
+  const cards = [
+    { label: "Employees with PPE", value: totals.employees, icon: Users, color: "#2563EB" },
+    { label: "Total PPE Issued", value: totals.issues, icon: Package, color: "#F36F24" },
+    { label: "Received More Than Once", value: totals.repeat, icon: Repeat, color: "#D97706" },
+    { label: "Re-issued Within 6 Months", value: totals.early, icon: AlertTriangle, color: "#DC2626" },
+  ];
 
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
-        <ExportExcelButton
-          filename={t.hse.ppe.title}
-          sheets={exportSheets}
-          disabled={(employee ? employeeRecords : ppeRecords).length === 0}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && (
+            <>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={importing}
+                className="btn-secondary gap-2 disabled:opacity-60"
+                title="Upload the PPE Passport sheet (CSV) — rows are added or updated by Employee ID"
+              >
+                <Upload className="h-4 w-4" />
+                {importing ? "Importing…" : "Import CSV"}
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  handleImport(e.target.files?.[0] ?? null);
+                  e.target.value = "";
+                }}
+              />
+            </>
+          )}
+          <ExportExcelButton filename="PPE Passport" sheets={exportSheets} disabled={filtered.length === 0} />
+        </div>
       </div>
 
       <PassportTabs />
+      <SummaryCards cards={cards} />
 
-      <div className="mb-6">
-        <EmployeeSearch selected={employee} onSelect={setEmployee} />
+      {importMsg && <p className="mb-4 text-sm font-medium text-brand-grayDark">{importMsg}</p>}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, employee ID, project…"
+            className="input-field max-w-sm"
+          />
+          <div className="inline-flex rounded-xl border border-brand-border bg-brand-surface p-1">
+            {([
+              ["all", "All"],
+              ["repeat", "Received more than once"],
+              ["early", "Within 6 months"],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setView(key)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  view === key ? "bg-brand-orange text-brand-onAccent" : "text-brand-grayDark hover:bg-brand-grayLight/60"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button type="button" onClick={() => setShowAdd(true)} className="btn-primary">
+          {t.hse.addBtn}
+        </button>
       </div>
 
-      {(
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-brand-black">
-              {employee ? employee.name : <span className="text-sm font-medium text-brand-gray">{t.hse.emptyState}</span>}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setShowAddForm((v) => !v)}
-              disabled={!employee}
-              title={employee ? undefined : t.hse.emptyState}
-              className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t.hse.addBtn}
-            </button>
-          </div>
-
-          <div className="card overflow-x-auto !p-0">
-            <table className="w-full min-w-[820px] text-start text-sm">
-              <thead>
-                <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.description}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.received}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.dateReceived}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.replacementDue}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.condition}</th>
-                  <th className="px-4 py-3 text-start sm:px-6">{t.hse.ppe.remarks}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PPE_TYPES.map((tp) => {
-                  const r = latestByType.get(tp);
-                  return (
-                    <tr key={tp} className="border-b border-brand-border last:border-0">
-                      <td className="px-4 py-3 sm:px-6">
-                        <div className="flex items-center gap-2.5">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orangeLight text-brand-orange">
-                            <PpeIcon type={tp} />
-                          </span>
-                          <span className="font-medium text-brand-black">{tp}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 sm:px-6">
-                        <input
-                          type="checkbox"
-                          checked={!!r?.received}
-                          disabled
-                          className="h-4 w-4 rounded border-brand-border text-brand-orange"
-                        />
-                      </td>
-                      <td className="px-4 py-3 text-brand-grayDark sm:px-6">
-                        {r?.dateReceived || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-brand-grayDark sm:px-6">
-                        {r?.replacementDueDate || "—"}
-                      </td>
-                      <td className="px-4 py-3 sm:px-6">
-                        <Badge value={r?.conditionAtReturn ?? "N/A"} />
-                      </td>
-                      <td className="px-4 py-3 text-brand-grayDark sm:px-6">
-                        {r?.remarks || "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr className="bg-brand-grayLight/40">
-                  <td className="px-4 py-3 font-bold text-brand-black sm:px-6" colSpan={5}>
-                    {t.hse.ppe.total}
-                  </td>
-                  <td className="px-4 py-3 font-bold text-brand-orange sm:px-6">
-                    {totalIssued} / {PPE_TYPES.length}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {showAddForm && employee && (
-            <AddPpeForm
-              employeeId={employee.id}
-              latestByType={latestByType}
-              onDone={() => setShowAddForm(false)}
-              onAdd={addPPERecord}
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PpeIcon({ type }: { type: string }) {
-  if (type === "Helmet") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-        <path d="M4 14a8 8 0 0116 0v1H4v-1z" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M2 15h20M12 6v3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (type.startsWith("Safety Glasses")) {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-        <circle cx="6.5" cy="13" r="3.5" />
-        <circle cx="17.5" cy="13" r="3.5" />
-        <path d="M10 12h4M3 12l1-3M21 12l-1-3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (type === "Hi-Visibility Vest") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-        <path d="M7 4l5 3 5-3 2 4-3 2v10H8V10L5 8l2-4z" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (type === "Gloves") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-        <path d="M7 11V5a1.5 1.5 0 013 0v4M10 9V4a1.5 1.5 0 013 0v5M13 9V5a1.5 1.5 0 013 0v6M16 12V8a1.5 1.5 0 013 0v6a6 6 0 01-6 6H9a4 4 0 01-4-4v-4l2-2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-      <path d="M4 17c0-2 2-3 4-3h1l2-4 2 4h1c2 0 4 1 4 3v2H4v-2z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-interface PpeRowState {
-  received: boolean;
-  dateReceived: string;
-  replacementDueDate: string;
-  conditionAtReturn: PPECondition;
-  remarks: string;
-}
-
-function AddPpeForm({
-  employeeId,
-  latestByType,
-  onDone,
-  onAdd,
-}: {
-  employeeId: string;
-  latestByType: Map<string, PPERecord>;
-  onDone: () => void;
-  onAdd: (r: {
-    employeeId: string;
-    ppeType: string;
-    received: boolean;
-    dateReceived: string;
-    replacementDueDate: string;
-    conditionAtReturn: PPECondition;
-    remarks: string;
-    attachments: UploadedFile[];
-  }) => Promise<void>;
-}) {
-  const { t } = useLanguage();
-  const router = useRouter();
-  const [rows, setRows] = useState<Record<string, PpeRowState>>(() =>
-    Object.fromEntries(
-      PPE_TYPES.map((tp) => {
-        const existing = latestByType.get(tp);
-        return [
-          tp,
-          {
-            received: existing?.received ?? false,
-            dateReceived: existing?.dateReceived ?? "",
-            replacementDueDate: existing?.replacementDueDate ?? "",
-            conditionAtReturn: existing?.conditionAtReturn ?? "N/A",
-            remarks: existing?.remarks ?? "",
-          },
-        ];
-      })
-    )
-  );
-  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
-  const [error, setError] = useState("");
-
-  const updateRow = (tp: string, patch: Partial<PpeRowState>) =>
-    setRows((prev) => ({ ...prev, [tp]: { ...prev[tp], ...patch } }));
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try {
-      await Promise.all(
-        PPE_TYPES.map((tp) => {
-          const row = rows[tp];
-          return onAdd({ employeeId, ppeType: tp, ...row, attachments });
-        })
-      );
-      onDone();
-      setTimeout(() => router.push("/dashboard"), 900);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.common.genericError);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="card space-y-4">
-      <h3 className="text-sm font-bold tracking-wide text-brand-grayDark">
-        {t.hse.ppe.addTitle}
-      </h3>
-      {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
-          {error}
-        </div>
-      )}
-
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-start text-sm">
+      <div className="card overflow-x-auto !p-0">
+        <table className="w-full min-w-[1100px] text-start text-sm">
           <thead>
-            <tr className="border-b border-brand-border text-xs font-semibold tracking-wide text-brand-gray">
-              <th className="px-2 py-2 text-start">{t.hse.ppe.description}</th>
-              <th className="px-2 py-2 text-start">{t.hse.ppe.received}</th>
-              <th className="px-2 py-2 text-start">{t.hse.ppe.dateReceived}</th>
-              <th className="px-2 py-2 text-start">{t.hse.ppe.replacementDue}</th>
-              <th className="px-2 py-2 text-start">{t.hse.ppe.condition}</th>
-              <th className="px-2 py-2 text-start">{t.hse.ppe.remarks}</th>
+            <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
+              <th className="px-4 py-3 text-start">Employee</th>
+              <th className="px-4 py-3 text-start">Project</th>
+              {PPE_ITEMS.map((i) => (
+                <th key={i} className="px-3 py-3 text-start">
+                  {i}
+                </th>
+              ))}
+              <th className="px-4 py-3 text-start">Remarks</th>
             </tr>
           </thead>
           <tbody>
-            {PPE_TYPES.map((tp) => {
-              const row = rows[tp];
-              return (
-                <tr key={tp} className="border-b border-brand-border last:border-0">
-                  <td className="px-2 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orangeLight text-brand-orange">
-                        <PpeIcon type={tp} />
-                      </span>
-                      <span className="font-medium text-brand-black">{tp}</span>
-                    </div>
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <input
-                      type="checkbox"
-                      checked={row.received}
-                      onChange={(e) => updateRow(tp, { received: e.target.checked })}
-                      className="h-4 w-4 rounded border-brand-border text-brand-orange focus:ring-brand-orange/40"
-                    />
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <input
-                      type="date"
-                      value={row.dateReceived}
-                      onChange={(e) => updateRow(tp, { dateReceived: e.target.value })}
-                      className="input-field !py-1.5"
-                    />
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <input
-                      type="date"
-                      value={row.replacementDueDate}
-                      onChange={(e) =>
-                        updateRow(tp, { replacementDueDate: e.target.value })
-                      }
-                      className="input-field !py-1.5"
-                    />
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <select
-                      value={row.conditionAtReturn}
-                      onChange={(e) =>
-                        updateRow(tp, { conditionAtReturn: e.target.value as PPECondition })
-                      }
-                      className="input-field !py-1.5"
-                    >
-                      {PPE_CONDITIONS.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <input
-                      type="text"
-                      value={row.remarks}
-                      onChange={(e) => updateRow(tp, { remarks: e.target.value })}
-                      className="input-field !py-1.5"
-                    />
-                  </td>
-                </tr>
-              );
-            })}
+            {isLoading ? (
+              <tr>
+                <td colSpan={PPE_ITEMS.length + 3} className="px-6 py-10 text-center text-brand-gray">
+                  {t.common.loading}
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={PPE_ITEMS.length + 3} className="px-6 py-10 text-center text-brand-gray">
+                  {rows.length === 0
+                    ? isAdmin
+                      ? "No PPE data yet — use Import CSV to upload the PPE Passport sheet."
+                      : "No PPE data yet."
+                    : "No matching employees."}
+                </td>
+              </tr>
+            ) : (
+              filtered.slice(0, limit).map(({ row, a }) => {
+                const red = a.earlyItems.length > 0;
+                return (
+                  <tr
+                    key={row.employeeCode}
+                    className="border-b border-brand-border align-top last:border-0"
+                    style={red ? { background: "rgba(220,38,38,0.08)" } : undefined}
+                  >
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-brand-black">{row.name}</p>
+                      <p className="text-xs text-brand-gray">
+                        {row.employeeCode.startsWith("name:") ? "—" : row.employeeCode}
+                        {row.designation ? ` · ${row.designation}` : ""}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-brand-grayDark">{row.project || "—"}</td>
+                    {PPE_ITEMS.map((item) => {
+                      const issue = row.items[item];
+                      const early = a.earlyItems.includes(item);
+                      return (
+                        <td key={item} className="px-3 py-3 text-xs" style={early ? { color: "#B91C1C", fontWeight: 600 } : undefined}>
+                          {!issue ? (
+                            <span className="text-brand-gray">—</span>
+                          ) : (
+                            <>
+                              {issue.dates.map((d) => (
+                                <p key={d} className="whitespace-nowrap">{formatPpeDate(d)}</p>
+                              ))}
+                              {issue.dates.length === 0 && <p className="text-brand-grayDark">Received</p>}
+                              {issue.note && <p className="text-[11px] font-normal text-brand-gray">{issue.note}</p>}
+                            </>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td className="px-4 py-3 text-xs" style={red ? { color: "#B91C1C" } : undefined}>
+                      {a.repeats.length === 0 ? (
+                        <span className="text-brand-gray">—</span>
+                      ) : (
+                        a.repeats.map((r) => (
+                          <p key={r.item} className={a.earlyItems.includes(r.item) ? "font-semibold" : "text-brand-grayDark"}>
+                            {r.item}: received {r.dates.length} times ({r.dates.map(formatPpeDate).join(", ")})
+                            {a.earlyItems.includes(r.item) ? " — within 6 months" : ""}
+                          </p>
+                        ))
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
 
-      <FileUpload
-        label={t.hse.attachments}
-        files={attachments}
-        onChange={setAttachments}
-      />
+      {filtered.length > limit && (
+        <div className="mt-4 flex items-center justify-center gap-3 text-sm text-brand-gray">
+          Showing {limit.toLocaleString("en-US")} of {filtered.length.toLocaleString("en-US")}
+          <button type="button" onClick={() => setLimit((l) => l + PAGE * 5)} className="btn-secondary !py-1.5">
+            Show more
+          </button>
+        </div>
+      )}
 
-      <div className="flex justify-end gap-3 border-t border-brand-border pt-4">
-        <button type="button" onClick={onDone} className="btn-secondary">
-          {t.hse.cancel}
-        </button>
-        <button type="submit" className="btn-primary">
-          {t.hse.submit}
-        </button>
+      {showAdd && <AddIssueModal rows={rows} onClose={() => setShowAdd(false)} onSave={saveIssue} />}
+    </div>
+  );
+}
+
+function cellText(row: PpePassportRow, item: PpeItem) {
+  const issue = row.items[item];
+  if (!issue) return "";
+  return [issue.dates.map(formatPpeDate).join(", ") || "Received", issue.note].filter(Boolean).join(" — ");
+}
+
+function remarkText(a: ReturnType<typeof analyzeRow>) {
+  return a.repeats
+    .map(
+      (r) =>
+        `${r.item}: received ${r.dates.length} times (${r.dates.map(formatPpeDate).join(", ")})${
+          a.earlyItems.includes(r.item) ? " — within 6 months" : ""
+        }`
+    )
+    .join("; ");
+}
+
+interface AddInput {
+  employeeCode: string;
+  name: string;
+  project: string;
+  designation: string;
+  item: PpeItem;
+  date: string;
+  note: string;
+}
+
+function AddIssueModal({
+  rows,
+  onClose,
+  onSave,
+}: {
+  rows: PpePassportRow[];
+  onClose: () => void;
+  onSave: (input: AddInput) => Promise<void>;
+}) {
+  const [v, setV] = useState<AddInput>({
+    employeeCode: "",
+    name: "",
+    project: "",
+    designation: "",
+    item: "Shoes",
+    date: new Date().toISOString().slice(0, 10),
+    note: "",
+  });
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const known = rows.find((r) => r.employeeCode === v.employeeCode.trim());
+
+  const set = (patch: Partial<AddInput>) => setV((p) => ({ ...p, ...patch }));
+
+  const submit = async () => {
+    setError("");
+    const code = v.employeeCode.trim();
+    if (!code || (!known && !v.name.trim()) || !v.date) {
+      setError("Employee ID, name and date are required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave({ ...v, employeeCode: code, name: known?.name ?? v.name.trim() });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" style={{ background: "rgba(15,23,42,0.55)" }} onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl bg-brand-surface p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-brand-black">
+            <HardHat className="h-5 w-5 text-brand-orange" />
+            Add PPE Issue
+          </h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="text-brand-gray hover:text-brand-black">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label-field">Employee ID *</label>
+            <input
+              className="input-field"
+              list="ppe-employee-codes"
+              value={v.employeeCode}
+              onChange={(e) => set({ employeeCode: e.target.value })}
+            />
+            <datalist id="ppe-employee-codes">
+              {rows.slice(0, 5000).map((r) => (
+                <option key={r.employeeCode} value={r.employeeCode}>
+                  {r.name}
+                </option>
+              ))}
+            </datalist>
+          </div>
+          <div>
+            <label className="label-field">Name {known ? "" : "*"}</label>
+            <input
+              className="input-field"
+              value={known ? known.name : v.name}
+              disabled={!!known}
+              onChange={(e) => set({ name: e.target.value })}
+            />
+          </div>
+          {!known && (
+            <>
+              <div>
+                <label className="label-field">Project</label>
+                <input className="input-field" value={v.project} onChange={(e) => set({ project: e.target.value })} />
+              </div>
+              <div>
+                <label className="label-field">Designation</label>
+                <input className="input-field" value={v.designation} onChange={(e) => set({ designation: e.target.value })} />
+              </div>
+            </>
+          )}
+          <div>
+            <label className="label-field">PPE Item *</label>
+            <select className="input-field" value={v.item} onChange={(e) => set({ item: e.target.value as PpeItem })}>
+              {PPE_ITEMS.map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">Date Received *</label>
+            <input type="date" className="input-field" value={v.date} onChange={(e) => set({ date: e.target.value })} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label-field">Size / Note</label>
+            <input className="input-field" value={v.note} onChange={(e) => set({ note: e.target.value })} placeholder="e.g. XL, Volta 43" />
+          </div>
+        </div>
+        {known && known.items[v.item]?.dates.length ? (
+          <p className="mt-3 text-xs text-brand-grayDark">
+            Previously received: {known.items[v.item]!.dates.map(formatPpeDate).join(", ")}
+          </p>
+        ) : null}
+        {error && <p className="mt-3 text-sm font-medium text-red-500">{error}</p>}
+        <div className="mt-5 flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="btn-secondary">
+            Cancel
+          </button>
+          <button type="button" onClick={submit} disabled={saving} className="btn-primary disabled:opacity-60">
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
       </div>
-    </form>
+    </div>
   );
 }

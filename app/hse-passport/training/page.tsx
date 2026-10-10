@@ -4,6 +4,8 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PassportTabs from "@/components/hsePassport/PassportTabs";
+import SummaryCards from "@/components/SummaryCards";
+import { BadgeCheck, CalendarX, Clock, GraduationCap, Users } from "lucide-react";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
 import FileUpload from "@/components/FileUpload";
 import Badge from "@/components/Badge";
@@ -33,6 +35,8 @@ function TrainingContent() {
   const records = employee
     ? trainingRecords.filter((r) => r.employeeId === employee.id)
     : [];
+  // Headline cards: the selected employee, or everyone when none is chosen.
+  const cardRecords = employee ? records : trainingRecords;
 
   const totalCourses = records.length;
   const totalHours = records.reduce((a, r) => a + r.hours, 0);
@@ -83,6 +87,15 @@ function TrainingContent() {
       </div>
 
       <PassportTabs />
+      <SummaryCards
+        cards={[
+          { label: "Total Trainings", value: cardRecords.length, icon: GraduationCap, color: "#2563EB" },
+          { label: "Employees Trained", value: new Set(cardRecords.map((r) => r.employeeId)).size, icon: Users, color: "#F36F24" },
+          { label: "Training Hours", value: cardRecords.reduce((a, r) => a + (Number(r.hours) || 0), 0), icon: Clock, color: "#7C3AED" },
+          { label: "Valid", value: cardRecords.filter((r) => r.status === "Valid").length, icon: BadgeCheck, color: "#16A34A" },
+          { label: "Expired", value: cardRecords.filter((r) => r.status === "Expired").length, icon: CalendarX, color: "#DC2626" },
+        ]}
+      />
 
       <div className="mb-6">
         <EmployeeSearch selected={employee} onSelect={setEmployee} />

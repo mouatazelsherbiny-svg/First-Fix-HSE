@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PassportTabs from "@/components/hsePassport/PassportTabs";
+import SummaryCards from "@/components/SummaryCards";
+import { Ban, ClipboardList, FileWarning, MessageSquareWarning, ShieldAlert } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
@@ -173,6 +175,15 @@ function DisciplinaryActionContent() {
       </div>
 
       <PassportTabs />
+      <SummaryCards
+        cards={[
+          { label: "Total Actions", value: scopedRecords.length, icon: ClipboardList, color: "#2563EB" },
+          { label: t.hse.disciplinary.verbalWarning, value: counts["Verbal Warning"], icon: MessageSquareWarning, color: "#D97706" },
+          { label: t.hse.disciplinary.writtenWarning, value: counts["Written Warning"], icon: FileWarning, color: "#EA580C" },
+          { label: t.hse.disciplinary.violation, value: counts.Violation, icon: Ban, color: "#DC2626" },
+          { label: t.hse.disciplinary.lsr, value: counts.LSR, icon: ShieldAlert, color: "#7C3AED" },
+        ]}
+      />
 
       {/* Filter bar */}
       <div className="card relative mb-6">
@@ -281,28 +292,6 @@ function DisciplinaryActionContent() {
             >
               {t.hse.addBtn}
             </button>
-          </div>
-
-          {/* Stat cards */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {(
-              [
-                ["Verbal Warning", t.hse.disciplinary.verbalWarning],
-                ["Written Warning", t.hse.disciplinary.writtenWarning],
-                ["Violation", t.hse.disciplinary.violation],
-                ["LSR", t.hse.disciplinary.lsr],
-              ] as [DisciplinaryType, string][]
-            ).map(([key, label]) => (
-              <div
-                key={key}
-                className="rounded-2xl bg-black p-5 text-center shadow-card"
-              >
-                <p className="text-3xl font-extrabold text-white">{counts[key]}</p>
-                <p className="mt-1 text-xs font-semibold tracking-wide text-white/70">
-                  {label}
-                </p>
-              </div>
-            ))}
           </div>
 
           {/* Life Saving Rules */}

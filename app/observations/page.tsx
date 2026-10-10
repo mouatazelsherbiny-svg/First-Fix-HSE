@@ -233,12 +233,6 @@ function ObservationsList() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <ExportExcelButton filename={t.list.title} sheets={exportSheets} disabled={filtered.length === 0} />
-          <Link href="/observations/new?type=Good%20Practice" className="btn-secondary">
-            {t.list.goodPracticeBtn}
-          </Link>
-          <Link href="/observations/new" className="btn-primary">
-            {t.list.newBtn}
-          </Link>
         </div>
       </div>
 

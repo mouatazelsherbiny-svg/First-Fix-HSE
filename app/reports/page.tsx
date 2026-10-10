@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, ChartColumn, Eye, Sparkles } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
 import { useLanguage } from "@/context/LanguageContext";
@@ -86,7 +86,29 @@ function ReportsContent() {
           </Link>
         </div>
       ) : (
-        <DailyKpiGrid />
+        <div>
+          <div className="mb-6 grid gap-3 sm:grid-cols-3">
+            <Link
+              href="/observations/new"
+              className="card flex items-center justify-center gap-2 !py-4 text-sm font-bold text-brand-black transition hover:shadow-cardHover"
+            >
+              <Eye className="h-5 w-5 text-brand-orange" />
+              {t.list.newBtn.replace(/^\+\s*/, "")}
+            </Link>
+            <div className="flex items-center justify-center gap-2 rounded-2xl bg-brand-orange py-4 text-sm font-bold text-brand-onAccent shadow-card">
+              <ChartColumn className="h-5 w-5" />
+              KPI
+            </div>
+            <Link
+              href="/observations/new?type=Good%20Practice"
+              className="card flex items-center justify-center gap-2 !py-4 text-sm font-bold text-brand-black transition hover:shadow-cardHover"
+            >
+              <Sparkles className="h-5 w-5 text-brand-orange" />
+              {t.list.goodPracticeBtn.replace(/^\+\s*/, "")}
+            </Link>
+          </div>
+          <DailyKpiGrid />
+        </div>
       )}
     </div>
   );

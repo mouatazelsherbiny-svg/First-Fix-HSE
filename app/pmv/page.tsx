@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import DashboardBackground from "@/components/DashboardBackground";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePmvDashboard, type PmvOwnershipFilter } from "@/lib/usePmvDashboard";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
@@ -128,9 +127,8 @@ function PmvPageContent() {
   };
 
   return (
-    <div className="relative isolate">
-      <DashboardBackground />
-      <div className="relative z-10">
+    <div>
+      <div>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <h1 className="flex flex-wrap items-baseline gap-x-3 text-2xl font-bold text-brand-black">
             {t.pmv.title}

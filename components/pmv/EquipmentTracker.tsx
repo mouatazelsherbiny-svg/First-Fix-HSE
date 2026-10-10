@@ -22,6 +22,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { BrandMark } from "@/components/Sidebar";
 import { Search, Plus, ChevronRight, MapPin, Calendar } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
@@ -81,13 +82,13 @@ export default function EquipmentTracker() {
   ];
 
   return (
-    <div className="relative mx-auto flex h-[680px] w-full max-w-sm flex-col lg:me-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-cardHover">
+    <div className="relative mx-auto flex h-[calc(100vh-9rem)] min-h-[720px] w-full max-w-sm flex-col lg:me-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-cardHover">
       {/* Header — brand orange, matching the app's accent colour. */}
       <div className="flex shrink-0 items-center gap-3 bg-brand-orange px-5 py-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15">
-          <Image src="/logo-icon.png" alt="" width={22} height={22} className="object-contain" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+          <BrandMark size={38} />
         </div>
-        <h2 className="truncate text-base font-bold text-white">{t.pmv.tabTracker}</h2>
+        <h2 className="truncate text-lg font-bold text-white">{t.pmv.tabTracker}</h2>
       </div>
 
       {/* Scrollable body — search, filters, and the equipment list all
