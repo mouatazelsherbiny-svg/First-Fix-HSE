@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, HardHat, Package, Repeat, Upload, Users, X } from "lucide-react";
+import { AlertTriangle, Footprints, Glasses, Hand, HardHat, Package, Repeat, Shirt, Upload, Users, X } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PassportTabs from "@/components/hsePassport/PassportTabs";
 import SummaryCards from "@/components/SummaryCards";
@@ -115,6 +115,16 @@ function PpeContent() {
       issues: inProject.reduce((s, x) => s + x.a.totalIssues, 0),
       repeat: inProject.filter((x) => x.a.repeats.length > 0).length,
       early: inProject.filter((x) => x.a.earlyItems.length > 0).length,
+      // Times each item was issued (a cell with no date still counts once).
+      perItem: Object.fromEntries(
+        PPE_ITEMS.map((item) => [
+          item,
+          inProject.reduce((s, x) => {
+            const issue = x.row.items[item];
+            return s + (issue ? Math.max(1, issue.dates.length) : 0);
+          }, 0),
+        ])
+      ) as Record<PpeItem, number>,
     }),
     [inProject]
   );
@@ -236,6 +246,15 @@ function PpeContent() {
 
       <PassportTabs />
       <SummaryCards cards={cards} />
+      <SummaryCards
+        cards={[
+          { label: "Helmet", value: totals.perItem.Helmet, icon: HardHat, color: "#F59E0B" },
+          { label: "Safety Shoes", value: totals.perItem.Shoes, icon: Footprints, color: "#78716C" },
+          { label: "Vest", value: totals.perItem.Vest, icon: Shirt, color: "#F36F24" },
+          { label: "Gloves", value: totals.perItem.Gloves, icon: Hand, color: "#16A34A" },
+          { label: "Glasses", value: totals.perItem.Glasses, icon: Glasses, color: "#0EA5E9" },
+        ]}
+      />
 
       {importMsg && <p className="mb-4 text-sm font-medium text-brand-grayDark">{importMsg}</p>}
 
@@ -298,7 +317,7 @@ function PpeContent() {
                 <td colSpan={PPE_ITEMS.length + 3} className="px-6 py-10 text-center text-brand-gray">
                   {rows.length === 0
                     ? isAdmin
-                      ? "No PPE data yet — use Import CSV to upload the PPE Passport sheet."
+                      ? "No PPE data yet — click Import CSV (top right) and choose PPE_Passport_clean.csv from your Claude outputs folder."
                       : "No PPE data yet."
                     : "No matching employees."}
                 </td>
