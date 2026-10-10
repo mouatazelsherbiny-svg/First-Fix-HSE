@@ -15,20 +15,20 @@ export default function PassportTabs() {
     { href: "/hse-passport/training", label: t.nav.training, icon: GraduationCap },
   ];
   return (
-    <div className="card mb-6 grid gap-2 !p-2 sm:grid-cols-3">
+    <div className="mb-6 inline-flex flex-wrap gap-1 rounded-xl border border-brand-border bg-brand-surface p-1">
       {tabs.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
               active
                 ? "bg-brand-orange text-brand-onAccent shadow-sm"
                 : "text-brand-grayDark hover:bg-brand-grayLight/60 hover:text-brand-black"
             }`}
           >
-            <tab.icon className="h-4 w-4" />
+            <tab.icon className="h-3.5 w-3.5" />
             {tab.label}
           </Link>
         );
