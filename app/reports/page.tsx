@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CalendarCheck, ChartColumn, Eye, Sparkles } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
+import ObservationForm from "@/components/observations/ObservationForm";
 import { useLanguage } from "@/context/LanguageContext";
 
 type ReportTab = "daily" | "monthly";
@@ -20,6 +21,15 @@ export default function ReportsPage() {
 function ReportsContent() {
   const { t } = useLanguage();
   const [tab, setTab] = useState<ReportTab>("daily");
+  const [dailyView, setDailyView] = useState<"observation" | "kpi" | "good">("kpi");
+  // Bumped after a save / cancel so the form comes back empty.
+  const [formKey, setFormKey] = useState(0);
+
+  const DAILY_VIEWS = [
+    { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye },
+    { key: "kpi" as const, label: "KPI", icon: ChartColumn },
+    { key: "good" as const, label: t.list.goodPracticeBtn.replace(/^\+\s*/, ""), icon: Sparkles },
+  ];
 
   // The 4 monthly HSE checklist templates — previously their own sidebar
   // group, now surfaced here under Reports → Monthly (see the sidebar
@@ -87,27 +97,35 @@ function ReportsContent() {
         </div>
       ) : (
         <div>
-          <div className="mb-6 grid gap-3 sm:grid-cols-3">
-            <Link
-              href="/observations/new"
-              className="card flex items-center justify-center gap-2 !py-4 text-sm font-bold text-brand-black transition hover:shadow-cardHover"
-            >
-              <Eye className="h-5 w-5 text-brand-orange" />
-              {t.list.newBtn.replace(/^\+\s*/, "")}
-            </Link>
-            <div className="flex items-center justify-center gap-2 rounded-2xl bg-brand-orange py-4 text-sm font-bold text-brand-onAccent shadow-card">
-              <ChartColumn className="h-5 w-5" />
-              KPI
-            </div>
-            <Link
-              href="/observations/new?type=Good%20Practice"
-              className="card flex items-center justify-center gap-2 !py-4 text-sm font-bold text-brand-black transition hover:shadow-cardHover"
-            >
-              <Sparkles className="h-5 w-5 text-brand-orange" />
-              {t.list.goodPracticeBtn.replace(/^\+\s*/, "")}
-            </Link>
+          <div className="mb-5 inline-flex flex-wrap gap-1 rounded-xl border border-brand-border bg-brand-surface p-1">
+            {DAILY_VIEWS.map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                onClick={() => setDailyView(v.key)}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
+                  dailyView === v.key
+                    ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                    : "text-brand-grayDark hover:bg-brand-grayLight/60 hover:text-brand-black"
+                }`}
+              >
+                <v.icon className="h-3.5 w-3.5" />
+                {v.label}
+              </button>
+            ))}
           </div>
-          <DailyKpiGrid />
+          {dailyView === "kpi" ? (
+            <DailyKpiGrid />
+          ) : (
+            <div>
+              <ObservationForm
+                key={`${dailyView}-${formKey}`}
+                embedded
+                presetType={dailyView === "good" ? "Good Practice" : ""}
+                onDone={() => setFormKey((k) => k + 1)}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
