@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GraduationCap, HardHat, ShieldAlert } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import NavCards from "@/components/NavCards";
 
-/** The three HSE Passport sections, shown as buttons at the top of each. */
+/** The three HSE Passport sections, shown as cards at the top of each. */
 export default function PassportTabs() {
   const { t } = useLanguage();
   const pathname = usePathname();
@@ -15,24 +15,14 @@ export default function PassportTabs() {
     { href: "/hse-passport/training", label: t.nav.training, icon: GraduationCap },
   ];
   return (
-    <div className="mb-6 inline-flex flex-wrap gap-1 rounded-xl border border-brand-border bg-brand-surface p-1">
-      {tabs.map((tab) => {
-        const active = pathname.startsWith(tab.href);
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
-              active
-                ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                : "text-brand-grayDark hover:bg-brand-grayLight/60 hover:text-brand-black"
-            }`}
-          >
-            <tab.icon className="h-3.5 w-3.5" />
-            {tab.label}
-          </Link>
-        );
-      })}
-    </div>
+    <NavCards
+      items={tabs.map((tab) => ({
+        key: tab.href,
+        label: tab.label,
+        icon: tab.icon,
+        href: tab.href,
+        active: pathname.startsWith(tab.href),
+      }))}
+    />
   );
 }

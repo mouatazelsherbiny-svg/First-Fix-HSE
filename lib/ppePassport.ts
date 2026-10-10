@@ -208,3 +208,123 @@ export function formatPpeDate(iso: string) {
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
+
+/** Display names for each item. */
+export const PPE_LABELS: Record<PpeItem, string> = {
+  Shoes: "Safety Shoes",
+  Vest: "Hi-Visibility Vest",
+  Helmet: "Helmet",
+  Gloves: "Gloves",
+  Glasses: "Safety Glasses",
+};
+
+/** Size / type choices offered for each item (form + Excel template). */
+export const PPE_OPTIONS: Record<PpeItem, string[]> = {
+  Shoes: ["38", "39", "40", "41", "42", "43", "44", "45", "46", "47"],
+  Vest: ["S", "M", "L", "XL", "2XL", "3XL", "4XL"],
+  Helmet: ["White", "Blue", "Yellow", "Green", "Red", "Orange"],
+  Gloves: ["Cotton", "Leather", "Rubber", "Cut Resistant", "Chemical"],
+  Glasses: ["Clear", "Dark"],
+};
+
+const ITEM_ALIASES: Record<string, PpeItem> = {
+  shoes: "Shoes", "safety shoes": "Shoes", shoe: "Shoes",
+  vest: "Vest", "hi-visibility vest": "Vest", "hi-vis vest": "Vest", "safety vest": "Vest",
+  helmet: "Helmet", "hard hat": "Helmet",
+  gloves: "Gloves", glove: "Gloves",
+  glasses: "Glasses", "safety glasses": "Glasses", goggles: "Glasses",
+};
+
+export function itemFromName(name: string): PpeItem | null {
+  return ITEM_ALIASES[name.trim().toLowerCase()] ?? null;
+}
+
+/** One line of the manual-entry Excel template: one item given on one day. */
+export interface PpeIssueLine {
+  employeeCode: string;
+  name: string;
+  project: string;
+  designation: string;
+  item: PpeItem;
+  /** ISO date, or "" when not filled in. */
+  date: string;
+  note: string;
+}
+
+/** Converts a cell value (Excel date, "dd/mm/yyyy" text…) to an ISO date. */
+export function toIsoDate(v: unknown): string {
+  if (v instanceof Date && !Number.isNaN(v.getTime())) {
+    // Excel dates arrive as midnight UTC.
+    return v.toISOString().slice(0, 10);
+  }
+  if (typeof v === "number" && v > 20000 && v < 80000) {
+    // Excel serial day number
+    return new Date(Date.UTC(1899, 11, 30) + v * 86_400_000).toISOString().slice(0, 10);
+  }
+  const s = String(v ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  return parseCell(s)?.dates[0] ?? "";
+}
+
+/**
+ * Reads the template sheet (header row + data rows). Returns the lines plus
+ * the row numbers that were skipped because something required was missing.
+ */
+export function parseIssueSheet(table: unknown[][]): { lines: PpeIssueLine[]; skipped: number[] } {
+  const [header, ...data] = table;
+  const h = (header ?? []).map((c) => String(c ?? "").trim().toLowerCase());
+  const col = (...names: string[]) => h.findIndex((x) => names.some((n) => x.startsWith(n)));
+  const iCode = col("employee id", "id no", "id");
+  const iName = col("name", "employee name");
+  const iProject = col("project");
+  const iDesig = col("designation");
+  const iItem = col("ppe item", "item");
+  const iSize = col("size");
+  const iDate = col("date");
+  const iRemarks = col("remarks", "note");
+  const lines: PpeIssueLine[] = [];
+  const skipped: number[] = [];
+  data.forEach((r, idx) => {
+    const cell = (i: number) => (i >= 0 ? r[i] : "");
+    const text = (i: number) => String(cell(i) ?? "").replace(/\s+/g, " ").trim();
+    if (!text(iCode) && !text(iName) && !text(iItem)) return; // blank row
+    const item = itemFromName(text(iItem));
+    const code = text(iCode);
+    if (!item || !code) {
+      skipped.push(idx + 2);
+      return;
+    }
+    lines.push({
+      employeeCode: code,
+      name: text(iName),
+      project: normalizeProject(text(iProject)),
+      designation: text(iDesig),
+      item,
+      date: toIsoDate(cell(iDate)),
+      note: [text(iSize), text(iRemarks)].filter(Boolean).join(" "),
+    });
+  });
+  return { lines, skipped };
+}
+
+/** Adds issue lines to the existing passport rows; returns only the rows that changed. */
+export function applyIssues(existing: PpePassportRow[], lines: PpeIssueLine[]): PpePassportRow[] {
+  const byCode = new Map(existing.map((r) => [r.employeeCode, r]));
+  const changed = new Map<string, PpePassportRow>();
+  for (const l of lines) {
+    const base = changed.get(l.employeeCode) ?? byCode.get(l.employeeCode);
+    const row: PpePassportRow = base
+      ? { ...base, items: { ...base.items } }
+      : { employeeCode: l.employeeCode, name: l.name || l.employeeCode, project: l.project, designation: l.designation, sponsor: "", items: {} };
+    if (!row.name && l.name) row.name = l.name;
+    if (!row.project && l.project) row.project = l.project;
+    if (!row.designation && l.designation) row.designation = l.designation;
+    const prev = row.items[l.item];
+    const dates = Array.from(new Set([...(prev?.dates ?? []), ...(l.date ? [l.date] : [])])).sort();
+    const notes = [prev?.note, l.note].filter(Boolean) as string[];
+    const note = Array.from(new Set(notes.join(", ").split(", ").filter(Boolean))).join(", ");
+    row.items[l.item] = { dates, ...(note ? { note } : {}) };
+    changed.set(l.employeeCode, row);
+  }
+  return Array.from(changed.values());
+}

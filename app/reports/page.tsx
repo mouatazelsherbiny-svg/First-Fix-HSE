@@ -6,6 +6,7 @@ import { CalendarCheck, ChartColumn, Eye, Sparkles } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
 import ObservationForm from "@/components/observations/ObservationForm";
+import NavCards from "@/components/NavCards";
 import { useLanguage } from "@/context/LanguageContext";
 
 type ReportTab = "daily" | "monthly";
@@ -97,23 +98,16 @@ function ReportsContent() {
         </div>
       ) : (
         <div>
-          <div className="mb-5 inline-flex flex-wrap gap-1 rounded-xl border border-brand-border bg-brand-surface p-1">
-            {DAILY_VIEWS.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                onClick={() => setDailyView(v.key)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition ${
-                  dailyView === v.key
-                    ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                    : "text-brand-grayDark hover:bg-brand-grayLight/60 hover:text-brand-black"
-                }`}
-              >
-                <v.icon className="h-3.5 w-3.5" />
-                {v.label}
-              </button>
-            ))}
-          </div>
+          <NavCards
+            className="mb-5"
+            items={DAILY_VIEWS.map((v) => ({
+              key: v.key,
+              label: v.label,
+              icon: v.icon,
+              active: dailyView === v.key,
+              onClick: () => setDailyView(v.key),
+            }))}
+          />
           {dailyView === "kpi" ? (
             <DailyKpiGrid />
           ) : (
