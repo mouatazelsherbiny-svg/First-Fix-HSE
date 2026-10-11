@@ -28,6 +28,8 @@ import {
   formatPpeDate,
   normalizeProject,
   parseCsv,
+  excelCellValue,
+  isIssueTemplate,
   parseIssueSheet,
   parsePpeCsv,
 } from "@/lib/ppePassport";
@@ -200,34 +202,26 @@ function PpeContent() {
         const ws = wb.getWorksheet("PPE Issues") ?? wb.worksheets[0];
         const t2: unknown[][] = [];
         ws.eachRow({ includeEmpty: false }, (row) => {
-          const values = (row.values as unknown[]).slice(1).map((v) => {
-            if (v && typeof v === "object" && !(v instanceof Date)) {
-              const o = v as { result?: unknown; text?: unknown; richText?: { text: string }[] };
-              if (o.result !== undefined) return o.result;
-              if (o.richText) return o.richText.map((x) => x.text).join("");
-              if (o.text !== undefined) return o.text;
-            }
-            return v;
-          });
+          const values = (row.values as unknown[]).slice(1).map(excelCellValue);
           t2.push(values);
         });
         table = t2;
       } else {
         const text = await file.text();
         const parsed = parseCsv(text);
-        if ((parsed[0] ?? []).some((h) => /ppe item/i.test(h))) table = parsed;
+        if (isIssueTemplate(parsed[0] ?? [])) table = parsed;
         else wide = parsePpeCsv(text);
       }
 
       if (table) {
         const { lines, skipped } = parseIssueSheet(table);
-        if (lines.length === 0) throw new Error("No PPE lines found — fill Employee ID and PPE Item on each line.");
+        if (lines.length === 0) throw new Error("No PPE found — fill the Employee ID and at least one item (size or date) on each line.");
         const changed = applyIssues(rows, lines);
         await saveRows(changed, (n) => setImportMsg(`Saving… ${n} / ${changed.length}`));
         await reload();
         setImportMsg(
           `Added ${lines.length} PPE issue(s) for ${changed.length} employee(s).` +
-            (skipped.length ? ` Skipped row(s) ${skipped.slice(0, 15).join(", ")} — Employee ID or PPE Item missing.` : "")
+            (skipped.length ? ` Skipped row(s) ${skipped.slice(0, 15).join(", ")} — Employee ID or items missing.` : "")
         );
       } else if (wide && wide.length) {
         const list = wide;

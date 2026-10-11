@@ -272,39 +272,69 @@ export function toIsoDate(v: unknown): string {
  */
 export function parseIssueSheet(table: unknown[][]): { lines: PpeIssueLine[]; skipped: number[] } {
   const [header, ...data] = table;
-  const h = (header ?? []).map((c) => String(c ?? "").trim().toLowerCase());
+  const h = (header ?? []).map((c) => String(c ?? "").replace(/\s+/g, " ").trim().toLowerCase());
   const col = (...names: string[]) => h.findIndex((x) => names.some((n) => x.startsWith(n)));
-  const iCode = col("employee id", "id no", "id");
+  // "Employee ID", or the template's "Employee (Name - ID)" pick-list column.
+  const iCode = col("employee id", "id no", "id", "employee");
   const iName = col("name", "employee name");
   const iProject = col("project");
   const iDesig = col("designation");
   const iItem = col("ppe item", "item");
+  const iRemarks = col("remarks", "note");
+
+  // Template layout A: one line per item (PPE Item / Size / Date columns).
+  // Template layout B: one line per employee, a Size + Date column pair per item.
+  const ITEM_KEYS: Record<PpeItem, string> = { Shoes: "shoe", Vest: "vest", Helmet: "helmet", Gloves: "glove", Glasses: "glass" };
+  const pairs = PPE_ITEMS.map((item) => ({
+    item,
+    size: h.findIndex((x) => x.includes(ITEM_KEYS[item]) && /size|type/.test(x)),
+    date: h.findIndex((x) => x.includes(ITEM_KEYS[item]) && x.includes("date")),
+  })).filter((p) => p.date >= 0 || p.size >= 0);
+  const perEmployee = iItem < 0 && pairs.length > 0;
   const iSize = col("size");
   const iDate = col("date");
-  const iRemarks = col("remarks", "note");
+
   const lines: PpeIssueLine[] = [];
   const skipped: number[] = [];
   data.forEach((r, idx) => {
     const cell = (i: number) => (i >= 0 ? r[i] : "");
     const text = (i: number) => String(cell(i) ?? "").replace(/\s+/g, " ").trim();
-    if (!text(iCode) && !text(iName) && !text(iItem)) return; // blank row
+    // A pick-list value looks like "Tasneem Asghar - 10106".
+    const picked = text(iCode).match(/^(.*?)\s+-\s+(\S+)$/);
+    const code = picked ? picked[2] : text(iCode);
+    const base = {
+      employeeCode: code,
+      name: text(iName) || (picked && picked[1] !== "Unknown" ? picked[1] : ""),
+      project: normalizeProject(text(iProject)),
+      designation: text(iDesig),
+    };
+    if (perEmployee) {
+      const filled = pairs.filter((p) => text(p.size) || text(p.date));
+      if (!code && !text(iName) && filled.length === 0) return; // blank row
+      if (!code || filled.length === 0) {
+        skipped.push(idx + 2);
+        return;
+      }
+      for (const p of filled) {
+        lines.push({ ...base, item: p.item, date: toIsoDate(cell(p.date)), note: [text(p.size), text(iRemarks)].filter(Boolean).join(" ") });
+      }
+      return;
+    }
+    if (!code && !text(iName) && !text(iItem)) return; // blank row
     const item = itemFromName(text(iItem));
-    const code = text(iCode);
     if (!item || !code) {
       skipped.push(idx + 2);
       return;
     }
-    lines.push({
-      employeeCode: code,
-      name: text(iName),
-      project: normalizeProject(text(iProject)),
-      designation: text(iDesig),
-      item,
-      date: toIsoDate(cell(iDate)),
-      note: [text(iSize), text(iRemarks)].filter(Boolean).join(" "),
-    });
+    lines.push({ ...base, item, date: toIsoDate(cell(iDate)), note: [text(iSize), text(iRemarks)].filter(Boolean).join(" ") });
   });
   return { lines, skipped };
+}
+
+/** True when a sheet header looks like one of the PPE entry templates. */
+export function isIssueTemplate(header: unknown[]): boolean {
+  const h = header.map((c) => String(c ?? "").toLowerCase());
+  return h.some((x) => x.includes("ppe item")) || h.some((x) => /(shoe|vest|helmet|glove|glass).*date/.test(x));
 }
 
 /** Adds issue lines to the existing passport rows; returns only the rows that changed. */
@@ -327,4 +357,17 @@ export function applyIssues(existing: PpePassportRow[], lines: PpeIssueLine[]): 
     changed.set(l.employeeCode, row);
   }
   return Array.from(changed.values());
+}
+
+/** Plain value of an ExcelJS cell (formula → its result, rich text → text). */
+export function excelCellValue(v: unknown): unknown {
+  if (v && typeof v === "object" && !(v instanceof Date)) {
+    const o = v as { formula?: unknown; sharedFormula?: unknown; result?: unknown; text?: unknown; richText?: { text: string }[]; error?: unknown };
+    if ("formula" in o || "sharedFormula" in o) return o.result ?? "";
+    if (o.richText) return o.richText.map((x) => x.text).join("");
+    if (o.text !== undefined) return o.text;
+    if (o.error !== undefined) return "";
+    return "";
+  }
+  return v;
 }
