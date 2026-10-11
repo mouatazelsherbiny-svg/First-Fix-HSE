@@ -14,6 +14,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PROJECTS } from "@/lib/mockData";
+import { projectName } from "@/lib/projectNames";
 
 const STORAGE_KEY = "ff.projectFilter";
 
@@ -57,7 +58,7 @@ export function ProjectFilterProvider({ children }: { children: React.ReactNode 
       let changed = false;
       const next = new Set(prev);
       for (const n of names) {
-        const v = n?.trim();
+        const v = projectName(n);
         if (v && !next.has(v)) {
           next.add(v);
           changed = true;
@@ -96,7 +97,7 @@ export function useProjectScoped<T>(rows: T[], projectOf: (row: T) => string | n
   }, [rows, addProjects]);
 
   return useMemo(
-    () => (project ? rows.filter((r) => (projectOf(r) ?? "").trim() === project) : rows),
+    () => (project ? rows.filter((r) => projectName(projectOf(r)) === project) : rows),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rows, project]
   );

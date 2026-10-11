@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient";
 import { EmployeeRecord } from "./mockData";
+import { projectName } from "./projectNames";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapEmployee(row: any): EmployeeRecord {
@@ -7,7 +8,7 @@ function mapEmployee(row: any): EmployeeRecord {
     id: row.id,
     name: row.name,
     employeeId: row.employee_code,
-    project: row.project,
+    project: projectName(row.project),
     department: row.department,
     phone: row.phone ?? "",
     jobGrade: row.job_grade ?? "",

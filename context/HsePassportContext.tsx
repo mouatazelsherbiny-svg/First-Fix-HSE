@@ -17,6 +17,7 @@ import { EmployeeRecord } from "@/lib/mockData";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { useProjectFilter, useProjectScoped } from "@/context/ProjectFilterContext";
+import { projectName } from "@/lib/projectNames";
 
 interface HsePassportContextValue {
   employees: EmployeeRecord[];
@@ -43,7 +44,7 @@ function mapEmployee(row: any): EmployeeRecord {
     id: row.id,
     name: row.name,
     employeeId: row.employee_code,
-    project: row.project,
+    project: projectName(row.project),
     department: row.department,
     phone: row.phone ?? "",
     jobGrade: row.job_grade ?? "",
