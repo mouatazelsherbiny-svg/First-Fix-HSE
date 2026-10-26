@@ -17,13 +17,14 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import { ScorePill } from "@/components/hseAudit/ScorePanel";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
-import { fetchAllRows, supabase } from "@/lib/supabaseClient";
+import { fetchAllRows } from "@/lib/supabaseClient";
 import {
   AUDIT_LIST_COLUMNS,
   AuditFinding,
   ENV_ITEMS,
   HS_ITEMS,
   HseAudit,
+  PRIORITIES,
   PRIORITY_STYLE,
   formatDate,
   isOverdue,
@@ -49,7 +50,6 @@ function HseAuditDashboard() {
   const [findings, setFindings] = useState<FindingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [closing, setClosing] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -97,6 +97,27 @@ function HseAuditDashboard() {
     [findings, auditById]
   );
 
+  const openByAudit = useMemo(() => {
+    const groups = new Map<string, FindingRow[]>();
+    for (const f of openFindings) groups.set(f.auditId, [...(groups.get(f.auditId) ?? []), f]);
+    return Array.from(groups.entries())
+      .map(([auditId, fs]) => {
+        const audit = auditById.get(auditId)!;
+        const byPriority: Record<string, number> = {};
+        for (const f of fs) byPriority[f.priority] = (byPriority[f.priority] ?? 0) + 1;
+        return {
+          audit,
+          open: fs.length,
+          total: findings.filter((f) => f.auditId === auditId).length,
+          overdue: fs.filter((f) => isOverdue(f)).length,
+          next: fs.map((f) => f.closeOutDate).filter(Boolean).sort()[0] ?? "",
+          byPriority,
+          categories: Array.from(new Set(fs.map((f) => f.category).filter(Boolean))),
+        };
+      })
+      .sort((x, y) => y.overdue - x.overdue || (x.next || "9999").localeCompare(y.next || "9999"));
+  }, [openFindings, auditById, findings]);
+
   const avg = (vals: (number | null)[]) => {
     const v = vals.filter((x): x is number => x != null);
     return v.length ? `${(v.reduce((s, x) => s + x, 0) / v.length).toFixed(1)}%` : "—";
@@ -115,16 +136,6 @@ function HseAuditDashboard() {
   }, [rows]);
   const target = rows[0]?.audit.targetPct ?? 70;
 
-  const closeFinding = async (f: FindingRow) => {
-    setClosing(f.id!);
-    const today = new Date().toISOString().slice(0, 10);
-    const { error } = await supabase
-      .from("hse_audit_findings")
-      .update({ status: "Closed", closed_on: today, updated_at: new Date().toISOString() })
-      .eq("id", f.id!);
-    if (!error) setFindings((list) => list.map((x) => (x.id === f.id ? { ...x, status: "Closed", closedOn: today } : x)));
-    setClosing(null);
-  };
 
   const exportSheets = [
     {
@@ -273,67 +284,69 @@ function HseAuditDashboard() {
 
       <div className="card overflow-x-auto !p-0">
         <h2 className="px-5 pt-5 text-lg font-bold text-brand-black">Open Findings</h2>
-        <table className="mt-3 w-full min-w-[860px] text-start text-sm">
+        <p className="px-5 text-xs text-brand-gray">One row per audit — click a row to open the full audit and close out its findings.</p>
+        <table className="mt-3 w-full min-w-[960px] text-start text-sm">
           <thead>
             <tr className="border-y border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
               <th className="px-4 py-3 text-start">Project</th>
-              <th className="px-4 py-3 text-start">Category</th>
-              <th className="px-4 py-3 text-start">Observation</th>
+              <th className="px-4 py-3 text-start">Audit Date</th>
+              <th className="px-4 py-3 text-start">Auditor</th>
+              <th className="px-4 py-3 text-start">Open</th>
               <th className="px-4 py-3 text-start">Priority</th>
-              <th className="px-4 py-3 text-start">Close Out</th>
-              <th className="px-4 py-3 text-start" />
+              <th className="px-4 py-3 text-start">Overdue</th>
+              <th className="px-4 py-3 text-start">Next Close Out</th>
+              <th className="px-4 py-3 text-start">Categories</th>
             </tr>
           </thead>
           <tbody>
-            {openFindings.length === 0 ? (
+            {openByAudit.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-brand-gray">
+                <td colSpan={8} className="px-4 py-8 text-center text-brand-gray">
                   No open findings.
                 </td>
               </tr>
             ) : (
-              openFindings.map((f) => {
-                const overdue = isOverdue(f);
-                const audit = auditById.get(f.auditId);
-                return (
-                  <tr
-                    key={f.id}
-                    className="border-b border-brand-border last:border-0"
-                    style={overdue ? { background: "rgba(220,38,38,0.07)" } : undefined}
+              openByAudit.map(({ audit, open, total, overdue, next, byPriority, categories }) => (
+                <tr
+                  key={audit.id}
+                  onClick={() => router.push(`/hse-audit/${audit.id}`)}
+                  className="cursor-pointer border-b border-brand-border last:border-0 hover:bg-brand-grayLight/40"
+                  style={overdue ? { background: "rgba(220,38,38,0.07)" } : undefined}
+                >
+                  <td className="px-4 py-3 font-semibold text-brand-black">{audit.projectName}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark">{formatDate(audit.auditDate)}</td>
+                  <td className="px-4 py-3 text-brand-grayDark">{audit.auditor || "—"}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <span className="font-bold text-brand-black">{open}</span>
+                    <span className="text-xs text-brand-gray"> of {total}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {PRIORITIES.filter((p) => byPriority[p]).map((p) => (
+                        <span
+                          key={p}
+                          className="rounded px-2 py-0.5 text-xs font-bold"
+                          style={{ background: PRIORITY_STYLE[p].bg, color: PRIORITY_STYLE[p].fg }}
+                        >
+                          {byPriority[p]} {p}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold" style={{ color: overdue ? "#B91C1C" : "#16A34A" }}>
+                    {overdue || "—"}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-4 py-3 text-xs font-semibold"
+                    style={next && isOverdue({ status: "Open", closeOutDate: next }) ? { color: "#B91C1C" } : undefined}
                   >
-                    <td className="px-4 py-3">
-                      <Link href={`/hse-audit/${f.auditId}`} className="font-semibold text-brand-black hover:text-brand-orange">
-                        {audit?.projectName}
-                      </Link>
-                      <p className="text-xs text-brand-gray">{formatDate(audit?.auditDate ?? "")}</p>
-                    </td>
-                    <td className="px-4 py-3 text-brand-grayDark">{f.category || "—"}</td>
-                    <td className="max-w-md px-4 py-3 text-xs text-brand-grayDark">{f.observation}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="rounded px-2 py-0.5 text-xs font-bold"
-                        style={{ background: PRIORITY_STYLE[f.priority].bg, color: PRIORITY_STYLE[f.priority].fg }}
-                      >
-                        {f.priority}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-xs" style={overdue ? { color: "#B91C1C", fontWeight: 700 } : undefined}>
-                      {formatDate(f.closeOutDate)}
-                      {overdue && <p>Overdue</p>}
-                    </td>
-                    <td className="px-4 py-3 text-end">
-                      <button
-                        type="button"
-                        onClick={() => closeFinding(f)}
-                        disabled={closing === f.id}
-                        className="btn-secondary !px-3 !py-1.5 text-xs disabled:opacity-60"
-                      >
-                        {closing === f.id ? "Closing…" : "Close Out"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
+                    {formatDate(next)}
+                  </td>
+                  <td className="max-w-xs truncate px-4 py-3 text-xs text-brand-grayDark" title={categories.join(", ")}>
+                    {categories.join(", ") || "—"}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
