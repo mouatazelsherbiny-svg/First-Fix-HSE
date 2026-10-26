@@ -15,7 +15,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import SummaryCards from "@/components/SummaryCards";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { ScorePill } from "@/components/hseAudit/ScorePanel";
-import ScoringMatrix from "@/components/hseAudit/ScoringMatrix";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
@@ -339,8 +338,6 @@ function HseAuditDashboard() {
           </tbody>
         </table>
       </div>
-
-      <ScoringMatrix />
     </div>
   );
 }
