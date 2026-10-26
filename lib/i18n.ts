@@ -97,6 +97,7 @@ export interface TranslationShape {
     shChecklist: string;
     tcChecklist: string;
     hsePassport: string;
+    hseAudit: string;
     disciplinaryAction: string;
     ppe: string;
     training: string;
@@ -903,6 +904,7 @@ export const translations: Record<Locale, TranslationShape> = {
       shChecklist: "Health & Safety Checklist",
       tcChecklist: "T&C and Energization Checklist",
       hsePassport: "HSE Passport",
+      hseAudit: "HSE Audit",
       disciplinaryAction: "Disciplinary Action",
       ppe: "PPE",
       training: "Training",
@@ -1708,6 +1710,7 @@ export const translations: Record<Locale, TranslationShape> = {
       shChecklist: "قائمة الصحة والسلامة المهنية",
       tcChecklist: "قائمة فحص التشغيل والطاقة (T&C)",
       hsePassport: "جواز السلامة (HSE Passport)",
+      hseAudit: "التدقيق (HSE Audit)",
       disciplinaryAction: "الإجراءات التأديبية",
       ppe: "معدات الوقاية الشخصية",
       training: "التدريب",

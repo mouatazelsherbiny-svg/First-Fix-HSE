@@ -9,6 +9,7 @@ import {
   ChartLine,
   ChevronDown,
   ClipboardCheck,
+  ClipboardList,
   FileText,
   FileWarning,
   House,
@@ -210,6 +211,7 @@ export default function Sidebar({
       icon: IdCard,
       count: disciplinaryRecords.length + ppeRecords.length + trainingRecords.length,
     },
+    { kind: "link", href: "/hse-audit", label: t.nav.hseAudit, icon: ClipboardList },
     { kind: "link", href: "/summary-performance-report", label: t.nav.summaryPerformanceReport, icon: ChartLine },
     { kind: "link", href: "/hse-team", label: t.nav.hseTeam, icon: Network },
   ];
