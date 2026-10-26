@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Printer, Trash2 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AuditForm from "@/components/hseAudit/AuditForm";
 import { useAuth } from "@/context/AuthContext";
@@ -71,6 +71,9 @@ function AuditDetail() {
               <p className="text-sm text-brand-gray">{formatDate(audit.auditDate)}</p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <a href={`/hse-audit/${id}/print`} target="_blank" rel="noopener noreferrer" className="btn-primary gap-2">
+                <Printer className="h-4 w-4" /> Print Report
+              </a>
               {audit.reportFile && (
                 <a href={audit.reportFile} download={audit.reportFileName || "HSE Audit Report"} className="btn-secondary gap-2">
                   <Download className="h-4 w-4" /> Report File

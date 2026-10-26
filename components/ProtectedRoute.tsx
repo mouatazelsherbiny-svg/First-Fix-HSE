@@ -12,10 +12,13 @@ import ProjectFilter from "./ProjectFilter";
 export default function ProtectedRoute({
   children,
   hideProjectFilter = false,
+  bare = false,
 }: {
   children: React.ReactNode;
   /** For pages that place the project filter themselves (the dashboard). */
   hideProjectFilter?: boolean;
+  /** No sidebar / top bar — for print views. Still requires sign-in. */
+  bare?: boolean;
 }) {
   const { user, isLoading } = useAuth();
   const { morphism } = useThemeSettings();
@@ -50,6 +53,8 @@ export default function ProtectedRoute({
       </div>
     );
   }
+
+  if (bare) return <>{children}</>;
 
   return (
     <div className="min-h-screen">
