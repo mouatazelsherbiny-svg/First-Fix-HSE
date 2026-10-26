@@ -24,6 +24,7 @@ import {
   scoreTone,
 } from "@/lib/hseAudit";
 import ScorePanel from "./ScorePanel";
+import ScoringMatrix from "./ScoringMatrix";
 
 const MAX_REPORT_BYTES = 8 * 1024 * 1024;
 
@@ -304,6 +305,8 @@ export default function AuditForm({
           {saving ? "Saving…" : "Save Audit"}
         </button>
       </div>
+
+      <ScoringMatrix highlight={[hs.level?.score, env.level?.score].filter((x): x is number => x != null)} />
     </div>
   );
 }

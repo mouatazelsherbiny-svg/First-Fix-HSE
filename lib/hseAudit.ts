@@ -121,17 +121,24 @@ export const ENV_ITEMS = [
 ];
 
 /** Scoring Matrix (last page of the form). */
-export const MATRIX: { score: number; label: string; tone: "red" | "amber" | "green"; action: string }[] = [
-  { score: 1, label: "Repeated Failings", tone: "red", action: "Contracts Director involvement; possible disciplinary." },
-  { score: 2, label: "Unacceptable", tone: "red", action: "Senior management involvement; improvement notice; corrective action plan urgently required." },
-  { score: 3, label: "Poor", tone: "red", action: "Corrective action plan urgently required." },
-  { score: 4, label: "Areas at Risk", tone: "amber", action: "Action plan for improvement; seek support from HSE Manager." },
-  { score: 5, label: "Improvement Required", tone: "amber", action: "Address areas of weakness with site team and contractors." },
-  { score: 6, label: "Improvements Recommended", tone: "amber", action: "Address areas of weakness with site team and contractors." },
-  { score: 7, label: "Basic Compliance Achieved", tone: "green", action: "Improvements to be sought where reasonably practicable." },
-  { score: 8, label: "Industry Standards Met", tone: "green", action: "Encourage continual improvement and engagement." },
-  { score: 9, label: "Very Good", tone: "green", action: "Recognise and share best practice." },
-  { score: 10, label: "Exemplar Model of Best Practice", tone: "green", action: "Congratulate site management; share at Director level." },
+export const MATRIX: {
+  score: number;
+  label: string;
+  tone: "red" | "amber" | "green";
+  outcome: string;
+  stopWork: string;
+  action: string;
+}[] = [
+  { score: 1, label: "Repeated Failings", tone: "red", outcome: "Repeat failings. Failure to close out previous actions as listed. Management inaction.", stopWork: "YES", action: "As below but with Contracts Director involvement. Contracts Manager and Site Management to discuss failings — possible disciplinary." },
+  { score: 2, label: "Unacceptable", tone: "red", outcome: "Reportable incidents / accidents, personal injury claims, enforcement action / prosecution.", stopWork: "YES", action: "Senior management involvement; First Fix internal improvement notice served. Corrective action plan urgently required." },
+  { score: 3, label: "Poor", tone: "red", outcome: "High risk of reportable incidents / accidents — claims.", stopWork: "YES", action: "Corrective action plan urgently required." },
+  { score: 4, label: "Areas at Risk", tone: "amber", outcome: "Risk of reportable incident / injury or claims.", stopWork: "Action plan for multiple scores of 4 within report", action: "Action plan for improvement. Seek support from HSE Manager. Internal improvement notice for consistent scores of 4; arrange joint visit / inspection." },
+  { score: 5, label: "Improvement Required", tone: "amber", outcome: "Risk of incident / injury or claims.", stopWork: "Possible action plan of 5 scores", action: "Seek support and advice from HSE Manager to address areas of weakness. Look at behavioural standards from site team and contractors." },
+  { score: 6, label: "Improvements Recommended", tone: "amber", outcome: "Reasonable standards, some hazards identified, some 'at risk' behaviours to be addressed and closed out at site level.", stopWork: "Possible action plan", action: "Seek support and advice from HSE Manager to address areas of weakness. Look at behavioural standards from site team and contractors." },
+  { score: 7, label: "Basic Compliance Achieved", tone: "green", outcome: "Basic legal compliance. No major issues.", stopWork: "No corrective action by management. Continual improvement still expected", action: "No further action mandated if benchmark score cannot reasonably be improved. Improvements to be sought where reasonably practicable." },
+  { score: 8, label: "Industry Standards Met", tone: "green", outcome: "Industry standard practice and basic legal compliance being achieved.", stopWork: "No corrective action by FF. Continual improvement sought", action: "Encourage search for continual improvement and new ideas; support HSE culture and engagement." },
+  { score: 9, label: "Very Good", tone: "green", outcome: "Well managed, fully compliant with both legal and FF standards.", stopWork: "Recognition from First Fix. Continual improvement still encouraged", action: "Worthy of note. Ensure recognition given where due. Share best practice where found." },
+  { score: 10, label: "Exemplar Model of Best Practice", tone: "green", outcome: "Strong management and support; legal / client / FF standards exceeded. Best practice areas evident.", stopWork: "Formal recognition by FF senior management. Standards to be shared, maintained & protected", action: "Congratulate site management. Ensure standards reflected in report wording. Encourage further distribution / circulation at Director level." },
 ];
 
 export const TONE_STYLE: Record<"red" | "amber" | "green", { bg: string; fg: string }> = {
