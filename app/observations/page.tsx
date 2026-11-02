@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import ExportExcelButton from "@/components/ExportExcelButton";
+import { PhotoThumbPair, useLinkedPhotosForObservations } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import type { Observation } from "@/types/observation";
@@ -183,6 +184,8 @@ function ObservationsList() {
   const currentPage = Math.min(page, totalPages - 1);
   const pageStart = currentPage * PAGE_SIZE;
   const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+  // Photos only for the rows on screen: one batched query + one signed-URL request.
+  const linkedPhotos = useLinkedPhotosForObservations(pageItems.map((o) => o.id));
 
   const exportSheets = useMemo(
     () => [
@@ -273,10 +276,11 @@ function ObservationsList() {
         </div>
       ) : (
         <div className="card overflow-x-auto !p-0">
-          <table className="w-full min-w-[820px] text-start text-sm">
+          <table className="w-full min-w-[920px] text-start text-sm">
             <thead>
               <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
                 <th className="px-4 py-3 text-start">{t.list.col.reportNumber}</th>
+                <th className="px-3 py-3 text-start">{t.list.col.photos}</th>
                 <th className="px-4 py-3 text-start">{t.list.col.project}</th>
                 <th className="px-4 py-3 text-start">{t.list.col.type}</th>
                 <th className="px-4 py-3 text-start">{t.list.col.classification}</th>
@@ -294,6 +298,14 @@ function ObservationsList() {
                 >
                   <td className="px-4 py-3 font-semibold text-brand-black">
                     #{o.reportNumber}
+                  </td>
+                  <td className="px-3 py-2">
+                    <PhotoThumbPair
+                      observationUrl={o.observationPhotos[0] ?? linkedPhotos.get(o.id)?.observation[0]}
+                      closeOutUrl={o.closeOutPhotos[0] ?? linkedPhotos.get(o.id)?.closeOut[0]}
+                      beforeLabel={t.list.photoBefore}
+                      afterLabel={t.list.photoAfter}
+                    />
                   </td>
                   <td className="px-4 py-3 text-brand-grayDark">{o.projectName}</td>
                   <td className="px-4 py-3">

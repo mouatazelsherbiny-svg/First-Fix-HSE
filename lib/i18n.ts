@@ -243,7 +243,10 @@ export interface TranslationShape {
       status: string;
       date: string;
       actions: string;
+      photos: string;
     };
+    photoBefore: string;
+    photoAfter: string;
     view: string;
     edit: string;
     cancel: string;
@@ -1050,7 +1053,10 @@ export const translations: Record<Locale, TranslationShape> = {
         status: "Status",
         date: "Date",
         actions: "Actions",
+        photos: "Photos",
       },
+      photoBefore: "Before",
+      photoAfter: "After",
       view: "View",
       edit: "Edit",
       cancel: "Cancel",
@@ -1856,7 +1862,10 @@ export const translations: Record<Locale, TranslationShape> = {
         status: "الحالة",
         date: "التاريخ",
         actions: "إجراءات",
+        photos: "الصور",
       },
+      photoBefore: "قبل",
+      photoAfter: "بعد",
       view: "عرض",
       edit: "تعديل",
       cancel: "إلغاء",
