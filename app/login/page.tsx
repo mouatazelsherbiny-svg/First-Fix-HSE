@@ -84,10 +84,10 @@ export default function LoginPage() {
         <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
-      {/* Hero (shared with "/" and /signup) with a real, visible nav row
-          and the larger, see-through sign-in card in its lower-right
-          corner — see components/LandingHero. */}
-      <LandingHero>
+      {/* Hero (the same banner as "/") with a real, visible nav row and
+          the see-through sign-in card placed in the banner's free band,
+          clear of its logo, title and slogans — see components/LandingHero. */}
+      <LandingHero variant="home">
         <div className="rounded-2xl border border-white/15 bg-neutral-800/50 p-5 text-sm shadow-cardHover backdrop-blur-xl">
           {mode === "login" ? (
             <>
