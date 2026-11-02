@@ -4,12 +4,16 @@ out
 *.log
 .env*.local
 
+# SharePoint photo export used by scripts/upload-observation-photos.mjs
+sp-photos/
+
 .vercel
 
 # Demo recording artifacts — large and regenerable via demo/record-demo.ts
 # + demo/build-video.ps1. The scripts, seed SQL, steps.json and subtitles
 # stay tracked; only the heavy outputs are ignored.
 demo/video/
+demo/verify/
 demo/work/
 demo/*.mp4
 demo/intro.png

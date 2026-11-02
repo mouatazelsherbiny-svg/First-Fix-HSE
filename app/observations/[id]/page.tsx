@@ -6,6 +6,7 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { PhotoSection, useLinkedObservationPhotos } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 
@@ -26,6 +27,7 @@ function ObservationDetail() {
   const [cancelError, setCancelError] = useState("");
 
   const observation = getById(params.id);
+  const linkedPhotos = useLinkedObservationPhotos(observation?.id);
 
   const handleCancelObservation = async () => {
     if (!observation) return;
@@ -118,22 +120,11 @@ function ObservationDetail() {
           </p>
         </div>
 
-        {observation.observationPhotos.length > 0 && (
-          <div>
-            <p className="label-field">{t.form.observationPhoto}</p>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {observation.observationPhotos.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={src}
-                  alt={`obs-${i}`}
-                  className="aspect-square w-full rounded-lg border border-brand-border object-cover"
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        <PhotoSection
+          label={t.form.observationPhoto}
+          urls={[...observation.observationPhotos, ...linkedPhotos.observation]}
+          altPrefix="obs"
+        />
       </div>
 
       <div className="card space-y-5">
@@ -154,22 +145,11 @@ function ObservationDetail() {
           </div>
         )}
 
-        {observation.closeOutPhotos.length > 0 && (
-          <div>
-            <p className="label-field">{t.form.closeOutPhoto}</p>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {observation.closeOutPhotos.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={src}
-                  alt={`close-out-${i}`}
-                  className="aspect-square w-full rounded-lg border border-brand-border object-cover"
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        <PhotoSection
+          label={t.form.closeOutPhoto}
+          urls={[...observation.closeOutPhotos, ...linkedPhotos.closeOut]}
+          altPrefix="close-out"
+        />
       </div>
 
       {cancelOpen && (
