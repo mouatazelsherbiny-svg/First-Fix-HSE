@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -9,25 +10,53 @@ interface LandingHeroProps {
       hero image — used by /login and /signup. Omitted on the plain
       landing page ("/"). */
   children?: ReactNode;
+  /** "home" = the landing page's own banner artwork (public/home-hero.jpg,
+      16:9, with the logo, title and slogans printed on it). /login and
+      /signup keep the default photo, which their form card sits on. */
+  variant?: "default" | "home";
 }
 
-export default function LandingHero({ children }: LandingHeroProps) {
+export default function LandingHero({ children, variant = "default" }: LandingHeroProps) {
   const { t } = useLanguage();
+  const isHome = variant === "home";
 
   return (
-    <div className="relative isolate flex min-h-screen w-full flex-col">
+    <div
+      className={`relative isolate flex w-full flex-col ${
+        // The home banner's text runs nearly edge to edge vertically, so on
+        // viewports wider than 16:9 grow to the image's own height (instead of
+        // cropping its top/bottom); never shorter than the screen, as before.
+        isHome ? "min-h-[max(100vh,56.25vw)]" : "min-h-screen"
+      }`}
+    >
       {/* Fills the whole screen: a plain (non-fixed) absolutely
           positioned cover-fit image behind everything. The nav and card
           are real HTML laid on top of it, so cropping this photo never
           breaks anything. This particular photo is dark, so the nav bar
           and card below are styled light/translucent to stay legible
           over it. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/brand/landing-hero-v3.jpg"
-        alt={t.landing.heroTagline}
-        className="absolute inset-0 -z-10 h-full w-full object-cover"
-      />
+      {isHome ? (
+        // Served byte-for-byte (unoptimized) so it is never re-compressed;
+        // quality/sizes only matter if the optimizer is ever re-enabled.
+        <Image
+          src="/home-hero.jpg"
+          alt={t.landing.heroTagline}
+          fill
+          priority
+          unoptimized
+          quality={100}
+          placeholder="empty"
+          sizes="100vw"
+          className="-z-10 object-cover object-center"
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/brand/landing-hero-v3.jpg"
+          alt={t.landing.heroTagline}
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+        />
+      )}
 
       {/* Real, visible nav row, on its own translucent bar rather than
           floating directly on the busy photo — keeps it readable no

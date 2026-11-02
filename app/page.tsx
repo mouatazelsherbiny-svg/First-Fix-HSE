@@ -65,7 +65,7 @@ function LandingPage() {
           LandingHero — see that file for the hotspot overlay details.
           Rendered full-bleed (outside the padded sections below) so it
           spans the page edge to edge. */}
-      <LandingHero />
+      <LandingHero variant="home" />
 
       {/* Feature highlights */}
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-8">

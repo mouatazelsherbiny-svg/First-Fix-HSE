@@ -6,7 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import ExportExcelButton from "@/components/ExportExcelButton";
-import { PhotoThumbPair, useLinkedPhotosForObservations } from "@/components/observations/ObservationPhotos";
+import { PhotoThumbPair, useLinkedPhotosForObservations, type PhotoUrl } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import type { Observation } from "@/types/observation";
@@ -121,6 +121,9 @@ export default function ObservationsPage() {
 }
 
 const PAGE_SIZE = 100;
+
+/** Legacy photo stored on the observation row (data URL) — it is its own thumbnail. */
+const rowPhoto = (photos: string[]): PhotoUrl | undefined => (photos[0] ? { src: photos[0], thumb: photos[0] } : undefined);
 
 function ObservationsList() {
   const { t, locale } = useLanguage();
@@ -301,8 +304,8 @@ function ObservationsList() {
                   </td>
                   <td className="px-3 py-2">
                     <PhotoThumbPair
-                      observationUrl={o.observationPhotos[0] ?? linkedPhotos.get(o.id)?.observation[0]}
-                      closeOutUrl={o.closeOutPhotos[0] ?? linkedPhotos.get(o.id)?.closeOut[0]}
+                      observationPhoto={rowPhoto(o.observationPhotos) ?? linkedPhotos.get(o.id)?.observation[0]}
+                      closeOutPhoto={rowPhoto(o.closeOutPhotos) ?? linkedPhotos.get(o.id)?.closeOut[0]}
                       beforeLabel={t.list.photoBefore}
                       afterLabel={t.list.photoAfter}
                     />

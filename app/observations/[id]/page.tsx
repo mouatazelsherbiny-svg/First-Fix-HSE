@@ -122,7 +122,7 @@ function ObservationDetail() {
 
         <PhotoSection
           label={t.form.observationPhoto}
-          urls={[...observation.observationPhotos, ...linkedPhotos.observation]}
+          urls={[...observation.observationPhotos, ...linkedPhotos.observation.map((p) => p.src)]}
           altPrefix="obs"
         />
       </div>
@@ -147,7 +147,7 @@ function ObservationDetail() {
 
         <PhotoSection
           label={t.form.closeOutPhoto}
-          urls={[...observation.closeOutPhotos, ...linkedPhotos.closeOut]}
+          urls={[...observation.closeOutPhotos, ...linkedPhotos.closeOut.map((p) => p.src)]}
           altPrefix="close-out"
         />
       </div>

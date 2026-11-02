@@ -3,7 +3,9 @@
 /**
  * Photos for observations: the legacy data-URL photos stored on the row plus
  * photos linked through the observation_photos table (private
- * observation-photos bucket, shown via short-lived signed URLs).
+ * observation-photos bucket, shown via short-lived signed URLs). Migrated
+ * photos at sharepoint/<hash>.jpg have a small square thumbnail at
+ * sharepoint-thumbs/<hash>.jpg, signed in the same batch for list views.
  */
 
 import { useEffect, useState } from "react";
@@ -16,10 +18,20 @@ const SIGNED_URL_TTL_SECONDS = 60 * 60;
 // Re-sign a cached URL once it has less than this long left.
 const SIGNED_URL_MIN_REMAINING_MS = 10 * 60 * 1000;
 
-export interface ObservationPhotoUrls {
-  observation: string[];
-  closeOut: string[];
+export interface PhotoUrl {
+  /** Full-size image (viewer, details page). */
+  src: string;
+  /** Small square thumbnail when one exists, otherwise the full-size image. */
+  thumb: string;
 }
+
+export interface ObservationPhotoUrls {
+  observation: PhotoUrl[];
+  closeOut: PhotoUrl[];
+}
+
+const thumbPathFor = (path: string) =>
+  path.startsWith("sharepoint/") ? path.replace("sharepoint/", "sharepoint-thumbs/") : null;
 
 const EMPTY: ObservationPhotoUrls = { observation: [], closeOut: [] };
 
@@ -73,15 +85,23 @@ export function useLinkedPhotosForObservations(observationIds: string[]): Map<st
           .in("observation_id", ids)
           .order("created_at");
         if (error) throw error;
-        const urlByPath = await signPaths(Array.from(new Set((rows ?? []).map((r) => r.storage_path as string))));
+        const paths = new Set<string>();
+        for (const r of rows ?? []) {
+          paths.add(r.storage_path as string);
+          const thumb = thumbPathFor(r.storage_path as string);
+          if (thumb) paths.add(thumb);
+        }
+        const urlByPath = await signPaths(Array.from(paths));
         if (cancelled) return;
 
         const grouped = new Map<string, ObservationPhotoUrls>();
         for (const r of rows ?? []) {
-          const url = urlByPath.get(r.storage_path as string);
-          if (!url) continue;
+          const src = urlByPath.get(r.storage_path as string);
+          if (!src) continue;
+          const thumbPath = thumbPathFor(r.storage_path as string);
+          const thumb = (thumbPath && urlByPath.get(thumbPath)) || src;
           const entry = grouped.get(r.observation_id) ?? { observation: [], closeOut: [] };
-          (r.photo_type === "close_out" ? entry.closeOut : entry.observation).push(url);
+          (r.photo_type === "close_out" ? entry.closeOut : entry.observation).push({ src, thumb });
           grouped.set(r.observation_id, entry);
         }
         setPhotos(grouped);
@@ -142,30 +162,30 @@ export function PhotoSection({ label, urls, altPrefix }: { label: string; urls: 
  * first close-out photo, a placeholder for a missing type, "—" for neither.
  */
 export function PhotoThumbPair({
-  observationUrl,
-  closeOutUrl,
+  observationPhoto,
+  closeOutPhoto,
   beforeLabel,
   afterLabel,
 }: {
-  observationUrl?: string;
-  closeOutUrl?: string;
+  observationPhoto?: PhotoUrl;
+  closeOutPhoto?: PhotoUrl;
   beforeLabel: string;
   afterLabel: string;
 }) {
   const [open, setOpen] = useState<{ src: string; alt: string } | null>(null);
-  if (!observationUrl && !closeOutUrl) return <span className="text-brand-gray">—</span>;
+  if (!observationPhoto && !closeOutPhoto) return <span className="text-brand-gray">—</span>;
 
-  const thumb = (src: string | undefined, label: string) => (
+  const thumb = (photo: PhotoUrl | undefined, label: string) => (
     <div className="flex flex-col items-center gap-0.5">
-      {src ? (
+      {photo ? (
         <button
           type="button"
-          onClick={() => setOpen({ src, alt: label })}
+          onClick={() => setOpen({ src: photo.src, alt: label })}
           title={label}
           className="h-9 w-9 overflow-hidden rounded-md border border-brand-border focus:outline-none focus:ring-2 focus:ring-brand-orange sm:h-11 sm:w-11"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={label} loading="lazy" className="h-full w-full object-cover transition hover:opacity-90" />
+          <img src={photo.thumb} alt={label} loading="lazy" className="h-full w-full object-cover transition hover:opacity-90" />
         </button>
       ) : (
         <div
@@ -182,8 +202,8 @@ export function PhotoThumbPair({
   return (
     <>
       <div className="flex items-start gap-1.5">
-        {thumb(observationUrl, beforeLabel)}
-        {thumb(closeOutUrl, afterLabel)}
+        {thumb(observationPhoto, beforeLabel)}
+        {thumb(closeOutPhoto, afterLabel)}
       </div>
       {open && <PhotoViewer src={open.src} alt={open.alt} onClose={() => setOpen(null)} />}
     </>
