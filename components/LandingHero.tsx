@@ -28,6 +28,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
   return (
     <div
       ref={heroRef}
+      style={isLogin && banner ? { minHeight: banner.total } : undefined}
       className={`relative isolate flex w-full flex-col ${
         // The home banner's text runs nearly edge to edge vertically, so on
         // viewports wider than 16:9 grow to the image's own height (instead of
@@ -124,6 +125,23 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           <Link href="/about" className="hover:text-brand-orange">
             {t.landing.navContact}
           </Link>
+          {/* Temporary: public Generators Report, opened from /login (remove when no longer needed). */}
+          {isLogin && (
+            <>
+              <span className="text-white/40">–</span>
+              <a
+                href="/generators-report"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-orange px-3 py-0.5 font-semibold text-white transition hover:brightness-110"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+                  <path d="M4 20V14M10 20V9M16 20V12M22 20V4" />
+                </svg>
+                Generators Report
+              </a>
+            </>
+          )}
           {/* /login has these inside its card already. */}
           {!isLogin && (
             <>
@@ -176,6 +194,8 @@ interface BannerLayout {
   offY: number;
   width: number;
   height: number;
+  /** Height the hero needs so the whole banner shows (>= the screen). */
+  total: number;
 }
 
 /**
@@ -203,16 +223,20 @@ function useBannerLayout(
       const avail = h - top;
       let s: number, offX: number, offY: number;
       if (w >= 640) {
-        s = Math.min(w / BANNER_W, avail / BANNER_H);
+        // Fill the screen edge to edge: at least the full width (the page
+        // grows to the image's height if needed, so its top and bottom are
+        // never cropped), and at least the full height on tall windows
+        // (cropping only the sides there).
+        s = Math.max(w / BANNER_W, avail / BANNER_H);
         offX = (w - BANNER_W * s) / 2;
-        offY = top + (avail - BANNER_H * s) / 2;
+        offY = top;
       } else {
         s = Math.max(w / BANNER_W, avail / BANNER_H);
         const gapCentre = (GAP_LEFT + GAP_RIGHT) / 2;
         offX = Math.min(0, Math.max(w - BANNER_W * s, w / 2 - gapCentre * s));
         offY = top + (avail - BANNER_H * s) / 2;
       }
-      setLayout({ s, offX, offY, width: w, height: h });
+      setLayout({ s, offX, offY, width: w, height: h, total: Math.max(h, offY + BANNER_H * s) });
     };
 
     update();
