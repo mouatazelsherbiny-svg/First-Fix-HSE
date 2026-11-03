@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, RefObject, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -11,26 +11,29 @@ interface LandingHeroProps {
       landing page ("/"). */
   children?: ReactNode;
   /** "home" = the banner artwork (public/home-hero.jpg, 16:9, with the
-      logo, title and slogans printed on it), used by "/" and /login.
+      logo, title and slogans printed on it) on "/"; "login" = the same
+      banner with the sign-in card centred in its empty middle area.
       /signup keeps the default photo. */
-  variant?: "default" | "home";
+  variant?: "default" | "home" | "login";
 }
 
 export default function LandingHero({ children, variant = "default" }: LandingHeroProps) {
   const { t } = useLanguage();
-  const isHome = variant === "home";
-  // Extra height requested by BannerCard on screens too small for the card.
-  const [cardMinHeight, setCardMinHeight] = useState<number | undefined>();
+  const isBanner = variant === "home" || variant === "login";
+  const heroRef = useRef<HTMLDivElement>(null);
+  const banner = useBannerLayout(heroRef, variant === "login");
 
   return (
     <div
+      ref={heroRef}
       className={`relative isolate flex w-full flex-col ${
         // The home banner's text runs nearly edge to edge vertically, so on
         // viewports wider than 16:9 grow to the image's own height (instead of
         // cropping its top/bottom); never shorter than the screen, as before.
-        isHome ? "min-h-[max(100vh,56.25vw)]" : "min-h-screen"
+        // /login computes its own height (see useBannerLayout).
+        variant === "home" ? "min-h-[max(100vh,56.25vw)]" : "min-h-screen"
       }`}
-      style={cardMinHeight ? { minHeight: cardMinHeight } : undefined}
+      style={banner?.minHeight ? { minHeight: banner.minHeight } : undefined}
     >
       {/* Fills the whole screen: a plain (non-fixed) absolutely
           positioned cover-fit image behind everything. The nav and card
@@ -38,7 +41,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           breaks anything. This particular photo is dark, so the nav bar
           and card below are styled light/translucent to stay legible
           over it. */}
-      {isHome ? (
+      {isBanner ? (
         // Served byte-for-byte (unoptimized) so it is never re-compressed;
         // quality/sizes only matter if the optimizer is ever re-enabled.
         <Image
@@ -51,6 +54,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           placeholder="empty"
           sizes="100vw"
           className="-z-10 object-cover object-center"
+          style={banner ? { objectPosition: banner.objectPosition } : undefined}
         />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
@@ -97,12 +101,12 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
         </nav>
       </div>
 
-      {children && isHome && <BannerCard onMinHeight={setCardMinHeight}>{children}</BannerCard>}
+      {children && variant === "login" && <CenteredCard layout={banner}>{children}</CenteredCard>}
 
       {/* See-through card, pinned to the lower-right corner (under the
           right-hand vest in this photo), sized to stay clear of the top
           nav bar and comfortably fit without needing to scroll. */}
-      {children && !isHome && (
+      {children && variant === "default" && (
         <div className="absolute bottom-5 right-4 w-[calc(100%-2rem)] max-w-sm sm:bottom-10 sm:right-10 sm:w-full">
           {children}
         </div>
@@ -111,126 +115,137 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
   );
 }
 
-// Layout of public/home-hero.jpg, in the image's own pixels (1600x900):
-// where its printed text is, so the sign-in card can stay clear of it.
+// Layout of public/home-hero.jpg, in the image's own pixels (1600x900).
 const BANNER_W = 1600;
 const BANNER_H = 900;
-const TITLE_LEFT = 505; // "HSE DEPARTMENT" spans x 505–1200 …
-const TITLE_RIGHT = 1200;
-const TITLE_BOTTOM = 300; // … and ends at y≈297
-const SLOGANS_TOP = 705; // slogan frame starts at y≈700
-const RIGHT_GROUP_X = 1215; // centre of the right-hand group of workers
-const CARD_MAX_W = 384;
-const CARD_MIN_W = 300;
-const EDGE = 16;
-const GAP = 12;
-const MIN_SCALE = 0.8; // below this the hero grows taller instead of shrinking the card further
+// Empty middle area: below the "HSE DEPARTMENT" title, above the slogan
+// frame, between the meeting-table group (left) and the circle of workers
+// (right).
+const GAP_LEFT = 615;
+const GAP_RIGHT = 1035;
+const GAP_TOP = 300;
+const GAP_BOTTOM = 698;
+// On screens wider than 16:9 the image is cropped vertically: first the strip
+// above the logo (behind the nav bar anyway), then from the bottom — below the
+// tagline, then the tagline itself — but never into the slogans (which end,
+// frame line included, at y≈838). Past that the hero grows taller instead.
+const SAFE_TOP = 30;
+const SAFE_BOTTOM = 838;
 
-type Rect = { left: number; top: number; width: number; height: number };
+const CARD_MAX_W = 380;
+const MARGIN = 8; // between the card and the artwork around the gap
+const MOBILE_EDGE = 16;
+const MOBILE_TOP = 96; // below the (wrapped) nav bar and language toggle
+
+interface BannerLayout {
+  /** Cover-fit scale and the image's offset inside the hero, in px. */
+  s: number;
+  offX: number;
+  offY: number;
+  width: number;
+  height: number;
+  objectPosition: string;
+  minHeight?: number;
+}
 
 /**
- * Places the sign-in card where it covers none of the banner's logo, title or
- * slogans: the column left or right of the title, or the band between title
- * and slogans — whichever fits the card best at the current screen size.
- * Positions follow the image's cover-fit scaling. If even the best spot is
- * too small the card is scaled down (purely visual — the form is untouched),
- * and below MIN_SCALE the hero is made taller so the card stays readable.
+ * Cover-fit geometry for the banner on /login: positioned so its empty middle
+ * area sits at the centre of the screen (screens narrower than 16:9 crop the
+ * sides) and so the title and slogans stay on screen (wider than 16:9 crop
+ * top/bottom). Returns null until measured, and for other variants.
  */
-function BannerCard({ children, onMinHeight }: { children: ReactNode; onMinHeight: (px: number | undefined) => void }) {
-  const boxRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [layout, setLayout] = useState<(Rect & { scale: number }) | null>(null);
+function useBannerLayout(heroRef: RefObject<HTMLDivElement>, enabled: boolean): BannerLayout | null {
+  const [layout, setLayout] = useState<BannerLayout | null>(null);
 
   useLayoutEffect(() => {
-    const hero = boxRef.current?.parentElement;
-    const card = cardRef.current;
-    if (!hero || !card) return;
-    const nav = hero.querySelector("nav")?.parentElement;
-
-    const place = (w: number, h: number, cardH: number) => {
-      // object-cover + object-center, same as the <Image> above.
-      const s = Math.max(w / BANNER_W, h / BANNER_H);
-      const offX = (w - BANNER_W * s) / 2;
-      const offY = (h - BANNER_H * s) / 2;
-      const X = (x: number) => offX + x * s;
-      const Y = (y: number) => offY + y * s;
-      // Below the nav bar and the fixed language toggle (top-right, ~60px).
-      const top = Math.max((nav?.offsetHeight ?? 44) + GAP, 64);
-      const bottom = Y(SLOGANS_TOP) - GAP;
-
-      const spots: Rect[] = [
-        // Left of the title, over the meeting-table group.
-        { left: EDGE, top, width: X(TITLE_LEFT) - GAP - EDGE, height: bottom - top },
-        // Right of the title.
-        { left: X(TITLE_RIGHT) + GAP, top, width: w - EDGE - (X(TITLE_RIGHT) + GAP), height: bottom - top },
-        // Band between the title and the slogans, over the right-hand group
-        // (centred on narrow screens).
-        (() => {
-          const bandTop = Math.max(top, Y(TITLE_BOTTOM) + GAP);
-          const width = Math.min(CARD_MAX_W, w - 2 * EDGE);
-          const left = w < 640 ? (w - width) / 2 : Math.min(Math.max(EDGE, X(RIGHT_GROUP_X) - width / 2), w - width - EDGE);
-          return { left, top: bandTop, width, height: bottom - bandTop };
-        })(),
-      ];
-
-      let best: (Rect & { scale: number }) | null = null;
-      for (const spot of spots) {
-        if (spot.width <= 0 || spot.height <= 0) continue;
-        const width = Math.min(CARD_MAX_W, Math.max(CARD_MIN_W, spot.width));
-        const scale = Math.min(1, spot.width / width, spot.height / cardH);
-        if (!best || scale > best.scale + 0.01) best = { ...spot, width, scale };
-      }
-      return best;
-    };
+    const hero = heroRef.current;
+    if (!enabled || !hero) return;
 
     const update = () => {
       const w = hero.clientWidth;
-      // The hero's own minimum height (CSS: max(100vh, 56.25vw)), ignoring any
-      // extra height this component asked for earlier.
-      const baseH = Math.max(window.innerHeight, w * 0.5625);
-      const cardH = card.offsetHeight;
-      let h = baseH;
-      let best = place(w, h, cardH);
-      // Too cramped: grow the hero (and with it the cover-fit image) until the
-      // card fits at MIN_SCALE.
-      for (let i = 0; i < 40 && best && best.scale < MIN_SCALE; i++) {
-        h += 20;
-        best = place(w, h, cardH);
-      }
-      onMinHeight(h > baseH ? Math.ceil(h) : undefined);
-      if (best) {
-        // Centre the (possibly narrower) card inside the chosen spot.
-        setLayout(best);
-      }
+      // At least the screen, and tall enough to show SAFE_TOP..SAFE_BOTTOM
+      // when the image is scaled to the full width.
+      // (A few px of tolerance: cropping a sliver of the frame line beats a 1px scroll.)
+      const needed = ((SAFE_BOTTOM - SAFE_TOP) * w) / BANNER_W;
+      const h = needed > window.innerHeight + 3 ? Math.ceil(needed) : window.innerHeight;
+      const s = Math.max(w / BANNER_W, h / BANNER_H);
+
+      // Horizontal: put the gap's centre at the screen centre when the sides are cropped.
+      const spareX = w - BANNER_W * s; // <= 0
+      const gapCentre = (GAP_LEFT + GAP_RIGHT) / 2;
+      const offX = spareX < -0.5 ? Math.min(0, Math.max(spareX, w / 2 - gapCentre * s)) : spareX / 2;
+      // Vertical: crop the top strip first, the rest from the bottom.
+      const spareY = h - BANNER_H * s; // <= 0
+      const offY = spareY < -0.5 ? -Math.min(-spareY / s, SAFE_TOP) * s : spareY / 2;
+
+      const px = spareX < -0.5 ? (offX / spareX) * 100 : 50;
+      const py = spareY < -0.5 ? (offY / spareY) * 100 : 50;
+      setLayout({
+        s,
+        offX,
+        offY,
+        width: w,
+        height: h,
+        objectPosition: `${px.toFixed(3)}% ${py.toFixed(3)}%`,
+        minHeight: h > window.innerHeight ? h : undefined,
+      });
     };
 
     update();
-    const ro = new ResizeObserver(update);
-    ro.observe(card); // card height changes (login / forgot-password / errors)
     window.addEventListener("resize", update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, [onMinHeight]);
+    return () => window.removeEventListener("resize", update);
+  }, [heroRef, enabled]);
+
+  return enabled ? layout : null;
+}
+
+/**
+ * The sign-in card, centred in the banner's empty middle area (desktop) or
+ * centred full-width with side margins (mobile). If the gap is ever shorter
+ * than the card it is scaled down to fit — purely visual, the form inside is
+ * untouched.
+ */
+function CenteredCard({ layout, children }: { layout: BannerLayout | null; children: ReactNode }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardH, setCardH] = useState(0);
+
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const ro = new ResizeObserver(() => setCardH(card.offsetHeight));
+    ro.observe(card); // login / forgot-password / error message change its height
+    setCardH(card.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  let box: { left: number; top: number; width: number; height: number; scale: number } | null = null;
+  if (layout) {
+    const { s, offX, offY, width: w, height: h } = layout;
+    const X = (x: number) => offX + x * s;
+    const Y = (y: number) => offY + y * s;
+    if (w < 640) {
+      // Mobile: centred, full width with side margins, vertically centred
+      // below the nav bar; covering parts of the artwork is fine here.
+      box = { left: MOBILE_EDGE, top: MOBILE_TOP, width: w - 2 * MOBILE_EDGE, height: h - MOBILE_TOP - MOBILE_EDGE, scale: 1 };
+    } else {
+      const width = Math.min(CARD_MAX_W, X(GAP_RIGHT) - X(GAP_LEFT) - 2 * MARGIN);
+      // Centred on screen, nudged only as far as needed to stay inside the gap.
+      const left = Math.min(Math.max(w / 2 - width / 2, X(GAP_LEFT) + MARGIN), X(GAP_RIGHT) - MARGIN - width);
+      const top = Y(GAP_TOP) + MARGIN;
+      const height = Y(GAP_BOTTOM) - MARGIN - top;
+      box = { left, top, width, height, scale: cardH ? Math.min(1, height / cardH) : 1 };
+    }
+  }
 
   return (
     <div
-      ref={boxRef}
       className="absolute flex items-center justify-center"
-      style={
-        layout
-          ? { left: layout.left, top: layout.top, width: Math.max(layout.width, 0), height: layout.height }
-          : { left: 0, top: 0, width: CARD_MAX_W, visibility: "hidden" }
-      }
+      style={box ? { left: box.left, top: box.top, width: box.width, height: box.height } : { visibility: "hidden" }}
     >
       <div
         ref={cardRef}
-        className="shrink-0"
-        style={{
-          width: layout ? Math.min(CARD_MAX_W, Math.max(CARD_MIN_W, layout.width)) : CARD_MAX_W,
-          transform: layout && layout.scale < 1 ? `scale(${layout.scale})` : undefined,
-        }}
+        className="w-full shrink-0"
+        style={{ transform: box && box.scale < 1 ? `scale(${box.scale})` : undefined }}
       >
         {children}
       </div>

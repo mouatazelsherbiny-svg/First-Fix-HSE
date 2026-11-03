@@ -9,14 +9,15 @@ import { supabase } from "@/lib/supabaseClient";
 import LanguageToggle from "@/components/LanguageToggle";
 import LandingHero from "@/components/LandingHero";
 
-// This page's hero photo (public/brand/landing-hero-v3.jpg) is dark, so
-// the card below uses light/translucent "glass" styling (white text,
-// faint white borders/fills) instead of the app's normal light .card —
-// see the shared globals.css comment on .input-field-glass for the same
-// pattern used on /signup and /reset-password.
+// The card sits on the dark home banner (public/home-hero.jpg), so it uses
+// translucent dark "glass" styling (white text, faint white borders/fills)
+// instead of the app's normal light .card — see the shared globals.css
+// comment on .input-field-glass for the same pattern on /signup and
+// /reset-password. Compact sizing so it fits the banner's empty middle area
+// between the title and the slogans (see components/LandingHero).
 const glassInput =
-  "w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
-const glassLabel = "mb-1.5 block text-sm font-medium text-white/90";
+  "w-full rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/50 focus:border-white focus:bg-white/20 focus:ring-2 focus:ring-white/30";
+const glassLabel = "mb-1 block text-xs font-medium text-white/90";
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth();
@@ -85,16 +86,16 @@ export default function LoginPage() {
       </div>
 
       {/* Hero (the same banner as "/") with a real, visible nav row and
-          the see-through sign-in card placed in the banner's free band,
-          clear of its logo, title and slogans — see components/LandingHero. */}
-      <LandingHero variant="home">
-        <div className="rounded-2xl border border-white/15 bg-neutral-800/50 p-5 text-sm shadow-cardHover backdrop-blur-xl">
+          the see-through sign-in card centred in the banner's empty middle
+          area, clear of its title and slogans — see components/LandingHero. */}
+      <LandingHero variant="login">
+        <div className="rounded-2xl border border-white/20 bg-neutral-900/45 px-4 py-3.5 text-sm shadow-cardHover backdrop-blur-md">
           {mode === "login" ? (
             <>
-              <h1 className="text-xl font-bold text-white">{t.login.title}</h1>
-              <p className="mt-1 text-sm text-white/80">{t.login.subtitle}</p>
+              <h1 className="text-lg font-bold leading-tight text-white">{t.login.title}</h1>
+              <p className="mt-0.5 text-xs text-white/80">{t.login.subtitle}</p>
 
-              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
                 <div>
                   <label htmlFor="email" className={glassLabel}>
                     {t.login.email}
@@ -133,11 +134,11 @@ export default function LoginPage() {
                   </p>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                   <label className="flex items-center gap-2 text-white/90">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-white/50 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
+                      className="h-3.5 w-3.5 rounded border-white/50 bg-white/10 text-brand-orange focus:ring-brand-orange/40"
                     />
                     {t.login.rememberMe}
                   </label>
@@ -150,28 +151,28 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn-primary w-full">
+                <button type="submit" disabled={submitting} className="btn-primary w-full !py-2">
                   {submitting ? t.login.submitting : t.login.submit}
                 </button>
               </form>
 
-              <p className="mt-4 text-center text-sm text-white/80">
+              <p className="mt-2.5 text-center text-xs text-white/80">
                 {t.login.noAccount}{" "}
                 <Link href="/signup" className="font-semibold text-brand-orange hover:underline">
                   {t.login.signUpLink}
                 </Link>
               </p>
 
-              <p className="mt-4 text-center text-xs font-medium text-white/70">
+              <p className="mt-1.5 text-center text-[11px] font-medium text-white/70">
                 {t.login.footer}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-white">{t.login.forgotTitle}</h1>
-              <p className="mt-1 text-sm text-white/80">{t.login.forgotSubtitle}</p>
+              <h1 className="text-lg font-bold leading-tight text-white">{t.login.forgotTitle}</h1>
+              <p className="mt-0.5 text-xs text-white/80">{t.login.forgotSubtitle}</p>
 
-              <form onSubmit={handleForgotSubmit} className="mt-5 space-y-4">
+              <form onSubmit={handleForgotSubmit} className="mt-3 space-y-2.5">
                 <div>
                   <label htmlFor="forgot-email" className={glassLabel}>
                     {t.login.email}
@@ -199,14 +200,14 @@ export default function LoginPage() {
                   </p>
                 )}
 
-                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full">
+                <button type="submit" disabled={forgotSubmitting} className="btn-primary w-full !py-2">
                   {forgotSubmitting ? t.login.forgotSubmitting : t.login.forgotSubmit}
                 </button>
 
                 <button
                   type="button"
                   onClick={backToLogin}
-                  className="w-full text-center text-sm font-medium text-white/80 hover:text-white hover:underline"
+                  className="w-full text-center text-xs font-medium text-white/80 hover:text-white hover:underline"
                 >
                   {t.login.backToLogin}
                 </button>
