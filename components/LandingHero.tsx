@@ -21,7 +21,9 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
   const { t } = useLanguage();
   const isBanner = variant === "home" || variant === "login";
   const heroRef = useRef<HTMLDivElement>(null);
-  const banner = useBannerLayout(heroRef, variant === "login");
+  const navRef = useRef<HTMLDivElement>(null);
+  const isLogin = variant === "login";
+  const banner = useBannerLayout(heroRef, navRef, isLogin);
 
   return (
     <div
@@ -33,7 +35,6 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
         // /login computes its own height (see useBannerLayout).
         variant === "home" ? "min-h-[max(100vh,56.25vw)]" : "min-h-screen"
       }`}
-      style={banner?.minHeight ? { minHeight: banner.minHeight } : undefined}
     >
       {/* Fills the whole screen: a plain (non-fixed) absolutely
           positioned cover-fit image behind everything. The nav and card
@@ -41,7 +42,41 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           breaks anything. This particular photo is dark, so the nav bar
           and card below are styled light/translucent to stay legible
           over it. */}
-      {isBanner ? (
+      {isLogin ? (
+        // /login shows the whole banner, never cropped: fitted inside the
+        // screen below the nav bar, with a blurred copy of it filling any
+        // leftover space around it.
+        <>
+          <div className="absolute inset-0 -z-20 bg-black" />
+          <Image
+            src="/home-hero.jpg"
+            alt=""
+            aria-hidden
+            fill
+            unoptimized
+            sizes="100vw"
+            className="-z-20 scale-110 object-cover opacity-40 blur-2xl"
+          />
+          {banner && (
+            <div
+              className="absolute -z-10"
+              style={{ left: banner.offX, top: banner.offY, width: BANNER_W * banner.s, height: BANNER_H * banner.s }}
+            >
+              <Image
+                src="/home-hero.jpg"
+                alt={t.landing.heroTagline}
+                fill
+                priority
+                unoptimized
+                quality={100}
+                placeholder="empty"
+                sizes="100vw"
+                className="object-cover"
+              />
+            </div>
+          )}
+        </>
+      ) : isBanner ? (
         // Served byte-for-byte (unoptimized) so it is never re-compressed;
         // quality/sizes only matter if the optimizer is ever re-enabled.
         <Image
@@ -54,7 +89,6 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           placeholder="empty"
           sizes="100vw"
           className="-z-10 object-cover object-center"
-          style={banner ? { objectPosition: banner.objectPosition } : undefined}
         />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
@@ -74,7 +108,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           building a separate Contact page — Home/HSE KPI's are still
           placeholders for pages that aren't built yet, so they carry no
           command. */}
-      <div className="bg-black/35 backdrop-blur-sm">
+      <div ref={navRef} className="bg-black/35 backdrop-blur-sm">
         <nav
           aria-label="Primary"
           className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 px-3 py-3 text-center text-sm font-medium text-white/90"
@@ -90,14 +124,19 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           <Link href="/about" className="hover:text-brand-orange">
             {t.landing.navContact}
           </Link>
-          <span className="text-white/40">–</span>
-          <Link href="/login" className="font-semibold text-white hover:text-brand-orange">
-            {t.landing.ctaLogin}
-          </Link>
-          <span className="text-white/40">–</span>
-          <Link href="/signup" className="font-semibold text-white hover:text-brand-orange">
-            {t.landing.ctaSignup}
-          </Link>
+          {/* /login has these inside its card already. */}
+          {!isLogin && (
+            <>
+              <span className="text-white/40">–</span>
+              <Link href="/login" className="font-semibold text-white hover:text-brand-orange">
+                {t.landing.ctaLogin}
+              </Link>
+              <span className="text-white/40">–</span>
+              <Link href="/signup" className="font-semibold text-white hover:text-brand-orange">
+                {t.landing.ctaSignup}
+              </Link>
+            </>
+          )}
         </nav>
       </div>
 
@@ -125,36 +164,32 @@ const GAP_LEFT = 615;
 const GAP_RIGHT = 1035;
 const GAP_TOP = 300;
 const GAP_BOTTOM = 698;
-// On screens wider than 16:9 the image is cropped vertically: first the strip
-// above the logo (behind the nav bar anyway), then from the bottom — below the
-// tagline, then the tagline itself — but never into the slogans (which end,
-// frame line included, at y≈838). Past that the hero grows taller instead.
-const SAFE_TOP = 30;
-const SAFE_BOTTOM = 838;
-
 const CARD_MAX_W = 380;
 const MARGIN = 8; // between the card and the artwork around the gap
 const MOBILE_EDGE = 16;
 const MOBILE_TOP = 96; // below the (wrapped) nav bar and language toggle
 
 interface BannerLayout {
-  /** Cover-fit scale and the image's offset inside the hero, in px. */
+  /** Scale of the banner and its top-left corner inside the hero, in px. */
   s: number;
   offX: number;
   offY: number;
   width: number;
   height: number;
-  objectPosition: string;
-  minHeight?: number;
 }
 
 /**
- * Cover-fit geometry for the banner on /login: positioned so its empty middle
- * area sits at the centre of the screen (screens narrower than 16:9 crop the
- * sides) and so the title and slogans stay on screen (wider than 16:9 crop
- * top/bottom). Returns null until measured, and for other variants.
+ * Geometry for the banner on /login. Desktop: the whole image, fitted
+ * (contain) into the screen below the nav bar and centred, so nothing is ever
+ * cropped. Mobile (< 640px): too narrow for that, so it covers the screen
+ * below the nav bar with the empty middle area centred, as before.
+ * Returns null until measured, and for other variants.
  */
-function useBannerLayout(heroRef: RefObject<HTMLDivElement>, enabled: boolean): BannerLayout | null {
+function useBannerLayout(
+  heroRef: RefObject<HTMLDivElement>,
+  navRef: RefObject<HTMLDivElement>,
+  enabled: boolean
+): BannerLayout | null {
   const [layout, setLayout] = useState<BannerLayout | null>(null);
 
   useLayoutEffect(() => {
@@ -163,38 +198,32 @@ function useBannerLayout(heroRef: RefObject<HTMLDivElement>, enabled: boolean): 
 
     const update = () => {
       const w = hero.clientWidth;
-      // At least the screen, and tall enough to show SAFE_TOP..SAFE_BOTTOM
-      // when the image is scaled to the full width.
-      // (A few px of tolerance: cropping a sliver of the frame line beats a 1px scroll.)
-      const needed = ((SAFE_BOTTOM - SAFE_TOP) * w) / BANNER_W;
-      const h = needed > window.innerHeight + 3 ? Math.ceil(needed) : window.innerHeight;
-      const s = Math.max(w / BANNER_W, h / BANNER_H);
-
-      // Horizontal: put the gap's centre at the screen centre when the sides are cropped.
-      const spareX = w - BANNER_W * s; // <= 0
-      const gapCentre = (GAP_LEFT + GAP_RIGHT) / 2;
-      const offX = spareX < -0.5 ? Math.min(0, Math.max(spareX, w / 2 - gapCentre * s)) : spareX / 2;
-      // Vertical: crop the top strip first, the rest from the bottom.
-      const spareY = h - BANNER_H * s; // <= 0
-      const offY = spareY < -0.5 ? -Math.min(-spareY / s, SAFE_TOP) * s : spareY / 2;
-
-      const px = spareX < -0.5 ? (offX / spareX) * 100 : 50;
-      const py = spareY < -0.5 ? (offY / spareY) * 100 : 50;
-      setLayout({
-        s,
-        offX,
-        offY,
-        width: w,
-        height: h,
-        objectPosition: `${px.toFixed(3)}% ${py.toFixed(3)}%`,
-        minHeight: h > window.innerHeight ? h : undefined,
-      });
+      const h = window.innerHeight;
+      const top = navRef.current?.offsetHeight ?? 0;
+      const avail = h - top;
+      let s: number, offX: number, offY: number;
+      if (w >= 640) {
+        s = Math.min(w / BANNER_W, avail / BANNER_H);
+        offX = (w - BANNER_W * s) / 2;
+        offY = top + (avail - BANNER_H * s) / 2;
+      } else {
+        s = Math.max(w / BANNER_W, avail / BANNER_H);
+        const gapCentre = (GAP_LEFT + GAP_RIGHT) / 2;
+        offX = Math.min(0, Math.max(w - BANNER_W * s, w / 2 - gapCentre * s));
+        offY = top + (avail - BANNER_H * s) / 2;
+      }
+      setLayout({ s, offX, offY, width: w, height: h });
     };
 
     update();
+    const ro = new ResizeObserver(update);
+    if (navRef.current) ro.observe(navRef.current);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [heroRef, enabled]);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [heroRef, navRef, enabled]);
 
   return enabled ? layout : null;
 }
