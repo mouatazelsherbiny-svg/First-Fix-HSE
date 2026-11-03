@@ -1,37 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Montserrat } from "next/font/google";
 import {
-  Activity,
-  Ambulance,
-  Bandage,
   BicepsFlexed,
-  Bone,
-  Brain,
   BriefcaseMedical,
-  ClipboardPlus,
-  Footprints,
+  ChevronDown,
   Hand,
+  HardHat,
   HeartPulse,
-  ShieldX,
-  UserRound,
+  Plus,
+  Search,
+  Stethoscope,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { BrandMark } from "@/components/Sidebar";
+import BodyFigure from "@/components/injury/BodyFigure";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
-import { BODY_REGIONS, normalizeBodyPart } from "@/lib/bodyParts";
+import { BODY_GROUP_IDS, bodyGroupOf, type BodyGroupId } from "@/lib/bodyParts";
 import type { Incident } from "@/types/incident";
+
+// The reference design's geometric sans; Arabic falls back to the app font.
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
 
 export default function InjuryPage() {
   return (
@@ -41,320 +35,489 @@ export default function InjuryPage() {
   );
 }
 
-const ACCENT = "rgb(var(--brand-orange-rgb))";
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const ORANGE = "#f36f24";
+const ORANGE_HI = "#ff8a3d";
+const ALL = "all";
+const TOP_PROJECTS = 8;
 
-const CARDS: { key: string; label: string; title: string; icon: LucideIcon; color: string; match: string[] }[] = [
-  { key: "lti", label: "LTI", title: "Lost Time Injury", icon: ShieldX, color: "#dc2626", match: ["Lost Time Incident", "Lost Time Injury", "LTI"] },
-  { key: "rwc", label: "RWC", title: "Restricted Work Case", icon: BriefcaseMedical, color: "#ea580c", match: ["Restricted Work Case", "RWC"] },
-  { key: "mtc", label: "MTC", title: "Medical Treatment Case", icon: Ambulance, color: "#d97706", match: ["Medical Treatment Case", "MTC"] },
-  { key: "fac", label: "FAC", title: "First Aid Case", icon: Bandage, color: "#16a34a", match: ["First Aid Case", "FAC"] },
+type KpiKey = "lti" | "rwc" | "mtc" | "fac";
+const KPIS: { key: KpiKey; label: string; icon: LucideIcon; match: string[] }[] = [
+  { key: "lti", label: "LTI", icon: HardHat, match: ["Lost Time Incident", "Lost Time Injury", "LTI"] },
+  { key: "rwc", label: "RWC", icon: BriefcaseMedical, match: ["Restricted Work Case", "RWC"] },
+  { key: "mtc", label: "MTC", icon: Stethoscope, match: ["Medical Treatment Case", "MTC"] },
+  { key: "fac", label: "FAC", icon: UsersRound, match: ["First Aid Case", "FAC"] },
 ];
 
-/** The detailed body regions (lib/bodyParts.ts) rolled up into the list beside the diagram. */
-const BODY_GROUPS: { label: string; icon: LucideIcon; regions: string[] }[] = [
-  { label: "Head", icon: Brain, regions: ["head", "face"] },
-  { label: "Neck", icon: UserRound, regions: ["neck"] },
-  { label: "Chest", icon: HeartPulse, regions: ["chest", "back", "torso"] },
-  { label: "Arm", icon: BicepsFlexed, regions: ["shoulder", "arm", "elbow", "forearm"] },
-  { label: "Hand", icon: Hand, regions: ["wrist", "hand", "finger"] },
-  { label: "Legs", icon: Bone, regions: ["hip", "leg", "shin"] },
-  { label: "Knees", icon: Bone, regions: ["knee"] },
-  { label: "Feet", icon: Footprints, regions: ["foot"] },
-];
-
+// The classification decides the KPI; the category is the fallback when the
+// classification is empty (both come from the FICC import).
 const norm = (v: string | null | undefined) => (v ?? "").trim().toLowerCase();
-const matches = (i: Incident, list: string[]) =>
-  list.some((m) => [norm(i.incidentCategory), norm(i.classification)].includes(m.toLowerCase()));
+const kpiOf = (i: Incident): KpiKey | null => {
+  const c = norm(i.classification) || norm(i.incidentCategory);
+  return KPIS.find((k) => k.match.some((m) => m.toLowerCase() === c))?.key ?? null;
+};
+const dateOf = (i: Incident) => {
+  const d = i.incidentDate ? new Date(i.incidentDate) : null;
+  return d && !Number.isNaN(d.getTime()) ? d : null;
+};
 
 function InjuryOverview() {
   const { t, locale } = useLanguage();
+  const b = t.injury.board;
   const { incidents, isLoading } = useIncidents();
   const [query, setQuery] = useState("");
-  const [year, setYear] = useState<number | null>(null);
+  const [year, setYear] = useState<string | null>(null);
 
   const injuries = useMemo(() => incidents.filter((i) => i.recordType === "Injury"), [incidents]);
 
+  // Years with injuries, newest first; the page opens on the latest one.
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    injuries.forEach((i) => {
+      const d = dateOf(i);
+      if (d) set.add(d.getFullYear());
+    });
+    return Array.from(set).sort((a, c) => c - a);
+  }, [injuries]);
+
+  useEffect(() => {
+    // Wait for the data, otherwise the page would settle on "All years".
+    if (isLoading || years.length === 0) return;
+    if (year === null || (year !== ALL && !years.includes(Number(year)))) setYear(String(years[0]));
+  }, [years, year, isLoading]);
+
+  // Year + search filter the whole page.
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return injuries;
-    return injuries.filter(
-      (i) =>
+    return injuries.filter((i) => {
+      if (year && year !== ALL && dateOf(i)?.getFullYear() !== Number(year)) return false;
+      if (!q) return true;
+      return (
         i.projectName.toLowerCase().includes(q) ||
         String(i.incidentNumber ?? "").includes(q) ||
         (i.bodyPart ?? "").toLowerCase().includes(q)
-    );
-  }, [injuries, query]);
-
-  // Years that have injuries, newest first; the month chart defaults to the latest.
-  const years = useMemo(() => {
-    const set = new Set<number>();
-    filtered.forEach((i) => {
-      const d = i.incidentDate ? new Date(i.incidentDate) : null;
-      if (d && !Number.isNaN(d.getTime())) set.add(d.getFullYear());
+      );
     });
-    return Array.from(set).sort((a, b) => b - a);
-  }, [filtered]);
+  }, [injuries, year, query]);
 
-  useEffect(() => {
-    if (year === null || !years.includes(year)) setYear(years[0] ?? new Date().getFullYear());
-  }, [years, year]);
+  // Months shown: the whole year for past years / all years; for the current
+  // year, up to the latest month with an injury (later months aren't over or
+  // haven't been imported yet).
+  const monthCount = useMemo(() => {
+    if (!year || year === ALL || Number(year) !== new Date().getFullYear()) return 12;
+    const last = Math.max(-1, ...injuries.map((i) => dateOf(i)).filter((d): d is Date => d?.getFullYear() === Number(year)).map((d) => d.getMonth()));
+    return Math.max(1, last + 1);
+  }, [year, injuries]);
 
   const stats = useMemo(() => {
-    const cards = CARDS.map((c) => ({ ...c, value: filtered.filter((i) => matches(i, c.match)).length }));
+    const months = Array.from({ length: monthCount }, () => 0);
+    const kpiMonths: Record<KpiKey, number[]> = {
+      lti: Array(monthCount).fill(0),
+      rwc: Array(monthCount).fill(0),
+      mtc: Array(monthCount).fill(0),
+      fac: Array(monthCount).fill(0),
+    };
+    const kpis: Record<KpiKey, number> = { lti: 0, rwc: 0, mtc: 0, fac: 0 };
+    const groups = Object.fromEntries(BODY_GROUP_IDS.map((g) => [g, 0])) as Record<BodyGroupId, number>;
+    const projects = new Map<string, number>();
+    let noBodyPart = 0;
 
-    const byMonth = MONTHS.map((m) => ({ name: m, value: 0 }));
     filtered.forEach((i) => {
-      const d = i.incidentDate ? new Date(i.incidentDate) : null;
-      if (d && !Number.isNaN(d.getTime()) && d.getFullYear() === year) byMonth[d.getMonth()].value += 1;
+      const m = dateOf(i)?.getMonth();
+      const k = kpiOf(i);
+      if (k) kpis[k] += 1;
+      if (m !== undefined && m < monthCount) {
+        months[m] += 1;
+        if (k) kpiMonths[k][m] += 1;
+      }
+      const g = bodyGroupOf(i.bodyPart);
+      if (g) groups[g] += 1;
+      else noBodyPart += 1;
+      const p = i.projectName?.trim() || "—";
+      projects.set(p, (projects.get(p) ?? 0) + 1);
     });
 
-    const projectMap = new Map<string, number>();
-    filtered.forEach((i) => {
-      const p = i.projectName?.trim() || "Not specified";
-      projectMap.set(p, (projectMap.get(p) ?? 0) + 1);
-    });
-    const byProject = Array.from(projectMap, ([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    const byProject = Array.from(projects, ([name, value]) => ({ name, value })).sort((a, c) => c.value - a.value);
+    return { months, kpiMonths, kpis, groups, byProject, noBodyPart };
+  }, [filtered, monthCount]);
 
-    const regionCounts = new Map<string, number>();
-    filtered.forEach((i) => {
-      const r = normalizeBodyPart(i.bodyPart);
-      if (r) regionCounts.set(r, (regionCounts.get(r) ?? 0) + 1);
-    });
-    const groups = BODY_GROUPS.map((g) => ({
-      ...g,
-      value: g.regions.reduce((s, r) => s + (regionCounts.get(r) ?? 0), 0),
-    }));
+  const monthLabels = useMemo(() => {
+    const fmt = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", { month: "short" });
+    return Array.from({ length: 12 }, (_, m) => fmt.format(new Date(2024, m, 1)));
+  }, [locale]);
+  const monthData = stats.months.map((value, m) => ({ name: monthLabels[m], value }));
 
-    return { cards, byMonth, byProject, regionCounts, groups, other: regionCounts.get("other") ?? 0 };
-  }, [filtered, year]);
-
-  const maxRegion = Math.max(1, ...Array.from(stats.regionCounts.values()));
-  const dateFmt = (v: string | null) =>
-    v
-      ? new Date(v).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "—";
+  const total = filtered.length;
+  const dateFmt = (d: Date | null) =>
+    d ? d.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" }) : "—";
 
   return (
-    <div>
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">{t.injury.title}</h1>
-          <p className="mt-1 text-sm text-brand-gray">{t.injury.subtitle}</p>
+    <div
+      className={`${montserrat.className} relative overflow-hidden rounded-3xl border border-white/5 p-4 text-white shadow-2xl sm:p-6`}
+      style={{
+        background:
+          "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
+      }}
+    >
+      {/* ---- Header ---- */}
+      <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3">
+          <span className="rounded-full p-0.5 ring-2 ring-[#f36f24]/80" style={{ boxShadow: "0 0 18px rgba(243,111,36,0.45)" }}>
+            <BrandMark size={44} />
+          </span>
+          <span className="text-2xl font-bold tracking-tight sm:text-[28px]">First Fix</span>
         </div>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.list.search}
-          className="input-field max-w-sm"
-        />
-      </div>
+        <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">{b.title}</h1>
+        <div className="ms-auto flex items-center gap-3">
+          <AnalyticsIcon />
+          <span className="text-xs font-medium uppercase tracking-[0.3em] text-white/85 sm:text-sm">{b.analytics}</span>
+        </div>
+      </header>
 
       {isLoading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+        <div className="flex items-center justify-center py-24">
+          <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#f36f24] border-t-transparent" />
         </div>
       ) : (
         <>
-          <div className="mb-5 grid gap-5 lg:grid-cols-12">
-            {/* ---- Left: KPIs + charts ---- */}
-            <div className="flex min-w-0 flex-col gap-4 lg:col-span-7">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {stats.cards.map((c) => (
-                  <div
-                    key={c.key}
-                    title={c.title}
-                    className="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-surface px-3 py-3 shadow-card"
-                  >
-                    <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                      style={{ background: `${c.color}1a`, color: c.color }}
-                    >
-                      <c.icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-2xl font-extrabold leading-none text-brand-black tabular-nums">{c.value}</p>
-                      <p className="mt-1 text-xs font-semibold text-brand-grayDark">{c.label}</p>
-                    </div>
-                  </div>
-                ))}
+          {/* ---- KPI row ---- */}
+          <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+            {KPIS.map((k) => (
+              <KpiCard
+                key={k.key}
+                icon={k.icon}
+                label={k.label}
+                title={b[k.key]}
+                value={stats.kpis[k.key]}
+                series={stats.kpiMonths[k.key]}
+                share={total ? stats.kpis[k.key] / total : 0}
+              />
+            ))}
+            <div className="flex items-center justify-center sm:col-span-2 xl:col-span-1 xl:ps-2">
+              <div
+                className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-[3px] border-[#f36f24] text-center"
+                style={{ boxShadow: "0 0 26px rgba(243,111,36,0.55), inset 0 0 22px rgba(243,111,36,0.25)" }}
+              >
+                <span className="px-3 text-[10px] font-medium uppercase leading-tight tracking-[0.18em] text-white/85">
+                  {b.totalInjuries}
+                </span>
+                <span className="mt-1 text-3xl font-bold tabular-nums">{total.toLocaleString("en-US")}</span>
               </div>
-
-              <div className="grid gap-4 sm:grid-cols-4">
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-brand-border bg-brand-surface p-4 text-center shadow-card">
-                  <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-orange/10 text-brand-orange">
-                    <ClipboardPlus className="h-6 w-6" />
-                  </span>
-                  <p className="text-4xl font-extrabold leading-none text-brand-black tabular-nums">
-                    {filtered.length.toLocaleString("en-US")}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-grayDark">Total Injuries</p>
-                </div>
-
-                <section className="min-w-0 rounded-2xl border border-brand-border bg-brand-surface p-4 shadow-card sm:col-span-3">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-bold text-brand-black">Total Injury By Month</h2>
-                    {years.length > 0 && (
-                      <select
-                        value={year ?? ""}
-                        onChange={(e) => setYear(Number(e.target.value))}
-                        className="rounded-lg border border-brand-border bg-brand-surface px-2 py-1 text-xs font-semibold text-brand-grayDark"
-                      >
-                        {years.map((y) => (
-                          <option key={y} value={y}>
-                            {y}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                  <div className="h-40">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={stats.byMonth} margin={{ top: 16, right: 4, bottom: 0, left: -24 }}>
-                        <CartesianGrid stroke="#eceff3" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} interval={0} />
-                        <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip
-                          cursor={{ fill: "rgba(148,163,184,0.12)" }}
-                          formatter={(v) => [v, "Injuries"]}
-                          contentStyle={{ borderRadius: 12, fontSize: 12 }}
-                        />
-                        <Bar dataKey="value" fill={ACCENT} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false}>
-                          <LabelList dataKey="value" position="top" fontSize={10} fill="#334155" formatter={(v) => (Number(v) ? v : "")} />
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </section>
-              </div>
-
-              <section className="min-w-0 rounded-2xl border border-brand-border bg-brand-surface p-4 shadow-card">
-                <h2 className="mb-2 text-sm font-bold text-brand-black">Injuries by Projects</h2>
-                {stats.byProject.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-brand-gray">{t.injury.empty}</p>
-                ) : (
-                  <div className="max-h-48 overflow-y-auto pe-1">
-                    <div style={{ height: Math.max(160, stats.byProject.length * 24) }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={stats.byProject} layout="vertical" margin={{ top: 0, right: 36, bottom: 0, left: 0 }} barCategoryGap={4}>
-                          <XAxis type="number" hide allowDecimals={false} />
-                          <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11, fill: "#334155" }} axisLine={false} tickLine={false} interval={0} />
-                          <Tooltip
-                            cursor={{ fill: "rgba(148,163,184,0.12)" }}
-                            formatter={(v) => [v, "Injuries"]}
-                            contentStyle={{ borderRadius: 12, fontSize: 12 }}
-                          />
-                          <Bar dataKey="value" fill={ACCENT} radius={[0, 4, 4, 0]} maxBarSize={16} isAnimationActive={false}>
-                            <LabelList dataKey="value" position="right" fontSize={11} fill="#334155" />
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-              </section>
             </div>
-
-            {/* ---- Right: body diagram + body-part list ---- */}
-            <section
-              className="relative flex min-w-0 overflow-hidden rounded-2xl p-4 shadow-card lg:col-span-5"
-              style={{ background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)" }}
-            >
-              <div className="relative mx-auto h-[420px] w-[262px] shrink-0 self-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/body-diagram-v3.png" alt="" className="h-full w-full object-contain" />
-                {BODY_REGIONS.filter((r) => r.id !== "other").map((r) => {
-                  const count = stats.regionCounts.get(r.id) ?? 0;
-                  if (!count) return null;
-                  const size = 14 + (count / maxRegion) * 18;
-                  return (
-                    <span
-                      key={r.id}
-                      title={`${r.label.en}: ${count}`}
-                      className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white font-bold text-white shadow"
-                      style={{
-                        left: `${r.x * 100}%`,
-                        top: `${r.y * 100}%`,
-                        width: size,
-                        height: size,
-                        fontSize: 9,
-                        background: "#0ea5e9",
-                      }}
-                    >
-                      {count}
-                    </span>
-                  );
-                })}
-              </div>
-              <ul className="flex min-w-0 flex-1 flex-col justify-between py-1 ps-3">
-                {stats.groups.map((g) => (
-                  <li key={g.label} className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 shadow-sm">
-                      <g.icon className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-sm font-semibold text-slate-800">{g.label}</span>
-                        <span className="text-lg font-extrabold tabular-nums text-slate-900">{g.value}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sky-600">
-                        <span className="h-px flex-1 bg-sky-600/40" />
-                        <Activity className="h-3 w-3" />
-                        <span className="h-px w-6 bg-sky-600/40" />
-                      </div>
-                    </div>
-                  </li>
-                ))}
-                {stats.other > 0 && (
-                  <li className="text-end text-xs text-slate-500">Other / Multiple: {stats.other}</li>
-                )}
-              </ul>
-            </section>
           </div>
 
-          {/* ---- Injury details: own scroll area so it is in view straight away ---- */}
-          <section className="rounded-2xl border border-brand-border bg-brand-surface shadow-card">
-            <h2 className="px-4 pt-4 text-base font-bold text-brand-black">Injury Details</h2>
-            {filtered.length === 0 ? (
-              <p className="p-6 text-center text-sm text-brand-gray">{t.injury.empty}</p>
-            ) : (
-              <div className="mt-3 max-h-[420px] overflow-auto">
-                <table className="w-full min-w-[760px] text-start text-sm">
-                  <thead className="sticky top-0 z-10 bg-brand-grayLight">
-                    <tr className="text-xs font-semibold tracking-wide text-brand-grayDark">
-                      <th className="px-3 py-2.5 text-start">#</th>
-                      <th className="px-3 py-2.5 text-start">{t.injury.colDate}</th>
-                      <th className="px-3 py-2.5 text-start">{t.injury.colProject}</th>
-                      <th className="px-3 py-2.5 text-start">{t.injury.colClassification}</th>
-                      <th className="px-3 py-2.5 text-start">{t.injury.colBodyPart}</th>
-                      <th className="px-3 py-2.5 text-start">{t.injury.colDescription}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((i) => (
-                      <tr key={i.id} className="border-b border-brand-border last:border-0 hover:bg-brand-grayLight/40">
-                        <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-brand-black">{i.incidentNumber ?? "—"}</td>
-                        <td className="whitespace-nowrap px-3 py-2.5 text-brand-grayDark">{dateFmt(i.incidentDate)}</td>
-                        <td className="px-3 py-2.5 font-semibold text-brand-black">{i.projectName}</td>
-                        <td className="px-3 py-2.5 text-brand-grayDark">{i.classification || i.incidentCategory}</td>
-                        <td className="px-3 py-2.5 text-brand-grayDark">{i.bodyPart || t.injury.unspecifiedBodyPart}</td>
-                        <td className="max-w-md px-3 py-2.5 text-brand-grayDark">
-                          <span className="line-clamp-2">{i.incidentDescription || "—"}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* ---- Body map | charts + table ---- */}
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,4.8fr)_minmax(0,7.2fr)]">
+            <Panel className="flex flex-col xl:row-span-2">
+              <div className="grid flex-1 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)]">
+                <div className="mx-auto aspect-[312/520] w-full max-w-[360px]">
+                  <BodyFigure counts={stats.groups} />
+                </div>
+                <ul className="rounded-xl border border-white/10 bg-white/[0.035] px-2.5 py-1">
+                  {BODY_GROUP_IDS.map((g) => (
+                    <li key={g} className="flex items-center gap-2.5 border-b border-white/[0.07] py-2.5 last:border-0">
+                      <BodyGroupIcon id={g} />
+                      <span className="min-w-0 flex-1 text-xs font-medium uppercase leading-tight tracking-wide text-white/90">
+                        {b.groups[g]}
+                      </span>
+                      <span
+                        className="text-2xl font-bold tabular-nums leading-none text-[#ff7a2f] sm:text-[28px]"
+                        style={{ textShadow: "0 0 12px rgba(243,111,36,0.55)" }}
+                      >
+                        {stats.groups[g]}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            )}
-          </section>
+              {stats.noBodyPart > 0 && (
+                <p className="mt-2 text-center text-[11px] text-white/45">
+                  {b.bodyNote.replace("{count}", String(stats.noBodyPart))}
+                </p>
+              )}
+            </Panel>
+
+            <div className="grid min-w-0 gap-5 lg:grid-cols-2">
+              {/* Month chart */}
+              <Panel>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <h2 className="text-base font-semibold leading-tight sm:text-[17px]">{b.byMonth}</h2>
+                  <div className="relative">
+                    <select
+                      value={year ?? ALL}
+                      onChange={(e) => setYear(e.target.value)}
+                      className="appearance-none rounded-full border border-white/25 bg-black/40 py-1 pe-8 ps-3.5 text-sm font-medium text-white outline-none focus:border-[#f36f24]"
+                      aria-label={b.byMonth}
+                    >
+                      {years.map((y) => (
+                        <option key={y} value={y} className="bg-neutral-900">
+                          {y}
+                        </option>
+                      ))}
+                      <option value={ALL} className="bg-neutral-900">
+                        {b.allYears}
+                      </option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/80" />
+                  </div>
+                </div>
+                <div className="h-56" dir="ltr">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={monthData} margin={{ top: 22, right: 14, bottom: 0, left: -18 }}>
+                      <defs>
+                        <linearGradient id="inj-area" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={ORANGE} stopOpacity={0.55} />
+                          <stop offset="100%" stopColor={ORANGE} stopOpacity={0.02} />
+                        </linearGradient>
+                        <filter id="inj-glow" x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur stdDeviation="3" result="b" />
+                          <feMerge>
+                            <feMergeNode in="b" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#d4d4d8" }} axisLine={{ stroke: "rgba(255,255,255,0.15)" }} tickLine={false} interval={0} />
+                      <YAxis tick={{ fontSize: 11, fill: "#a1a1aa" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <Tooltip
+                        cursor={{ stroke: "rgba(255,255,255,0.2)" }}
+                        formatter={(v) => [v, b.injuries]}
+                        contentStyle={{ background: "#18181b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, fontSize: 12, color: "#fff" }}
+                        labelStyle={{ color: "#fff" }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke={ORANGE_HI}
+                        strokeWidth={2.5}
+                        fill="url(#inj-area)"
+                        isAnimationActive={false}
+                        style={{ filter: "drop-shadow(0 0 6px rgba(243,111,36,0.8))" }}
+                        dot={{ r: 4, fill: "#fff", stroke: ORANGE, strokeWidth: 2, filter: "url(#inj-glow)" }}
+                        activeDot={{ r: 5, fill: "#fff", stroke: ORANGE, strokeWidth: 2 }}
+                      >
+                        <LabelList dataKey="value" position="top" offset={10} fontSize={12} fontWeight={600} fill="#fff" />
+                      </Area>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </Panel>
+
+              {/* Projects */}
+              <Panel>
+                <h2 className="mb-3 text-base font-semibold leading-tight sm:text-[17px]">{b.byProjects}</h2>
+                {stats.byProject.length === 0 ? (
+                  <p className="py-10 text-center text-sm text-white/50">{t.injury.empty}</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {stats.byProject.slice(0, TOP_PROJECTS).map((p) => (
+                      <li key={p.name} className="grid grid-cols-[minmax(0,6.5rem)_minmax(0,1fr)] items-center gap-3">
+                        <span className="line-clamp-2 text-end text-sm leading-tight text-white/90" title={p.name}>
+                          {p.name}
+                        </span>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="h-3.5 rounded-[3px]"
+                            style={{
+                              width: `max(10px, calc(${(p.value / stats.byProject[0].value) * 100}% - 2.5rem))`,
+                              background: `linear-gradient(90deg, #e2551a, ${ORANGE_HI})`,
+                              boxShadow: "0 0 10px rgba(243,111,36,0.55)",
+                            }}
+                          />
+                          <span className="text-sm tabular-nums text-white/90">{p.value}</span>
+                        </span>
+                      </li>
+                    ))}
+                    {stats.byProject.length > TOP_PROJECTS && (
+                      <li className="pt-1 text-end text-xs text-white/45">
+                        +{stats.byProject.length - TOP_PROJECTS}
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </Panel>
+            </div>
+
+            {/* Injury details */}
+            <Panel className="min-w-0">
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-semibold sm:text-xl">{b.details}</h2>
+                <label className="relative w-full sm:max-w-xs">
+                  <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={b.search}
+                    className="w-full rounded-full border border-white/15 bg-black/40 py-1.5 pe-3 ps-9 text-sm text-white outline-none placeholder:text-white/40 focus:border-[#f36f24]"
+                  />
+                </label>
+              </div>
+              {filtered.length === 0 ? (
+                <p className="py-10 text-center text-sm text-white/50">{t.injury.empty}</p>
+              ) : (
+                <div className="max-h-[370px] overflow-auto rounded-lg">
+                  <table className="w-full min-w-[680px] table-fixed text-start text-sm">
+                    <colgroup>
+                      <col className="w-12" />
+                      <col className="w-[6.75rem]" />
+                      <col className="w-[7.25rem]" />
+                      <col className="w-[7.5rem]" />
+                      <col className="w-[7.75rem]" />
+                      <col />
+                    </colgroup>
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
+                        <th className="rounded-s-lg px-3 py-2.5 text-start">#</th>
+                        <th className="px-3 py-2.5 text-start">{t.injury.colDate}</th>
+                        <th className="px-3 py-2.5 text-start">{t.injury.colProject}</th>
+                        <th className="px-3 py-2.5 text-start">{t.injury.colClassification}</th>
+                        <th className="px-3 py-2.5 text-start">{t.injury.colBodyPart}</th>
+                        <th className="rounded-e-lg px-3 py-2.5 text-start">{t.injury.colDescription}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((i) => (
+                        <tr key={i.id} className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]">
+                          <td className="whitespace-nowrap px-3 py-2.5 font-bold">{i.incidentNumber ?? "—"}</td>
+                          <td className="whitespace-nowrap px-3 py-2.5 text-white/80">{dateFmt(dateOf(i))}</td>
+                          <td className="px-3 py-2.5 font-medium">{i.projectName}</td>
+                          <td className="px-3 py-2.5 text-white/80">{i.classification || i.incidentCategory}</td>
+                          <td className="px-3 py-2.5 text-white/80">
+                            <span dir="auto" className="block">{i.bodyPart || t.injury.unspecifiedBodyPart}</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-white/80">
+                            <span dir="auto" className="line-clamp-2" title={i.incidentDescription ?? undefined}>
+                              {i.incidentDescription || "—"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Panel>
+          </div>
         </>
       )}
     </div>
+  );
+}
+
+function Panel({ className = "", children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <section
+      className={`rounded-2xl border border-white/[0.08] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:p-5 ${className}`}
+      style={{ background: "linear-gradient(160deg, #18181b 0%, #111113 100%)" }}
+    >
+      {children}
+    </section>
+  );
+}
+
+function KpiCard({
+  icon: Icon,
+  label,
+  title,
+  value,
+  series,
+  share,
+}: {
+  icon: LucideIcon;
+  label: string;
+  title: string;
+  value: number;
+  series: number[];
+  share: number;
+}) {
+  return (
+    <div
+      title={title}
+      className="flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 pb-4 pt-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
+      style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
+    >
+      <div className="flex items-center gap-4">
+        <Icon className="h-9 w-9 shrink-0 text-white/75" strokeWidth={1.4} />
+        <div className="min-w-0">
+          <p className="text-[30px] font-bold leading-none tabular-nums">{value}</p>
+          <p className="mt-1.5 text-sm font-medium tracking-wide text-white/70">{label}</p>
+        </div>
+        <Sparkline values={series} className="ms-auto h-8 w-20 shrink-0" />
+      </div>
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${Math.max(value ? 4 : 0, share * 100)}%`,
+            background: `linear-gradient(90deg, #e2551a, ${ORANGE_HI})`,
+            boxShadow: "0 0 8px rgba(243,111,36,0.8)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Small glowing trend line of the monthly counts. */
+function Sparkline({ values, className }: { values: number[]; className?: string }) {
+  const W = 80;
+  const H = 30;
+  const max = Math.max(1, ...values);
+  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - (v / max) * (H - 8)]);
+  // Smooth curve through the points (Catmull-Rom → cubic Bézier).
+  let d = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={className} preserveAspectRatio="none" aria-hidden>
+      <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.2" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 3px rgba(243,111,36,0.9))" }} />
+    </svg>
+  );
+}
+
+function AnalyticsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden>
+      {[
+        [3, 14, 10],
+        [9.5, 9, 15],
+        [16, 4, 20],
+      ].map(([x, y, h], i) => (
+        <rect key={i} x={x} y={y} width="4.5" height={h} rx="1.2" fill={i === 2 ? ORANGE_HI : ORANGE} style={{ filter: "drop-shadow(0 0 4px rgba(243,111,36,0.7))" }} />
+      ))}
+    </svg>
+  );
+}
+
+/** Outline icons for the body-part list (lucide where it has a good match). */
+function BodyGroupIcon({ id }: { id: BodyGroupId }) {
+  const cls = "h-7 w-7 shrink-0 text-white/80";
+  const lucide: Partial<Record<BodyGroupId, LucideIcon>> = { chest: HeartPulse, arm: BicepsFlexed, hands: Hand, other: Plus };
+  const L = lucide[id];
+  if (L) return <L className={cls} strokeWidth={1.4} />;
+  const paths: Record<string, string> = {
+    // Head in profile.
+    head: "M9 21v-3.5c-2.4-1.2-4-3.7-4-6.5a7 7 0 0 1 14 0c0 .8.6 1.6 1.4 2.4l-1.4 1.1V17a2 2 0 0 1-2 2h-1.5V21",
+    // Neck between head and shoulders.
+    neck: "M8 3c0 3 1 5 1 8 0 2-3 3-6 4M16 3c0 3-1 5-1 8 0 2 3 3 6 4M9 11h6",
+    // Leg.
+    legs: "M10 2c-.5 4 .5 7 0 10s-2 6-1.5 9.5H13c-.6-1 .3-2.5 1-4 1-2.5 1.5-6 1.5-9S15 4 15 2",
+    // Knee with kneecap.
+    knee: "M9 2v7c0 1.5-1 3-1 5 0 2.2 1 3.4 1 5v3M15 2v7c0 1.5 1 3 1 5 0 2.2-1 3.4-1 5v3M12 11.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4",
+    // Foot.
+    feet: "M9 2v11c0 2-3 3.5-3 6.5 0 1.5 1 2.5 2.5 2.5H17c1 0 1.5-.8 1-1.6-.8-1.3-3.4-2.1-4.5-3.4-.8-1-.5-3.5-.5-5V2",
+  };
+  return (
+    <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d={paths[id]} />
+    </svg>
   );
 }

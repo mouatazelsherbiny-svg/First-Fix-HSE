@@ -517,6 +517,34 @@ export interface TranslationShape {
     colDescription: string;
     empty: string;
     unspecifiedBodyPart: string;
+    board: {
+      title: string;
+      analytics: string;
+      totalInjuries: string;
+      lti: string;
+      rwc: string;
+      mtc: string;
+      fac: string;
+      byMonth: string;
+      byProjects: string;
+      details: string;
+      allYears: string;
+      injuries: string;
+      noBodyData: string;
+      bodyNote: string;
+      search: string;
+      groups: {
+        head: string;
+        neck: string;
+        chest: string;
+        arm: string;
+        hands: string;
+        legs: string;
+        knee: string;
+        feet: string;
+        other: string;
+      };
+    };
   };
   ptw: {
     formTitle: string;
@@ -1328,6 +1356,34 @@ export const translations: Record<Locale, TranslationShape> = {
       colDescription: "Description",
       empty: "No injury records yet.",
       unspecifiedBodyPart: "Not specified",
+      board: {
+        title: "First Aid Body Map",
+        analytics: "HSE Analytics",
+        totalInjuries: "Total Injuries",
+        lti: "Lost Time Injury",
+        rwc: "Restricted Work Case",
+        mtc: "Medical Treatment Case",
+        fac: "First Aid Case",
+        byMonth: "Total Injury By Month",
+        byProjects: "Injuries by Projects",
+        details: "Injury Details",
+        allYears: "All years",
+        injuries: "Injuries",
+        noBodyData: "No body-part data for this period.",
+        bodyNote: "{count} without a recorded body part",
+        search: "Search project, # or body part",
+        groups: {
+          head: "Head",
+          neck: "Neck",
+          chest: "Chest",
+          arm: "Arm",
+          hands: "Hands",
+          legs: "Legs",
+          knee: "Knee",
+          feet: "Feet",
+          other: "Other / Multiple",
+        },
+      },
     },
     ptw: {
       formTitle: "New Permit to Work",
@@ -2137,6 +2193,34 @@ export const translations: Record<Locale, TranslationShape> = {
       colDescription: "الوصف",
       empty: "لا توجد سجلات إصابات بعد.",
       unspecifiedBodyPart: "غير محدد",
+      board: {
+        title: "خريطة إصابات الجسم",
+        analytics: "تحليلات السلامة",
+        totalInjuries: "إجمالي الإصابات",
+        lti: "إصابة مضيعة للوقت",
+        rwc: "حالة عمل مقيد",
+        mtc: "حالة علاج طبي",
+        fac: "حالة إسعافات أولية",
+        byMonth: "إجمالي الإصابات حسب الشهر",
+        byProjects: "الإصابات حسب المشاريع",
+        details: "تفاصيل الإصابات",
+        allYears: "كل السنوات",
+        injuries: "الإصابات",
+        noBodyData: "لا توجد بيانات أجزاء الجسم لهذه الفترة.",
+        bodyNote: "{count} بدون جزء جسم مسجل",
+        search: "ابحث بالمشروع أو الرقم أو جزء الجسم",
+        groups: {
+          head: "الرأس",
+          neck: "الرقبة",
+          chest: "الصدر",
+          arm: "الذراع",
+          hands: "اليدين",
+          legs: "الساقين",
+          knee: "الركبة",
+          feet: "القدمين",
+          other: "أخرى / متعددة",
+        },
+      },
     },
     ptw: {
       formTitle: "طلب تصريح عمل جديد",

@@ -84,3 +84,34 @@ export function normalizeBodyPart(raw: string | null | undefined): string | null
   }
   return "other";
 }
+
+/**
+ * Coarse body groups used by the Injury dashboard's body map. A body-part
+ * text maps to a group when every keyword it contains belongs to that one
+ * group (so "left hand index and middle finger" -> hands); text naming parts
+ * from several groups ("right foot, right arm", "shoulders and back"), or
+ * nothing recognisable ("body injury"), is "other". Empty / "n/a" -> null
+ * (no body-part data, left off the map).
+ */
+export type BodyGroupId = "head" | "neck" | "chest" | "arm" | "hands" | "legs" | "knee" | "feet" | "other";
+
+export const BODY_GROUP_IDS: BodyGroupId[] = ["head", "neck", "chest", "arm", "hands", "legs", "knee", "feet", "other"];
+
+// Whole-word patterns (so "palmar" is not "arm", "forearm" is not "arm" twice).
+const GROUP_PATTERNS: Array<{ id: Exclude<BodyGroupId, "other">; re: RegExp }> = [
+  { id: "hands", re: /\b(hands?|palms?|palmar|fingers?|thumbs?|wrists?|knuckles?|index)\b/ },
+  { id: "arm", re: /\b(arms?|forearms?|elbows?|shoulders?|biceps?|triceps?)\b/ },
+  { id: "head", re: /\b(head|face|forehead|chin|eyes?|ears?|nose|mouth|lips?|teeth|tooth|cheeks?|scalp|jaw)\b/ },
+  { id: "neck", re: /\bneck\b/ },
+  { id: "chest", re: /\b(chest|back|torso|abdomen|stomach|ribs?|waist|trunk)\b/ },
+  { id: "knee", re: /\bknees?\b/ },
+  { id: "legs", re: /\b(legs?|thighs?|shins?|calf|calves|hips?|lower limbs?)\b/ },
+  { id: "feet", re: /\b(foot|feet|toes?|ankles?|heels?)\b/ },
+];
+
+export function bodyGroupOf(raw: string | null | undefined): BodyGroupId | null {
+  const s = (raw ?? "").trim().toLowerCase().replace(/-/g, " ");
+  if (!s || s === "n/a" || s === "na" || s === "nil" || s === "none") return null;
+  const hits = new Set(GROUP_PATTERNS.filter((g) => g.re.test(s)).map((g) => g.id));
+  return hits.size === 1 ? Array.from(hits)[0] : "other";
+}
