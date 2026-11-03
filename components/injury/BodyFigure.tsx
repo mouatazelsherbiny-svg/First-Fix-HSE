@@ -25,9 +25,17 @@ export const BODY_MARKERS: Record<Exclude<BodyGroupId, "other">, { at: [number, 
   feet: { at: [92, 485], badge: [26, 480] },
 };
 
-export default function BodyFigure({ counts }: { counts: Record<BodyGroupId, number> }) {
+export default function BodyFigure({
+  counts,
+  selected = null,
+  onSelect,
+}: {
+  counts: Record<BodyGroupId, number>;
+  selected?: BodyGroupId | null;
+  onSelect?: (id: BodyGroupId) => void;
+}) {
   return (
-    <svg viewBox="-30 0 380 520" className="h-full w-full" role="img" aria-label="Body map">
+    <svg viewBox="-12 8 352 504" className="h-full w-full" role="img" aria-label="Body map">
       <defs>
         <radialGradient id="bf-floor" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#f36f24" stopOpacity="0.35" />
@@ -55,16 +63,25 @@ export default function BodyFigure({ counts }: { counts: Record<BodyGroupId, num
         height={IMG.h}
         preserveAspectRatio="xMidYMid meet"
         filter="url(#bf-soft)"
-        opacity={0.92}
       />
 
       {(Object.keys(BODY_MARKERS) as Array<keyof typeof BODY_MARKERS>).map((id) => {
         const { at, badge } = BODY_MARKERS[id];
         const n = counts[id] ?? 0;
         const active = n > 0;
-        const r = n >= 100 ? 17 : 15;
+        const isSel = selected === id;
+        const r = (n >= 100 ? 17 : 15) + (isSel ? 2 : 0);
+        const opacity = selected ? (isSel ? 1 : 0.35) : active ? 1 : 0.35;
         return (
-          <g key={id} opacity={active ? 1 : 0.35}>
+          <g
+            key={id}
+            opacity={opacity}
+            role={onSelect ? "button" : undefined}
+            tabIndex={onSelect ? 0 : undefined}
+            onClick={onSelect ? () => onSelect(id) : undefined}
+            onKeyDown={onSelect ? (e) => (e.key === "Enter" || e.key === " ") && onSelect(id) : undefined}
+            style={{ cursor: onSelect ? "pointer" : undefined, outline: "none", transition: "opacity 150ms" }}
+          >
             {(at[0] !== badge[0] || at[1] !== badge[1]) && (
               <line x1={at[0]} y1={at[1]} x2={badge[0]} y2={badge[1]} stroke="#f36f24" strokeWidth="1.2" />
             )}
@@ -74,8 +91,8 @@ export default function BodyFigure({ counts }: { counts: Record<BodyGroupId, num
               cy={badge[1]}
               r={r}
               fill="#f36f24"
-              stroke="#ffb27a"
-              strokeWidth="1.2"
+              stroke={isSel ? "#ffffff" : "#ffb27a"}
+              strokeWidth={isSel ? 2.5 : 1.2}
               filter={active ? "url(#bf-glow)" : undefined}
             />
             <text
@@ -86,6 +103,7 @@ export default function BodyFigure({ counts }: { counts: Record<BodyGroupId, num
               fontSize={n >= 100 ? 12.5 : 14}
               fontWeight={800}
               fill="#fff"
+              style={{ pointerEvents: "none" }}
             >
               {n}
             </text>

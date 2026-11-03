@@ -11,13 +11,13 @@ import {
   HeartPulse,
   Plus,
   Search,
+  X,
   Stethoscope,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { Area, AreaChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { BrandMark } from "@/components/Sidebar";
 import BodyFigure from "@/components/injury/BodyFigure";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
@@ -66,6 +66,19 @@ function InjuryOverview() {
   const { incidents, isLoading } = useIncidents();
   const [query, setQuery] = useState("");
   const [year, setYear] = useState<string | null>(null);
+  const [group, setGroup] = useState<BodyGroupId | null>(null);
+  const toggleGroup = (g: BodyGroupId) => setGroup((cur) => (cur === g ? null : g));
+
+  // The whole page is dark: paint the app's content area black while here.
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    const prev = main.style.background;
+    main.style.background = "#0a0a0c";
+    return () => {
+      main.style.background = prev;
+    };
+  }, []);
 
   const injuries = useMemo(() => incidents.filter((i) => i.recordType === "Injury"), [incidents]);
 
@@ -85,8 +98,8 @@ function InjuryOverview() {
     if (year === null || (year !== ALL && !years.includes(Number(year)))) setYear(String(years[0]));
   }, [years, year, isLoading]);
 
-  // Year + search filter the whole page.
-  const filtered = useMemo(() => {
+  // Year + search filter the whole page; the body map's counts come from this.
+  const base = useMemo(() => {
     const q = query.trim().toLowerCase();
     return injuries.filter((i) => {
       if (year && year !== ALL && dateOf(i)?.getFullYear() !== Number(year)) return false;
@@ -98,6 +111,20 @@ function InjuryOverview() {
       );
     });
   }, [injuries, year, query]);
+
+  // A clicked body part filters everything else on the page too.
+  const filtered = useMemo(
+    () => (group ? base.filter((i) => bodyGroupOf(i.bodyPart) === group) : base),
+    [base, group]
+  );
+  const groupCounts = useMemo(() => {
+    const counts = Object.fromEntries(BODY_GROUP_IDS.map((g) => [g, 0])) as Record<BodyGroupId, number>;
+    base.forEach((i) => {
+      const g = bodyGroupOf(i.bodyPart);
+      if (g) counts[g] += 1;
+    });
+    return counts;
+  }, [base]);
 
   // Months shown: the whole year for past years / all years; for the current
   // year, up to the latest month with an injury (later months aren't over or
@@ -160,18 +187,22 @@ function InjuryOverview() {
     >
       {/* ---- Header ---- */}
       <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-3">
-          <span className="rounded-full p-0.5 ring-2 ring-[#f36f24]/80" style={{ boxShadow: "0 0 18px rgba(243,111,36,0.45)" }}>
-            <BrandMark size={44} />
-          </span>
-          <span className="text-2xl font-bold tracking-tight sm:text-[28px]">First Fix</span>
-        </div>
+        <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
+          {b.pageName}
+        </span>
         <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
         <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">{b.title}</h1>
-        <div className="ms-auto flex items-center gap-3">
-          <AnalyticsIcon />
-          <span className="text-xs font-medium uppercase tracking-[0.3em] text-white/85 sm:text-sm">{b.analytics}</span>
-        </div>
+        {group && (
+          <button
+            type="button"
+            onClick={() => setGroup(null)}
+            className="ms-auto inline-flex items-center gap-2 rounded-full border border-[#f36f24]/60 bg-[#f36f24]/15 px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-[#f36f24]/30"
+          >
+            {b.groups[group]}
+            <X className="h-4 w-4" />
+            <span className="sr-only">{b.clearFilter}</span>
+          </button>
+        )}
       </header>
 
       {isLoading ? (
@@ -207,15 +238,24 @@ function InjuryOverview() {
           </div>
 
           {/* ---- Body map | charts + table ---- */}
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,4.8fr)_minmax(0,7.2fr)]">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,5.4fr)_minmax(0,6.6fr)]">
             <Panel className="flex flex-col xl:row-span-2">
-              <div className="grid flex-1 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)]">
-                <div className="mx-auto aspect-[312/520] w-full max-w-[360px]">
-                  <BodyFigure counts={stats.groups} />
+              <div className="grid flex-1 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,160px)]">
+                <div className="mx-auto aspect-[352/504] w-full">
+                  <BodyFigure counts={groupCounts} selected={group} onSelect={toggleGroup} />
                 </div>
                 <ul className="rounded-xl border border-white/10 bg-white/[0.035] px-2.5 py-1">
                   {BODY_GROUP_IDS.map((g) => (
-                    <li key={g} className="flex items-center gap-2.5 border-b border-white/[0.07] py-2.5 last:border-0">
+                    <li
+                      key={g}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleGroup(g)}
+                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleGroup(g)}
+                      className={`flex cursor-pointer items-center gap-2.5 rounded-lg border-b border-white/[0.07] px-1 py-2.5 transition last:border-0 hover:bg-white/[0.05] ${
+                        group === g ? "bg-[#f36f24]/15 ring-1 ring-[#f36f24]/60" : group ? "opacity-45" : ""
+                      }`}
+                    >
                       <BodyGroupIcon id={g} />
                       <span className="min-w-0 flex-1 text-xs font-medium uppercase leading-tight tracking-wide text-white/90">
                         {b.groups[g]}
@@ -224,7 +264,7 @@ function InjuryOverview() {
                         className="text-2xl font-bold tabular-nums leading-none text-[#ff7a2f] sm:text-[28px]"
                         style={{ textShadow: "0 0 12px rgba(243,111,36,0.55)" }}
                       >
-                        {stats.groups[g]}
+                        {groupCounts[g]}
                       </span>
                     </li>
                   ))}
@@ -479,20 +519,6 @@ function Sparkline({ values, className }: { values: number[]; className?: string
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={className} preserveAspectRatio="none" aria-hidden>
       <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.2" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 3px rgba(243,111,36,0.9))" }} />
-    </svg>
-  );
-}
-
-function AnalyticsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden>
-      {[
-        [3, 14, 10],
-        [9.5, 9, 15],
-        [16, 4, 20],
-      ].map(([x, y, h], i) => (
-        <rect key={i} x={x} y={y} width="4.5" height={h} rx="1.2" fill={i === 2 ? ORANGE_HI : ORANGE} style={{ filter: "drop-shadow(0 0 4px rgba(243,111,36,0.7))" }} />
-      ))}
     </svg>
   );
 }

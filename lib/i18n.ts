@@ -520,6 +520,8 @@ export interface TranslationShape {
     board: {
       title: string;
       analytics: string;
+      pageName: string;
+      clearFilter: string;
       totalInjuries: string;
       lti: string;
       rwc: string;
@@ -1359,6 +1361,8 @@ export const translations: Record<Locale, TranslationShape> = {
       board: {
         title: "First Aid Body Map",
         analytics: "HSE Analytics",
+        pageName: "Injury",
+        clearFilter: "Clear filter",
         totalInjuries: "Total Injuries",
         lti: "Lost Time Injury",
         rwc: "Restricted Work Case",
@@ -1588,8 +1592,8 @@ export const translations: Record<Locale, TranslationShape> = {
       colCount: "Count",
       operatorsOverviewTitle: "Operators Overview",
       tabDashboard: "Dashboard",
-      tabLog: "PMV Log",
-      tabTracker: "Equipment Tracker",
+      tabLog: "Logistic (PMV)",
+      tabTracker: "Equipment Register",
       trackerSearch: "Search equipment...",
       trackerAllStatuses: "All",
       trackerFilterActive: "Active",
@@ -2196,6 +2200,8 @@ export const translations: Record<Locale, TranslationShape> = {
       board: {
         title: "خريطة إصابات الجسم",
         analytics: "تحليلات السلامة",
+        pageName: "الإصابات",
+        clearFilter: "إلغاء الفلتر",
         totalInjuries: "إجمالي الإصابات",
         lti: "إصابة مضيعة للوقت",
         rwc: "حالة عمل مقيد",
@@ -2425,8 +2431,8 @@ export const translations: Record<Locale, TranslationShape> = {
       colCount: "العدد",
       operatorsOverviewTitle: "نظرة عامة على المشغلين",
       tabDashboard: "لوحة المعلومات",
-      tabLog: "سجل المركبات والمعدات",
-      tabTracker: "متابعة المعدات",
+      tabLog: "اللوجستيات (PMV)",
+      tabTracker: "سجل المعدات",
       trackerSearch: "ابحث عن معدة...",
       trackerAllStatuses: "الكل",
       trackerFilterActive: "نشط",

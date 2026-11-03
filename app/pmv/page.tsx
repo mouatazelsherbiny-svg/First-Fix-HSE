@@ -150,18 +150,6 @@ function PmvPageContent() {
             </button>
             <button
               type="button"
-              onClick={() => setTab("log")}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                tab === "log"
-                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
-              }`}
-            >
-              <ClipboardList className="h-4 w-4" />
-              {t.pmv.tabLog}
-            </button>
-            <button
-              type="button"
               onClick={() => setTab("tracker")}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 tab === "tracker"
@@ -171,6 +159,18 @@ function PmvPageContent() {
             >
               <MapPinned className="h-4 w-4" />
               {t.pmv.tabTracker}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("log")}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                tab === "log"
+                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
+                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
+              }`}
+            >
+              <ClipboardList className="h-4 w-4" />
+              {t.pmv.tabLog}
             </button>
           </div>
         </div>
