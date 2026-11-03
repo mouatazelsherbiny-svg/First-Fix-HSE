@@ -81,7 +81,19 @@ export default function LoginPage() {
       {/* The login page has no Topbar (that only wraps signed-in pages),
           so it keeps its own language toggle, pinned to the true
           top-right screen corner regardless of text direction. */}
-      <div className="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
+      <div className="fixed right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
+        {/* Temporary: public Generators Report (remove when no longer needed). */}
+        <a
+          href="/generators-report"
+          target="_blank"
+          rel="noopener"
+          className="flex items-center gap-1.5 rounded-full bg-brand-orange px-3.5 py-1.5 text-xs font-semibold text-white shadow-card transition hover:brightness-110"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 20V14M10 20V9M16 20V12M22 20V4" />
+          </svg>
+          Generators Report
+        </a>
         <LanguageToggle className="bg-white/90 backdrop-blur-sm shadow-card" />
       </div>
 
@@ -162,19 +174,6 @@ export default function LoginPage() {
                   {t.login.signUpLink}
                 </Link>
               </p>
-
-              {/* Temporary: public Generators Report (remove when no longer needed). */}
-              <a
-                href="/generators-report"
-                target="_blank"
-                rel="noopener"
-                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-brand-orange/70 bg-white/10 py-2 text-xs font-semibold text-white transition hover:bg-brand-orange/20"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-                  <path d="M4 20V14M10 20V9M16 20V12M22 20V4" />
-                </svg>
-                Generators Report
-              </a>
 
               <p className="mt-1.5 text-center text-[11px] font-medium text-white/70">
                 {t.login.footer}
