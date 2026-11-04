@@ -245,11 +245,11 @@ function InjuryOverview() {
           {/* ---- Body map | charts + table ---- */}
           <div className="grid gap-5 xl:grid-cols-[minmax(0,5.4fr)_minmax(0,6.6fr)]">
             <Panel className="flex flex-col xl:row-span-2">
-              <div className="grid flex-1 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,160px)]">
-                <div className="mx-auto aspect-[352/504] w-full">
+              <div className="grid flex-1 grid-cols-1 items-stretch gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,160px)]">
+                <div className="mx-auto aspect-[352/504] w-full self-center">
                   <BodyFigure counts={groupCounts} selected={group} onSelect={toggleGroup} />
                 </div>
-                <ul className="rounded-xl border border-white/10 bg-white/[0.035] px-2.5 py-1">
+                <ul className="flex flex-col rounded-xl border border-white/10 bg-white/[0.035] px-2.5 py-1">
                   {BODY_GROUP_IDS.map((g) => (
                     <li
                       key={g}
@@ -257,7 +257,7 @@ function InjuryOverview() {
                       tabIndex={0}
                       onClick={() => toggleGroup(g)}
                       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleGroup(g)}
-                      className={`flex cursor-pointer items-center gap-2.5 rounded-lg border-b border-white/[0.07] px-1 py-2.5 transition last:border-0 hover:bg-white/[0.05] ${
+                      className={`flex flex-1 cursor-pointer items-center gap-2.5 rounded-lg border-b border-white/[0.07] px-1 py-2.5 transition last:border-0 hover:bg-white/[0.05] ${
                         group === g ? "bg-[#f36f24]/15 ring-1 ring-[#f36f24]/60" : group ? "opacity-45" : ""
                       }`}
                     >
