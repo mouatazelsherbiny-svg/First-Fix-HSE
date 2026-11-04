@@ -129,51 +129,29 @@ function PmvPageContent() {
   return (
     <div>
       <div>
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="flex flex-wrap items-baseline gap-x-3 text-2xl font-bold text-brand-black">
-            {t.pmv.title}
-            <span className="text-xl font-semibold text-brand-grayDark">Plant, Machinery, and Vehicles</span>
-          </h1>
-
+        {/* Tabs, right under the app-wide project filter: Dashboard and
+            Equipment Register together, Logistic (PMV) on its own as a
+            separate choice. */}
+        <div className="-mt-2 mb-4 flex flex-wrap items-center justify-end gap-3">
           <div className="inline-flex rounded-xl border border-brand-border bg-brand-surface/60 p-1 backdrop-blur-md">
-            <button
-              type="button"
-              onClick={() => setTab("dashboard")}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                tab === "dashboard"
-                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
-              }`}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              {t.pmv.tabDashboard}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("tracker")}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                tab === "tracker"
-                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
-              }`}
-            >
-              <MapPinned className="h-4 w-4" />
-              {t.pmv.tabTracker}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("log")}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                tab === "log"
-                  ? "bg-brand-orange text-brand-onAccent shadow-sm"
-                  : "text-brand-grayDark hover:bg-brand-grayLight/60"
-              }`}
-            >
-              <ClipboardList className="h-4 w-4" />
-              {t.pmv.tabLog}
-            </button>
+            <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")} icon={LayoutDashboard} label={t.pmv.tabDashboard} />
+            <TabButton active={tab === "tracker"} onClick={() => setTab("tracker")} icon={MapPinned} label={t.pmv.tabTracker} />
+          </div>
+          <div className="inline-flex rounded-xl border border-brand-border bg-brand-surface/60 p-1 backdrop-blur-md">
+            <TabButton active={tab === "log"} onClick={() => setTab("log")} icon={ClipboardList} label={t.pmv.tabLog} />
           </div>
         </div>
+
+        {/* Page title, laid out like the Injury page header. */}
+        <header className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-brand-border pb-4">
+          <span className="text-2xl font-bold uppercase tracking-tight text-brand-orange sm:text-[30px]">
+            {t.pmv.title}
+          </span>
+          <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-brand-orange to-transparent sm:block" />
+          <h1 className="text-xl font-extrabold uppercase tracking-wide text-brand-black sm:text-[30px]">
+            Plant, Machinery, and Vehicles
+          </h1>
+        </header>
 
         {tab === "dashboard" ? (
           <PmvDashboard onOpenLog={openLog} />
@@ -184,6 +162,31 @@ function PmvPageContent() {
         )}
       </div>
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: typeof LayoutDashboard;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+        active ? "bg-brand-orange text-brand-onAccent shadow-sm" : "text-brand-grayDark hover:bg-brand-grayLight/60"
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
   );
 }
 
