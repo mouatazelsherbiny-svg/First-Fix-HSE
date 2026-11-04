@@ -61,7 +61,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           {banner && (
             <div
               className="absolute -z-10"
-              style={{ left: banner.offX, top: banner.offY, width: BANNER_W * banner.s, height: BANNER_H * banner.s }}
+              style={{ left: banner.offX, top: banner.offY, width: BANNER_W * banner.sx, height: BANNER_H * banner.sy }}
             >
               <Image
                 src="/home-hero.jpg"
@@ -72,7 +72,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
                 quality={100}
                 placeholder="empty"
                 sizes="100vw"
-                className="object-cover"
+                className="object-fill"
               />
             </div>
           )}
@@ -194,6 +194,9 @@ interface BannerLayout {
   offY: number;
   width: number;
   height: number;
+  /** Horizontal and vertical scale (they differ when the banner is stretched to fit). */
+  sx: number;
+  sy: number;
   /** Height the hero needs so the whole banner shows (>= the screen). */
   total: number;
 }
@@ -222,21 +225,25 @@ function useBannerLayout(
       const top = navRef.current?.offsetHeight ?? 0;
       const avail = h - top;
       let s: number, offX: number, offY: number;
+      let sx: number, sy: number;
       if (w >= 640) {
-        // Fill the screen edge to edge: at least the full width (the page
-        // grows to the image's height if needed, so its top and bottom are
-        // never cropped), and at least the full height on tall windows
-        // (cropping only the sides there).
-        s = Math.max(w / BANNER_W, avail / BANNER_H);
-        offX = (w - BANNER_W * s) / 2;
+        // Exactly the screen below the nav bar: the whole banner, nothing
+        // cropped and no scrolling. Width and height are scaled separately,
+        // so on screens that aren't 16:9 it is stretched slightly to fit.
+        sx = w / BANNER_W;
+        sy = avail / BANNER_H;
+        s = Math.min(sx, sy);
+        offX = 0;
         offY = top;
       } else {
         s = Math.max(w / BANNER_W, avail / BANNER_H);
         const gapCentre = (GAP_LEFT + GAP_RIGHT) / 2;
         offX = Math.min(0, Math.max(w - BANNER_W * s, w / 2 - gapCentre * s));
         offY = top + (avail - BANNER_H * s) / 2;
+        sx = s;
+        sy = s;
       }
-      setLayout({ s, offX, offY, width: w, height: h, total: Math.max(h, offY + BANNER_H * s) });
+      setLayout({ s, sx, sy, offX, offY, width: w, height: h, total: h });
     };
 
     update();
@@ -273,9 +280,9 @@ function CenteredCard({ layout, children }: { layout: BannerLayout | null; child
 
   let box: { left: number; top: number; width: number; height: number; scale: number } | null = null;
   if (layout) {
-    const { s, offX, offY, width: w, height: h } = layout;
-    const X = (x: number) => offX + x * s;
-    const Y = (y: number) => offY + y * s;
+    const { sx, sy, offX, offY, width: w, height: h } = layout;
+    const X = (x: number) => offX + x * sx;
+    const Y = (y: number) => offY + y * sy;
     if (w < 640) {
       // Mobile: centred, full width with side margins, vertically centred
       // below the nav bar; covering parts of the artwork is fine here.
