@@ -29,7 +29,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
     <div
       ref={heroRef}
       style={isLogin && banner ? { minHeight: banner.total } : undefined}
-      className={`relative isolate flex w-full flex-col ${
+      className={`relative isolate flex w-full flex-col overflow-hidden ${
         // The home banner's text runs nearly edge to edge vertically, so on
         // viewports wider than 16:9 grow to the image's own height (instead of
         // cropping its top/bottom); never shorter than the screen, as before.
