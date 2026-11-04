@@ -45,6 +45,17 @@ const ORANGE = "#f36f24";
 const ORANGE_HI = "#ff8a3d";
 const PANEL_BG = "linear-gradient(160deg, #18181b 0%, #111113 100%)";
 
+// Dark values for the app's brand colour tokens (see app/globals.css), used by
+// the Logistic and Equipment Register tabs so their tables read white-on-black.
+const DARK_TOKENS = {
+  "--brand-black-rgb": "245 245 247",
+  "--brand-gray-dark-rgb": "205 207 213",
+  "--brand-gray-rgb": "150 153 162",
+  "--brand-gray-light-rgb": "40 40 46",
+  "--brand-surface-rgb": "24 24 27",
+  "--brand-border-rgb": "52 52 58",
+} as React.CSSProperties;
+
 const TYPE_ICONS: Record<PmvTypeBreakdown["key"], React.ElementType> = {
   vehicles: Truck,
   excavators: Construction,
@@ -126,10 +137,10 @@ function PmvPageContent() {
       {tab === "dashboard" ? (
         <PmvDashboard onOpenLog={openLog} />
       ) : (
-        // The log tables and the tracker are see-through light "glass" cards made
-        // for the app's light background: on the black page they turned grey and
-        // unreadable, so they sit on a solid light panel with dark text.
-        <div className="rounded-2xl p-3 text-brand-black sm:p-5" style={{ background: "var(--background-app, #E9EAEB)" }}>
+        // The log tables are built from the app's brand colour tokens (made for its
+        // light background). Here those tokens are switched to a dark palette, so
+        // the same tables show light text on dark cards, matching the dashboard.
+        <div className="text-white" style={DARK_TOKENS}>
           {tab === "log" ? <PmvLogSection activeKey={logKey} setActiveKey={setLogKey} /> : <EquipmentTrackerSection />}
         </div>
       )}
@@ -212,7 +223,10 @@ function EquipmentTrackerSection() {
       <div className="min-w-0">
         {ASSET_REGISTER_DEFINITION && <PmvLogTable definition={ASSET_REGISTER_DEFINITION} />}
       </div>
-      <EquipmentTracker />
+      {/* The tracker is a white phone-style screen: keep its text dark. */}
+      <div className="text-slate-800">
+        <EquipmentTracker />
+      </div>
     </div>
   );
 }
