@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 // The About page is the approved design artwork itself, shown exactly as
-// supplied (public/brand/about-hse-hd.jpg, upscaled 2x to 2560x1440; hotspot
+// supplied (public/brand/about-hse-hd2.jpg, upscaled 2x to 2560x1440; hotspot
 // coordinates below are in the original 1280x720 units). The three nav labels
 // printed on it are made clickable with invisible links placed over them.
 const W = 1280;
@@ -21,7 +21,7 @@ export default function AboutPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#0d0d0f]">
       <div className="relative w-full" style={{ aspectRatio: `${W} / ${H}` }}>
         <Image
-          src="/brand/about-hse-hd.jpg"
+          src="/brand/about-hse-hd2.jpg"
           alt="About HSE Department: Meet the HSE Director Rabih El Chaar, our mission, vision and HSE core team"
           fill
           priority
