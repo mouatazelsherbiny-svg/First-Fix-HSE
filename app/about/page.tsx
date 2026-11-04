@@ -11,7 +11,7 @@ const W = 1280;
 const H = 720;
 const pct = (v: number, of: number) => `${(v / of) * 100}%`;
 const HOTSPOTS = [
-  { label: "Home", href: "/", x: 992, y: 4, w: 54, h: 30 },
+  { label: "Home", href: "/login", x: 992, y: 4, w: 54, h: 30 },
   { label: "About HSE", href: "/about", x: 1064, y: 4, w: 82, h: 30 },
   { label: "Our Team", href: "#team", x: 1156, y: 4, w: 74, h: 30 },
 ];
