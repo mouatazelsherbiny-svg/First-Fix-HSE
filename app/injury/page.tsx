@@ -180,7 +180,7 @@ function InjuryOverview() {
 
   return (
     <div
-      className={`${montserrat.className} relative -mt-6 overflow-hidden rounded-3xl border border-white/5 p-4 text-white shadow-2xl sm:p-6`}
+      className={`${montserrat.className} relative -mt-6 overflow-hidden p-4 text-white sm:p-6`}
       style={{
         background:
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
