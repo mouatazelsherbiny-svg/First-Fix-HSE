@@ -50,7 +50,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
         <>
           <div className="absolute inset-0 -z-20 bg-black" />
           <Image
-            src="/home-hero.jpg"
+            src="/home-hero-4k.jpg"
             alt=""
             aria-hidden
             fill
@@ -64,7 +64,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
               style={{ left: banner.offX, top: banner.offY, width: BANNER_W * banner.sx, height: BANNER_H * banner.sy }}
             >
               <Image
-                src="/home-hero.jpg"
+                src="/home-hero-4k.jpg"
                 alt={t.landing.heroTagline}
                 fill
                 priority
@@ -81,7 +81,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
         // Served byte-for-byte (unoptimized) so it is never re-compressed;
         // quality/sizes only matter if the optimizer is ever re-enabled.
         <Image
-          src="/home-hero.jpg"
+          src="/home-hero-4k.jpg"
           alt={t.landing.heroTagline}
           fill
           priority
@@ -172,7 +172,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
   );
 }
 
-// Layout of public/home-hero.jpg, in the image's own pixels (1600x900).
+// Layout of the banner (public/home-hero-4k.jpg, 3840x2160), in units of the original 1600x900 artwork.
 const BANNER_W = 1600;
 const BANNER_H = 900;
 // Empty middle area: below the "HSE DEPARTMENT" title, above the slogan
