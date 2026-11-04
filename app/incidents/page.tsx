@@ -1,41 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
-import {
-  Ambulance,
-  Bandage,
-  BriefcaseMedical,
-  CarFront,
-  Flame,
-  Leaf,
-  OctagonAlert,
-  ShieldX,
-  Skull,
-  Thermometer,
-  TriangleAlert,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  LabelList,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useEffect, useMemo, useState } from "react";
+import { Montserrat } from "next/font/google";
+import { BedDouble, CarFront, HardHat, OctagonAlert, Thermometer, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useLanguage } from "@/context/LanguageContext";
+import ProjectFilter from "@/components/ProjectFilter";
 import { useIncidents } from "@/context/IncidentsContext";
 import type { Incident } from "@/types/incident";
 
+// Same geometric sans as the Injury and PMV pages.
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
+
 export default function IncidentsPage() {
   return (
-    <ProtectedRoute>
+    // The project filter lives in this page's own header (as on Injury and PMV).
+    <ProtectedRoute hideProjectFilter>
       <IncidentsOverview />
     </ProtectedRoute>
   );
@@ -47,30 +26,34 @@ export default function IncidentsPage() {
 // a card when either its Incident Category or its Classification matches.
 // ---------------------------------------------------------------------------
 
-const ACCENT = "rgb(var(--brand-orange-rgb))";
+const ORANGE = "#f36f24";
+const ORANGE_HI = "#ff8a3d";
+const PANEL_BG = "linear-gradient(160deg, #18181b 0%, #111113 100%)";
 
 interface CardDef {
   key: string;
   label: string;
   title: string;
-  icon: LucideIcon;
-  color: string;
+  /** Colour icon from public/brand/incidents, or a lucide icon in `color`. */
+  img?: string;
+  icon?: LucideIcon;
+  color?: string;
   match: string[];
 }
 
 const CARDS: CardDef[] = [
-  { key: "fatality", label: "Fatality", title: "Fatality", icon: Skull, color: "#7f1d1d", match: ["Fatality"] },
-  { key: "lti", label: "LTI", title: "Lost Time Injury", icon: ShieldX, color: "#dc2626", match: ["Lost Time Incident", "Lost Time Injury", "LTI"] },
-  { key: "rwc", label: "RWC", title: "Restricted Work Case", icon: BriefcaseMedical, color: "#ea580c", match: ["Restricted Work Case", "RWC"] },
-  { key: "mtc", label: "MTC", title: "Medical Treatment Case", icon: Ambulance, color: "#f59e0b", match: ["Medical Treatment Case", "MTC"] },
-  { key: "fac", label: "FAC", title: "First Aid Case", icon: Bandage, color: "#16a34a", match: ["First Aid Case", "FAC"] },
-  { key: "noi", label: "NOI", title: "Non-Occupational Illness", icon: Thermometer, color: "#0891b2", match: ["Non-Occupational Illness", "NOI"] },
-  { key: "lsr", label: "LSR", title: "LSR Violation", icon: OctagonAlert, color: "#b91c1c", match: ["LSR Violation", "LSR"] },
-  { key: "nm", label: "SNM/NM", title: "Significant Near Miss / Near Miss", icon: TriangleAlert, color: "#d97706", match: ["Significant Near Miss", "Near Miss", "SNM", "NM"] },
-  { key: "pd", label: "PD", title: "Property Damage", icon: Wrench, color: "#475569", match: ["Property Damage", "PD"] },
-  { key: "fire", label: "Fire", title: "Fire", icon: Flame, color: "#ef4444", match: ["Fire", "Fire Incident"] },
-  { key: "env", label: "Environmental", title: "Environmental", icon: Leaf, color: "#15803d", match: ["Environmental", "Environmental Incident"] },
-  { key: "rta", label: "RTA", title: "Road Traffic Accident", icon: CarFront, color: "#2563eb", match: ["Road Traffic Accident", "RTA"] },
+  { key: "fatality", label: "Fatality", title: "Fatality", img: "/brand/incidents/fatality.png", match: ["Fatality"] },
+  { key: "lti", label: "LTI", title: "Lost Time Injury", icon: BedDouble, color: "#60a5fa", match: ["Lost Time Incident", "Lost Time Injury", "LTI"] },
+  { key: "rwc", label: "RWC", title: "Restricted Work Case", img: "/brand/incidents/restricted.png", match: ["Restricted Work Case", "RWC"] },
+  { key: "mtc", label: "MTC", title: "Medical Treatment Case", img: "/brand/incidents/medical.png", match: ["Medical Treatment Case", "MTC"] },
+  { key: "fac", label: "FAC", title: "First Aid Case", img: "/brand/incidents/first-aid.png", match: ["First Aid Case", "FAC"] },
+  { key: "noi", label: "NOI", title: "Non-Occupational Illness", icon: Thermometer, color: "#38bdf8", match: ["Non-Occupational Illness", "NOI"] },
+  { key: "lsr", label: "LSR", title: "LSR Violation", icon: OctagonAlert, color: "#facc15", match: ["LSR Violation", "LSR"] },
+  { key: "nm", label: "SNM/NM", title: "Significant Near Miss / Near Miss", img: "/brand/incidents/near-miss.png", match: ["Significant Near Miss", "Near Miss", "SNM", "NM"] },
+  { key: "pd", label: "PD", title: "Property Damage", img: "/brand/incidents/dangerous.png", match: ["Property Damage", "PD"] },
+  { key: "fire", label: "Fire", title: "Fire", img: "/brand/incidents/lost-time.png", match: ["Fire", "Fire Incident"] },
+  { key: "env", label: "Environmental", title: "Environmental", img: "/brand/incidents/environmental.png", match: ["Environmental", "Environmental Incident"] },
+  { key: "rta", label: "RTA", title: "Road Traffic Accident", icon: CarFront, color: "#fbbf24", match: ["Road Traffic Accident", "RTA"] },
 ];
 
 /**
@@ -80,12 +63,12 @@ const CARDS: CardDef[] = [
 const SEVERITY_LEVELS = [
   {
     name: "Critical",
-    color: "#b91c1c",
+    color: "#ef4444",
     match: ["Fatality", "Lost Time Incident", "Lost Time Injury", "LTI", "Dangerous Occurrence", "Fire", "Fire Incident"],
   },
   {
     name: "High",
-    color: "#ea580c",
+    color: "#f97316",
     match: [
       "Restricted Work Case",
       "Medical Treatment Case",
@@ -96,13 +79,13 @@ const SEVERITY_LEVELS = [
       "Environmental Incident",
     ],
   },
-  { name: "Moderate", color: "#eab308", match: [] as string[] }, // everything else
+  { name: "Moderate", color: "#facc15", match: [] as string[] }, // everything else
 ];
 
 const TEAM_COLORS: Record<string, string> = {
-  "First Fix": ACCENT,
-  Subcontractor: "#475569",
+  "First Fix": ORANGE,
   "Not specified": "#cbd5e1",
+  Subcontractor: "#3f4656",
 };
 
 const norm = (v: string | null | undefined) => (v ?? "").trim().toLowerCase();
@@ -140,81 +123,106 @@ function countBy(items: Incident[], key: (i: Incident) => string) {
   return Array.from(map, ([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 }
 
+const dateOf = (i: Incident) => {
+  const d = i.incidentDate ? new Date(i.incidentDate) : null;
+  return d && !Number.isNaN(d.getTime()) ? d : null;
+};
+
 // ---------------------------------------------------------------------------
 
 function IncidentsOverview() {
-  const { t } = useLanguage();
   const { incidents, isLoading } = useIncidents();
 
+  // The whole page is dark, like Injury and PMV: paint the app's content area black while here.
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    const prev = main.style.background;
+    main.style.background = "#0a0a0c";
+    return () => {
+      main.style.background = prev;
+    };
+  }, []);
+
   const data = useMemo(() => {
-    const cards = CARDS.map((c) => ({ ...c, value: incidents.filter((i) => matches(i, c.match)).length }));
+    // Last 12 months, oldest first, for each card's small trend line.
+    const now = new Date();
+    const monthIndex = (d: Date) => (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+    const cards = CARDS.map((c) => {
+      const rows = incidents.filter((i) => matches(i, c.match));
+      const series = Array.from({ length: 12 }, () => 0);
+      rows.forEach((i) => {
+        const d = dateOf(i);
+        if (!d) return;
+        const back = monthIndex(d);
+        if (back >= 0 && back < 12) series[11 - back] += 1;
+      });
+      return { ...c, value: rows.length, series };
+    });
     const perProject = countBy(incidents, (i) => i.projectName || "Not specified");
     const perType = countBy(incidents, (i) => i.incidentCategory || "Not specified");
     const severity = SEVERITY_LEVELS.map((l) => ({
       name: l.name,
       value: incidents.filter((i) => severityOf(i) === l.name).length,
       color: l.color,
-    })).filter((s) => s.value > 0);
-    const team = countBy(incidents, teamOf).map((s) => ({
-      ...s,
-      color: TEAM_COLORS[s.name] ?? "#94a3b8",
     }));
+    const team = countBy(incidents, teamOf).map((s) => ({ ...s, color: TEAM_COLORS[s.name] ?? "#94a3b8" }));
     return { cards, perProject, perType, severity, team };
   }, [incidents]);
 
+  const total = incidents.length;
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.incidents}</h1>
-        <p className="mt-1 text-sm text-brand-gray">
-          Live totals pulled from FICC records · {incidents.length.toLocaleString("en-US")} incidents
-        </p>
-      </div>
+    <div
+      className={`${montserrat.className} relative -mt-6 overflow-hidden p-4 text-white sm:p-6`}
+      style={{
+        background:
+          "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
+      }}
+    >
+      {/* ---- Header ---- */}
+      <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
+        <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
+          Incidents
+        </span>
+        <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Incident Summary at a Glance</h1>
+        <div className="ms-auto">
+          <ProjectFilter className="!text-white/75" />
+        </div>
+      </header>
 
       {isLoading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
+        <div className="flex items-center justify-center py-24">
+          <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#f36f24] border-t-transparent" />
         </div>
       ) : (
         <>
-          {/* Compact KPI cards */}
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {/* ---- KPI cards: two rows of six ---- */}
+          <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
             {data.cards.map((c) => (
-              <div
-                key={c.key}
-                title={c.title}
-                className="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-surface px-3 py-3 shadow-card"
-              >
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{ background: `${c.color}1a`, color: c.color }}
-                >
-                  <c.icon className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-2xl font-extrabold leading-none text-brand-black tabular-nums">
-                    {c.value.toLocaleString("en-US")}
-                  </p>
-                  <p className="mt-1 truncate text-xs font-semibold text-brand-grayDark">{c.label}</p>
-                </div>
-              </div>
+              <KpiCard key={c.key} card={c} value={c.value} series={c.series} share={total ? c.value / total : 0} />
             ))}
           </div>
 
-          {/* Charts 2 x 2 */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <ChartCard title="Incidents Per Project">
+          {/* ---- Per project | Severity ---- */}
+          <div className="grid gap-5 xl:grid-cols-2">
+            <Panel title="Incidents Per Project">
               <HorizontalBars rows={data.perProject} />
-            </ChartCard>
-            <ChartCard title="Incident By Severity">
-              <FullPie rows={data.severity} />
-            </ChartCard>
-            <ChartCard title="Incidents Per Type">
+            </Panel>
+            <Panel title="Incident By Severity">
+              <Severity rows={data.severity} total={total} />
+            </Panel>
+          </div>
+
+          {/* ---- Per type | Team ---- */}
+          <div className="mt-5 grid gap-5 xl:grid-cols-2">
+            <Panel title="Incidents Per Type">
               <HorizontalBars rows={data.perType} />
-            </ChartCard>
-            <ChartCard title="Incident By Team">
-              <FullPie rows={data.team} />
-            </ChartCard>
+            </Panel>
+            <Panel title="Incident By Team">
+              <TeamPie rows={data.team} />
+            </Panel>
           </div>
         </>
       )}
@@ -222,97 +230,247 @@ function IncidentsOverview() {
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex min-w-0 flex-col rounded-2xl border border-brand-border bg-brand-surface p-5 shadow-card">
-      <h2 className="mb-3 text-base font-bold text-brand-black">{title}</h2>
+    <section
+      className="flex min-w-0 flex-col rounded-2xl border border-white/[0.08] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:p-6"
+      style={{ background: PANEL_BG }}
+    >
+      <h2 className="mb-5 flex items-center gap-3 text-xl font-bold sm:text-2xl">
+        <span className="h-8 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-[#ff9a4a] to-[#f36f24] shadow-[0_0_10px_rgba(243,111,36,0.8)]" />
+        {title}
+      </h2>
       {children}
     </section>
   );
 }
 
-function Empty() {
+function KpiCard({ card, value, series, share }: { card: CardDef; value: number; series: number[]; share: number }) {
+  const Icon = card.icon;
   return (
-    <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-brand-border text-sm text-brand-gray">
-      No FICC records yet
+    <div
+      title={card.title}
+      className="flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-4 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
+      style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
+    >
+      <div className="flex items-center gap-2.5">
+        {card.img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={card.img} alt="" className="h-10 w-10 shrink-0 object-contain" />
+        ) : Icon ? (
+          <Icon className="h-10 w-10 shrink-0" strokeWidth={1.6} style={{ color: card.color }} />
+        ) : null}
+        <span className="h-10 w-px shrink-0 bg-white/15" />
+        <div className="min-w-0">
+          <p className="text-[28px] font-bold leading-none tabular-nums">{value.toLocaleString("en-US")}</p>
+          <p className="mt-1.5 whitespace-nowrap text-[13px] font-medium text-white/75">{card.label}</p>
+        </div>
+        <Sparkline values={series} className="ms-auto h-8 w-12 min-w-0 shrink" />
+      </div>
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${Math.max(value ? 4 : 0, share * 100)}%`,
+            background: `linear-gradient(90deg, #e2551a, ${ORANGE_HI})`,
+            boxShadow: "0 0 8px rgba(243,111,36,0.8)",
+          }}
+        />
+      </div>
     </div>
   );
 }
 
-/** Horizontal bars, largest first. Scrolls inside the card when there are many rows. */
+/** Small glowing trend line of the monthly counts. */
+function Sparkline({ values, className }: { values: number[]; className?: string }) {
+  const W = 80;
+  const H = 30;
+  const max = Math.max(1, ...values);
+  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - (v / max) * (H - 8)]);
+  let d = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={className} preserveAspectRatio="none" aria-hidden>
+      <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.2" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 3px rgba(243,111,36,0.9))" }} />
+    </svg>
+  );
+}
+
+function Empty() {
+  return <div className="flex h-56 items-center justify-center text-sm text-white/50">No FICC records yet</div>;
+}
+
+/** "Nice" axis maximum and tick step for the bar charts. */
+function niceAxis(max: number) {
+  const raw = Math.max(1, max) / 6;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
+  const top = Math.ceil(max / step) * step || step;
+  return { top, ticks: Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step) };
+}
+
+/** Glowing horizontal bars with value labels and a numeric axis; largest first, scrolls when long. */
 function HorizontalBars({ rows }: { rows: { name: string; value: number }[] }) {
   if (rows.length === 0) return <Empty />;
-  const height = Math.max(220, rows.length * 30);
+  const { top, ticks } = niceAxis(rows[0].value * 1.08);
+  const pct = (v: number) => `${(v / top) * 100}%`;
   return (
-    <div className="max-h-80 overflow-y-auto pe-1">
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 0 }} barCategoryGap={6}>
-            <XAxis type="number" hide allowDecimals={false} />
-            <YAxis
-              type="category"
-              dataKey="name"
-              width={175}
-              tick={{ fontSize: 12, fill: "#334155" }}
-              axisLine={false}
-              tickLine={false}
-              interval={0}
-              tickFormatter={(v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v)}
-            />
-            <Tooltip
-              cursor={{ fill: "rgba(148,163,184,0.12)" }}
-              formatter={(v) => [Number(v).toLocaleString("en-US"), "Incidents"]}
-              contentStyle={{ borderRadius: 12, fontSize: 12 }}
-            />
-            <Bar dataKey="value" fill={ACCENT} radius={[0, 4, 4, 0]} maxBarSize={18} isAnimationActive={false}>
-              <LabelList dataKey="value" position="right" fontSize={11} fill="#334155" />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="flex flex-1 flex-col">
+      <div className="max-h-[23rem] overflow-y-auto pe-2">
+        <div className="relative grid grid-cols-[minmax(0,11rem)_minmax(0,1fr)] gap-x-3">
+          {rows.map((r) => (
+            <div key={r.name} className="contents">
+              <span className="truncate py-1.5 text-end text-[15px] text-white/90" title={r.name}>
+                {r.name}
+              </span>
+              <div className="relative flex items-center border-s border-white/30 py-1.5">
+                {/* Vertical gridlines */}
+                {ticks.slice(1).map((tk) => (
+                  <span key={tk} className="pointer-events-none absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: pct(tk) }} />
+                ))}
+                <div
+                  className="relative h-[22px] rounded-e-[5px]"
+                  style={{
+                    width: pct(r.value),
+                    minWidth: 4,
+                    background: "linear-gradient(180deg, #ffab52 0%, #ff7a1a 45%, #e8590c 100%)",
+                    boxShadow: "0 0 12px rgba(255,122,26,0.55)",
+                  }}
+                />
+                <span className="relative ms-2 text-[15px] font-semibold tabular-nums">{r.value.toLocaleString("en-US")}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Axis */}
+      <div className="grid grid-cols-[minmax(0,11rem)_minmax(0,1fr)] gap-x-3 pe-2">
+        <span />
+        <div className="relative h-6 border-t border-white/30">
+          {ticks.map((tk) => (
+            <span key={tk} className="absolute top-1 -translate-x-1/2 text-xs tabular-nums text-white/75" style={{ left: pct(tk) }}>
+              {tk.toLocaleString("en-US")}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-/** Full (non-donut) pie with a legend showing count and share. */
-function FullPie({ rows }: { rows: { name: string; value: number; color: string }[] }) {
-  const total = rows.reduce((s, r) => s + r.value, 0);
-  if (total === 0) return <Empty />;
-  const pct = (v: number) => `${((v / total) * 100).toFixed(1)}%`;
+function Severity({ rows, total }: { rows: { name: string; value: number; color: string }[]; total: number }) {
+  const pct = (v: number) => (total ? (v / total) * 100 : 0);
   return (
-    <div className="flex flex-1 flex-col items-center gap-4 sm:flex-row">
-      <div className="h-56 w-full sm:w-1/2">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={rows}
-              dataKey="value"
-              nameKey="name"
-              outerRadius="90%"
-              stroke="#fff"
-              strokeWidth={2}
-              isAnimationActive={false}
-              label={({ percent }) => ((percent ?? 0) >= 0.06 ? `${((percent ?? 0) * 100).toFixed(0)}%` : "")}
-              labelLine={false}
-            >
-              {rows.map((r) => (
-                <Cell key={r.name} fill={r.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(v, n) => [`${Number(v).toLocaleString("en-US")} (${pct(Number(v))})`, String(n)]}
-              contentStyle={{ borderRadius: 12, fontSize: 12 }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+    <div className="flex flex-1 flex-col justify-center">
+      <div className="flex justify-center">
+        <div
+          className="flex h-48 w-48 flex-col items-center justify-center rounded-full border-[3px] border-[#f36f24] text-center"
+          style={{ boxShadow: "0 0 30px rgba(243,111,36,0.6), inset 0 0 26px rgba(243,111,36,0.28)" }}
+        >
+          <HardHat className="h-10 w-10 text-white/90" strokeWidth={1.4} />
+          <span className="mt-1 text-5xl font-extrabold leading-none tabular-nums">{total.toLocaleString("en-US")}</span>
+          <span className="mt-1.5 text-base text-white/90">Total Incidents</span>
+        </div>
       </div>
-      <ul className="w-full space-y-2 sm:w-1/2">
+      <ul className="mt-6 space-y-4">
         {rows.map((r) => (
-          <li key={r.name} className="flex items-center gap-2 text-sm">
-            <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: r.color }} />
-            <span className="min-w-0 flex-1 truncate font-semibold text-brand-black">{r.name}</span>
-            <span className="tabular-nums text-brand-black">{r.value.toLocaleString("en-US")}</span>
-            <span className="w-14 text-end text-xs tabular-nums text-brand-gray">{pct(r.value)}</span>
+          <li key={r.name}>
+            <div className="flex items-center gap-3 text-lg font-medium">
+              <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: r.color, boxShadow: `0 0 10px ${r.color}99` }} />
+              <span className="flex-1">{r.name}</span>
+              <span className="w-16 text-end font-bold tabular-nums">{r.value.toLocaleString("en-US")}</span>
+              <span className="w-20 text-end font-bold tabular-nums">{pct(r.value).toFixed(1)}%</span>
+            </div>
+            <div className="mt-2 ps-8">
+              <div className="h-3.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${Math.max(r.value ? 2 : 0, pct(r.value))}%`, background: r.color, boxShadow: `0 0 10px ${r.color}aa` }}
+                />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Full pie with a soft orange glow, percentage labels outside, and a legend with count and share. */
+function TeamPie({ rows }: { rows: { name: string; value: number; color: string }[] }) {
+  const total = rows.reduce((s, r) => s + r.value, 0);
+  const [hover, setHover] = useState<string | null>(null);
+  if (total === 0) return <Empty />;
+  const R = 100;
+  let start = -Math.PI / 2 + 0.0001;
+  const slices = rows.map((r) => {
+    const angle = (r.value / total) * Math.PI * 2;
+    const a0 = start;
+    const a1 = start + angle;
+    start = a1;
+    const mid = (a0 + a1) / 2;
+    const large = angle > Math.PI ? 1 : 0;
+    const p = (a: number, rad = R) => `${(rad * Math.cos(a)).toFixed(2)},${(rad * Math.sin(a)).toFixed(2)}`;
+    const d = angle >= Math.PI * 2 - 0.001 ? `M${p(0)} A${R},${R} 0 1 1 ${p(Math.PI)} A${R},${R} 0 1 1 ${p(0)} Z` : `M0,0 L${p(a0)} A${R},${R} 0 ${large} 1 ${p(a1)} Z`;
+    return { ...r, d, mid, share: r.value / total };
+  });
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 sm:flex-row">
+      <svg viewBox="-150 -130 300 260" className="w-full max-w-[22rem] overflow-visible">
+        <defs>
+          <filter id="teamGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="7" />
+          </filter>
+        </defs>
+        <circle r={R + 2} fill="none" stroke={ORANGE} strokeWidth="6" opacity="0.75" filter="url(#teamGlow)" />
+        {slices.map((s) => (
+          <path
+            key={s.name}
+            d={s.d}
+            fill={s.color}
+            stroke="#e9eef5"
+            strokeOpacity="0.85"
+            strokeWidth="1.5"
+            opacity={hover && hover !== s.name ? 0.55 : 1}
+            onMouseEnter={() => setHover(s.name)}
+            onMouseLeave={() => setHover(null)}
+          >
+            <title>{`${s.name}: ${s.value.toLocaleString("en-US")} (${(s.share * 100).toFixed(1)}%)`}</title>
+          </path>
+        ))}
+        <circle r={R} fill="none" stroke="#ffb066" strokeWidth="1.5" opacity="0.9" />
+        {slices
+          .filter((s) => s.share >= 0.06 && s.share < 0.5)
+          .map((s) => (
+            <text
+              key={s.name}
+              x={(R + 26) * Math.cos(s.mid)}
+              y={(R + 26) * Math.sin(s.mid)}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="#fff"
+              fontSize="17"
+              fontWeight="500"
+            >
+              {Math.round(s.share * 100)}%
+            </text>
+          ))}
+      </svg>
+      <ul className="w-full max-w-sm space-y-4">
+        {slices.map((s) => (
+          <li key={s.name} className="flex items-center gap-3 text-lg" onMouseEnter={() => setHover(s.name)} onMouseLeave={() => setHover(null)}>
+            <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: s.color }} />
+            <span className="min-w-0 flex-1 truncate font-medium">{s.name}</span>
+            <span className="w-14 text-end font-bold tabular-nums">{s.value.toLocaleString("en-US")}</span>
+            <span className="w-16 text-end tabular-nums text-white/85">{(s.share * 100).toFixed(1)}%</span>
           </li>
         ))}
       </ul>
