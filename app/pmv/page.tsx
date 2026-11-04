@@ -126,9 +126,10 @@ function PmvPageContent() {
       {tab === "dashboard" ? (
         <PmvDashboard onOpenLog={openLog} />
       ) : (
-        // The log tables and the tracker are light cards: give them dark text
-        // again (the page itself is white-on-black), so everything reads clearly.
-        <div className="text-brand-black">
+        // The log tables and the tracker are see-through light "glass" cards made
+        // for the app's light background: on the black page they turned grey and
+        // unreadable, so they sit on a solid light panel with dark text.
+        <div className="rounded-2xl p-3 text-brand-black sm:p-5" style={{ background: "var(--background-app, #E9EAEB)" }}>
           {tab === "log" ? <PmvLogSection activeKey={logKey} setActiveKey={setLogKey} /> : <EquipmentTrackerSection />}
         </div>
       )}
