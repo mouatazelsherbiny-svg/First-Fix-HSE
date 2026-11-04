@@ -125,10 +125,12 @@ function PmvPageContent() {
 
       {tab === "dashboard" ? (
         <PmvDashboard onOpenLog={openLog} />
-      ) : tab === "log" ? (
-        <PmvLogSection activeKey={logKey} setActiveKey={setLogKey} />
       ) : (
-        <EquipmentTrackerSection />
+        // The log tables and the tracker are light cards: give them dark text
+        // again (the page itself is white-on-black), so everything reads clearly.
+        <div className="text-brand-black">
+          {tab === "log" ? <PmvLogSection activeKey={logKey} setActiveKey={setLogKey} /> : <EquipmentTrackerSection />}
+        </div>
       )}
     </div>
   );
