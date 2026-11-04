@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Area, AreaChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ProjectFilter from "@/components/ProjectFilter";
 import BodyFigure from "@/components/injury/BodyFigure";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
@@ -29,7 +30,7 @@ const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600"
 
 export default function InjuryPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute hideProjectFilter>
       <InjuryOverview />
     </ProtectedRoute>
   );
@@ -179,7 +180,7 @@ function InjuryOverview() {
 
   return (
     <div
-      className={`${montserrat.className} relative overflow-hidden rounded-3xl border border-white/5 p-4 text-white shadow-2xl sm:p-6`}
+      className={`${montserrat.className} relative -mt-6 overflow-hidden rounded-3xl border border-white/5 p-4 text-white shadow-2xl sm:p-6`}
       style={{
         background:
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
@@ -192,17 +193,21 @@ function InjuryOverview() {
         </span>
         <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
         <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">{b.title}</h1>
-        {group && (
-          <button
-            type="button"
-            onClick={() => setGroup(null)}
-            className="ms-auto inline-flex items-center gap-2 rounded-full border border-[#f36f24]/60 bg-[#f36f24]/15 px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-[#f36f24]/30"
-          >
-            {b.groups[group]}
-            <X className="h-4 w-4" />
-            <span className="sr-only">{b.clearFilter}</span>
-          </button>
-        )}
+        <div className="ms-auto flex flex-wrap items-center gap-3">
+          {group && (
+            <button
+              type="button"
+              onClick={() => setGroup(null)}
+              className="inline-flex items-center gap-2 rounded-full border border-[#f36f24]/60 bg-[#f36f24]/15 px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-[#f36f24]/30"
+            >
+              {b.groups[group]}
+              <X className="h-4 w-4" />
+              <span className="sr-only">{b.clearFilter}</span>
+            </button>
+          )}
+          {/* App-wide project filter, moved into this header (hidden above the page). */}
+          <ProjectFilter className="!text-white/75" />
+        </div>
       </header>
 
       {isLoading ? (
