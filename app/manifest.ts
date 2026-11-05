@@ -9,7 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#F5F5F3",
     theme_color: "#F36F24",
-    orientation: "portrait-primary",
+    // "any": phones and tablets can rotate the installed app to landscape too.
+    orientation: "any",
     icons: [
       {
         src: "/icons/icon-192.png",
