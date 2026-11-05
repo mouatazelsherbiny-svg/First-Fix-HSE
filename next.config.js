@@ -1,9 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Temporary public page: the Generators Report (static file in /public).
+  // Temporary public pages (static files in /public): Generators Report, Qiddiya Workforce map.
   async rewrites() {
-    return [{ source: "/generators-report", destination: "/generators-report.html" }];
+    return [
+      { source: "/generators-report", destination: "/generators-report.html" },
+      { source: "/qiddiya-workforce", destination: "/qiddiya-workforce.html" },
+    ];
   },
 };
 

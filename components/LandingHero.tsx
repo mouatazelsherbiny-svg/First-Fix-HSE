@@ -125,7 +125,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
           <Link href="/about" className="hover:text-brand-orange">
             {t.landing.navContact}
           </Link>
-          {/* Temporary: public Generators Report, opened from /login (remove when no longer needed). */}
+          {/* Temporary: public Generators Report and Qiddiya Workforce map, opened from /login (remove when no longer needed). */}
           {isLogin && (
             <>
               <span className="text-white/40">–</span>
@@ -139,6 +139,19 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
                   <path d="M4 20V14M10 20V9M16 20V12M22 20V4" />
                 </svg>
                 Generators Report
+              </a>
+              <span className="text-white/40">–</span>
+              <a
+                href="/qiddiya-workforce"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-orange px-3 py-0.5 font-semibold text-white transition hover:brightness-110"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" />
+                  <circle cx="12" cy="9.5" r="2.5" />
+                </svg>
+                Qiddiya Workforce
               </a>
             </>
           )}
