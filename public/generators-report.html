@@ -57,8 +57,9 @@ html,body{margin:0;background:#ececef}body{padding:clamp(0px,1.6vw,20px)}.go{max
 .go-card.pad{padding:20px 22px}
 .go-card.acc::before{content:"";position:absolute;left:0;top:0;width:90px;height:4px;background:linear-gradient(90deg,var(--o),var(--o3));border-radius:0 0 4px 0}
 .go-g1{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:16px}
-.go-g2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-@media (max-width:1050px){.go-g1{grid-template-columns:1fr}.go-g2{grid-template-columns:1fr 1fr}.go-g2>:last-child{grid-column:1/-1}}
+.go-g2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:1400px){.go-g2{grid-template-columns:1fr 1fr}}
+@media (max-width:1050px){.go-g1{grid-template-columns:1fr}}
 @media (max-width:680px){.go-g2{grid-template-columns:1fr}}
 .go-hd{display:flex;align-items:center;gap:14px;padding:14px 22px;color:#fff;background:linear-gradient(100deg,var(--o) 0,var(--o) 7px,#1b1b1d 7px,#2a2a2d 78%,var(--o) 78%,var(--o2));clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
 .go-hd svg{width:34px;height:34px;flex:none}
@@ -129,6 +130,30 @@ html,body{margin:0;background:#ececef}body{padding:clamp(0px,1.6vw,20px)}.go{max
 .go-ms td:first-child svg{width:20px;height:20px;flex:none;color:var(--o)}
 .go-ms td:last-child{text-align:right;font-weight:800;white-space:nowrap}
 .go-ms td.o{color:var(--o)}
+.go-os{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.go-ost{background:var(--soft);border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:2px}
+.go-ost.o{background:#fff0e4}
+.go-ost .l{font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--mut)}
+.go-ost b{font-size:40px;font-weight:800;line-height:1.05}
+.go-ost.o b{color:var(--o)}
+.go-ost .s{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--ink2)}
+.go-ost .s i{font-style:normal;display:flex;align-items:center;gap:6px}
+.go-ost .s i::before{content:"";width:7px;height:7px;border-radius:50%}
+.go-ost .s i.ok::before{background:var(--g)}
+.go-ost .s i.bd::before{background:var(--r)}
+.go-locs{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.go-loc{all:unset;box-sizing:border-box;cursor:pointer;display:block;background:var(--soft);border-radius:12px;padding:12px 14px;transition:background .15s,opacity .15s,outline-color .15s;outline:1px solid transparent}
+.go-loc:hover{background:#ececef}
+.go-loc.on{background:#fff0e4;outline-color:#ffc89f}
+.go-loc.off{opacity:.45}
+.go-loc .t{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.go-loc .n{font-size:15px;font-weight:800;letter-spacing:.03em}
+.go-loc .c{font-size:28px;font-weight:800;line-height:1}
+.go-loc .m{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--mut);margin-top:4px}
+.go-loc .bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#dcdce0;margin-top:8px}
+.go-loc .bar i{display:block;height:100%}
+.go-loc .bar .a{background:#2b2b2e}
+.go-loc .bar .b{background:linear-gradient(90deg,var(--o),var(--o2))}
 .go-sec{display:flex;align-items:center;gap:14px;margin-top:6px}
 .go-sec h2{margin:0;font-size:22px;font-weight:800}
 .go-sec .go-rule{max-width:none}
@@ -369,22 +394,34 @@ html,body{margin:0;background:#ececef}body{padding:clamp(0px,1.6vw,20px)}.go{max
       <p class="go-cost">One-time repair cost <b>SAR <span data-draw="pv" data-k="repair_cost">—</span></b> · extra saving <b>SAR <span data-draw="pv" data-k="repair_saving">—</span></b> a month · pays back in about <b><span data-draw="pv" data-k="payback_days">—</span> days</b></p>
     </div>
 
-    <div class="go-card pad acc" id="management-summary">
+    <div class="go-card pad acc" id="office-site">
       <div class="go-ch">
-        <svg viewBox="0 0 40 40" fill="none" stroke="#f26a1b" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="6" width="24" height="30" rx="3"/><path d="M15 4h10v5H15zM13 16h14M13 22h14M13 28h9"/></svg>
-        <h2>Management Summary</h2>
+        <svg viewBox="0 0 40 40" fill="none" stroke="#f26a1b" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="9" width="14" height="25" rx="1.5"/><path d="M9 15h6M9 21h6M9 27h6"/><path d="M23 34V20l6-5 6 5v14" /><path d="M27 34v-6h4v6"/></svg>
+        <div><h2>Owned by Office / Site</h2><p class="go-sub">Where the company-owned generators are</p></div>
       </div>
-      <table class="go-ms">
-        <thead><tr><th>Key Indicator</th><th>Value</th></tr></thead>
-        <tbody>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="13" height="10" rx="1.5"/><path d="M15 8h3v4h-3M5 15v2M12 15v2"/></svg>Rental Generators Reduced</td><td><span data-draw="pv" data-k="before_units">—</span> → <span data-draw="pv" data-k="after_units">—</span></td></tr>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><ellipse cx="10" cy="5" rx="6" ry="2.5"/><path d="M4 5v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5M4 10v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-5"/></svg>Confirmed Monthly Savings</td><td class="o">SAR <span data-draw="pv" data-k="saving_month">—</span></td></tr>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="4" width="16" height="14" rx="2"/><path d="M2 8h16M6 2v4M14 2v4"/></svg>Annualized Rental Savings</td><td>SAR <span data-draw="pv" data-k="saving_year">—</span></td></tr>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l8 4-8 4-8-4z"/><path d="M2 10l8 4 8-4M2 14l8 4 8-4"/></svg>Total Owned Generators</td><td><span data-draw="pv" data-k="owned_total">—</span></td></tr>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 2a4 4 0 0 0-3.8 5.2L2 15.4 4.6 18l8.2-8.2A4 4 0 0 0 18 6l-2.4 2.4-2-.6-.6-2L15.4 3.4A4 4 0 0 0 14 2z"/></svg>Generators to Be Prepared from Breakdown</td><td><span data-draw="pv" data-k="repair_units">—</span></td></tr>
-          <tr><td><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 2v7"/><path d="M5.5 5a7 7 0 1 0 9 0"/></svg>Operational Owned After Preparation</td><td class="o"><span data-draw="pv" data-k="after_working">—</span></td></tr>
-        </tbody>
-      </table>
+      <div class="go-os">
+        <div class="go-ost">
+          <span class="l">OFFICE</span>
+          <b data-draw="v" data-k="owned_office">—</b>
+          <span class="s"><i class="ok"><span data-draw="v" data-k="owned_office_working">—</span> working</i><i class="bd"><span data-draw="v" data-k="owned_office_down">—</span> breakdown</i></span>
+        </div>
+        <div class="go-ost o">
+          <span class="l">SITE</span>
+          <b data-draw="v" data-k="owned_site">—</b>
+          <span class="s"><i class="ok"><span data-draw="v" data-k="owned_site_working">—</span> working</i><i class="bd"><span data-draw="v" data-k="owned_site_down">—</span> breakdown</i></span>
+        </div>
+      </div>
+      <p class="go-fs">OFFICE VS SITE</p>
+      <div class="go-split" data-draw="ossplit" data-source="summary"></div>
+    </div>
+
+    <div class="go-card pad acc" id="by-location">
+      <div class="go-ch">
+        <svg viewBox="0 0 40 40" fill="none" stroke="#f26a1b" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M20 36s11-10.5 11-19a11 11 0 0 0-22 0c0 8.5 11 19 11 19z"/><circle cx="20" cy="17" r="4"/></svg>
+        <div><h2>Generators by Location</h2><p class="go-sub">All generators per location · click one to filter</p></div>
+      </div>
+      <div class="go-locs" data-draw="locs" data-source="summary"></div>
+      <div class="go-leg" style="margin:12px 0 0"><span><i class="go-dot" style="background:#2b2b2e"></i>First Fix</span><span><i class="go-dot" style="background:#f26a1b"></i>Rental</span></div>
     </div>
   </section>
 
@@ -487,12 +524,12 @@ html,body{margin:0;background:#ececef}body{padding:clamp(0px,1.6vw,20px)}.go{max
 dash.calc('summary', {
   inputs: ['generators', 'plan'],
   title: 'Generator totals by filter',
-  description: 'Units, rent before and after off-hire, saving and repair plan for every mix of ownership, status, region, project and action, with All for each.',
+  description: 'Units, rent before and after off-hire, saving, repair plan and owned units at office or site for every mix of ownership, status, region, project and action, with All for each.',
   fn: (generators, plan) => {
     const cat = (r) => r.action === 'Off-hire' ? 'Off-hire' : String(r.action).startsWith('Repair') ? 'Repair' : String(r.action).startsWith('Transfer') ? 'Transfer' : (r.ownership === 'Rented' ? 'Keep' : 'None');
     const p = (k) => Number((plan.find((r) => r.key === k) || {}).value) || 0;
     const planUnits = p('repair_units') || 1, unitCost = p('repair_cost') / planUnits, unitSave = p('repair_saving') / planUnits;
-    const rows = generators.map((r) => ({ own: r.ownership, st: r.status, reg: r.region, proj: r.project, act: cat(r), cost: Number(r.monthly_cost_sar) || 0 }));
+    const rows = generators.map((r) => ({ own: r.ownership, st: r.status, reg: r.region, proj: r.project, act: cat(r), os: r.office_site || '', cost: Number(r.monthly_cost_sar) || 0 }));
     const uniq = (k) => Array.from(new Set(rows.map((r) => r[k]))).sort();
     const out = [];
     for (const own of ['All', 'Owned', 'Rented']) for (const st of ['All', 'Working', 'Breakdown']) for (const reg of ['All', ...uniq('reg')]) for (const proj of ['All', ...uniq('proj')]) for (const act of ['All', 'Off-hire', 'Repair', 'Transfer', 'Keep']) {
@@ -513,6 +550,9 @@ dash.calc('summary', {
         saving_month: before - after, saving_year: (before - after) * 12,
         saving_pct: before ? Math.round(((before - after) / before) * 1000) / 10 : 0,
         owned_total: owned, working_pct: owned ? Math.round((ow / owned) * 100) : 0, down_pct: owned ? 100 - Math.round((ow / owned) * 100) : 0,
+        owned_office: n((r) => r.own === 'Owned' && r.os === 'Office'), owned_site: n((r) => r.own === 'Owned' && r.os === 'Site'),
+        owned_office_working: n((r) => r.own === 'Owned' && r.os === 'Office' && r.st === 'Working'), owned_site_working: n((r) => r.own === 'Owned' && r.os === 'Site' && r.st === 'Working'),
+        owned_office_down: n((r) => r.own === 'Owned' && r.os === 'Office' && r.st !== 'Working'), owned_site_down: n((r) => r.own === 'Owned' && r.os === 'Site' && r.st !== 'Working'),
         rent_off: rented - kept, owned_pct: count ? Math.round((owned / count) * 100) : 0,
         repair_units: ru, after_working: ow + ru, after_down: owned - ow - ru,
         repair_cost: rc, repair_saving: rs, payback_days: rs ? Math.round((rc / rs) * 30) : 0,
@@ -604,6 +644,49 @@ window.go = (() => {
       i.append(s, `\u00a0(${pct}%)`); return i;
     };
     el.append(mk('a', r.owned_working, r.working_pct), mk('b', r.owned_down, r.down_pct));
+  });
+  dash.draw('ossplit', (el) => {
+    const r = plan();
+    el.replaceChildren();
+    const tot = r ? r.owned_office + r.owned_site : 0;
+    if (!tot) return;
+    const q = whereOf(P());
+    const mk = (c, k, label) => {
+      const pct = Math.round((r[k] / tot) * 100);
+      const i = document.createElement('i'); i.className = c; i.style.width = (r[k] / tot) * 100 + '%';
+      if (!r[k]) return i;
+      const s = document.createElement('span'); s.dataset.source = 'summary'; s.dataset.field = k; s.dataset.where = q; s.textContent = fmt(r[k]);
+      if (pct < 22) i.append(s); else i.append(label + '\u00a0', s, `\u00a0(${pct}%)`);
+      return i;
+    };
+    el.append(mk('b', 'owned_office', 'Office'), mk('a', 'owned_site', 'Site'));
+  });
+  dash.draw('locs', (el) => {
+    const s = dash.data('summary');
+    el.replaceChildren();
+    if (s.status !== 'ok') return;
+    const p = P();
+    const rows = s.data.filter((r) => r.reg !== 'All' && r.own === p.own && r.st === p.st && r.proj === p.proj && r.act === p.act)
+      .sort((a, b) => b.count - a.count);
+    rows.forEach((d) => {
+      const q = whereOf({ ...p, reg: d.reg });
+      const mark = (k, text) => { const sp = document.createElement('span'); sp.dataset.source = 'summary'; sp.dataset.field = k; sp.dataset.where = q; sp.textContent = text ?? fmt(d[k]); return sp; };
+      const b = document.createElement('button'); b.type = 'button';
+      b.className = 'go-loc' + (p.reg === 'All' ? '' : p.reg === d.reg ? ' on' : ' off');
+      const top = document.createElement('div'); top.className = 't';
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = d.reg.toUpperCase();
+      const c = document.createElement('span'); c.className = 'c'; c.append(mark('count'));
+      top.append(n, c);
+      const m = document.createElement('div'); m.className = 'm';
+      const l = document.createElement('span'); l.append(mark('owned_total'), ' First Fix · ', mark('rented'), ' Rental');
+      const w = document.createElement('span'); w.append(mark('working'), ' working');
+      m.append(l, w);
+      const bar = document.createElement('div'); bar.className = 'bar';
+      if (d.count) [['a', d.owned_total], ['b', d.rented]].forEach(([cls, v]) => { if (!v) return; const i = document.createElement('i'); i.className = cls; i.style.width = (v / d.count) * 100 + '%'; bar.append(i); });
+      b.append(top, m, bar);
+      b.onclick = () => dash.setParams({ reg: p.reg === d.reg ? 'All' : d.reg });
+      el.append(b);
+    });
   });
   dash.draw('ffsplit', (el) => {
     const r = plan();
