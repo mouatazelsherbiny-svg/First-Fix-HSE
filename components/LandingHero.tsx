@@ -151,7 +151,7 @@ export default function LandingHero({ children, variant = "default" }: LandingHe
                   <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" />
                   <circle cx="12" cy="9.5" r="2.5" />
                 </svg>
-                Qiddiya Workforce
+                Operation Grouping
               </a>
             </>
           )}
