@@ -335,3 +335,26 @@ html[data-morphism="solid"] [class*="bg-black/"] {
     transition: none;
   }
 }
+
+/* ---- Fit every page to any phone / tablet width (portrait or landscape) ----
+   1. Grid and flex children default to "min-width: auto", so one wide table,
+      chart or long word makes the whole column (and the page) wider than the
+      screen; the extra width was then cut off by body { overflow-x: hidden }.
+      min-width: 0 lets them shrink to the screen; wide tables keep scrolling
+      sideways inside their own card. :where() keeps this at zero specificity,
+      so any explicit min-w-* utility still wins.
+   2. On phones and tablets, cards no longer start hidden waiting for the
+      scroll-reveal animation, so nothing stays blank on small screens. */
+main :where(.grid, .flex) > * {
+  min-width: 0;
+}
+main :where(h1, h2, h3) {
+  overflow-wrap: break-word;
+}
+@media (max-width: 1023px) {
+  .reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
