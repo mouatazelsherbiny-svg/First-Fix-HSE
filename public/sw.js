@@ -3,7 +3,7 @@
 // moment if the connection drops — never serve stale data to a signed-in
 // user while online.
 
-const CACHE_NAME = "ffhse-cache-v1";
+const CACHE_NAME = "ffhse-cache-v2"; // bumped so phones pick up the new app icons
 const OFFLINE_FALLBACK_URL = "/dashboard";
 
 const PRECACHE_URLS = [
