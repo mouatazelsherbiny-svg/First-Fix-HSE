@@ -81,7 +81,7 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 h1 { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; margin: 6px 0 4px; letter-spacing: .01em; text-wrap: balance; }
 h1 span { color: var(--elec); }
 .lead { margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
 .stat { border-top: 1px solid var(--card-line); padding-top: 8px; }
 .stat b { display: block; font-family: var(--display); font-size: 26px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
@@ -148,6 +148,8 @@ h1 span { color: var(--elec); }
   h1 { font-size: 26px; }
   .lead { display: none; }
   .stat b { font-size: 21px; }
+  .stat span { font-size: 9.5px; letter-spacing: .03em; }
+  .stats { gap: 6px; }
   #detail { top: auto; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto; max-height: 42%; }
   #detail.min .bd, #detail.min .facts { display: none; }
   #zoom { flex-direction: row; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); top: auto; right: max(12px, env(safe-area-inset-right, 0px)); }
@@ -175,6 +177,7 @@ h1 span { color: var(--elec); }
     <h1>Qiddiya <span>MEP</span> Workforce</h1>
     <p class="lead">Tap a name, or zoom in, to open the next level: the PD, Construction Managers, engineers, groups, then every role in the crew.</p>
     <div class="stats">
+      <div class="stat"><b>1</b><span>PD</span></div>
       <div class="stat"><b id="s-cm">—</b><span>CMs</span></div>
       <div class="stat"><b id="s-eng">—</b><span>Engineers</span></div>
       <div class="stat"><b id="s-grp">—</b><span>Groups</span></div>
@@ -237,6 +240,8 @@ const LEVELS = [
   { key: "role", label: "Job title", m: 3.0, min: 0.95 },
   { key: "ppl", label: "Each person", m: 3.8, min: 1.2 },
 ];
+let flying = false; // true while the map glides to a tapped node
+const fly = (sel) => { flying = true; sel.on("end interrupt", () => { flying = false; }); return sel; };
 const opened = new Map(); // node → the zoom it was opened at; zooming well out closes it again
 LEVELS.forEach((L) => (L.s = 0));
 
@@ -414,7 +419,7 @@ let currentLevel = 0;
 function render() {
   const t = transform, s = t.k;
   // Zooming out past where a branch was opened closes it (and everything under it).
-  opened.forEach((k, m) => { if (s < k * 0.8) opened.delete(m); });
+  if (!flying) opened.forEach((k, m) => { if (s < k * 0.8) opened.delete(m); });
   nodes.forEach((n) => { if (n !== hub && opened.has(n) && !opened.has(n.parent)) opened.delete(n); });
   // A node shows when its parent is open (tapped) or the zoom has reached its level.
   nodes.forEach((n) => {
@@ -469,7 +474,7 @@ function fitView(animate, keepOpen) {
   // Each level appears after a modest zoom, never smaller than what keeps its labels apart.
   LEVELS.forEach((L) => (L.s = L.m ? Math.max(L.m * s, L.min * 1.4) : 0));
   const t = d3.zoomIdentity.translate(left - s * bx[0], topPad + (H - topPad - botPad) / 2 - s * (by[0] + by[1]) / 2).scale(s);
-  (animate ? svg.transition().duration(900).ease(d3.easeCubicInOut) : svg).call(zoom.transform, t);
+  (animate ? fly(svg.transition().duration(900).ease(d3.easeCubicInOut)) : svg).call(zoom.transform, t);
   paintLadder();
 }
 function flyTo(n, s) {
@@ -478,7 +483,7 @@ function flyTo(n, s) {
   // Put the node a little left of centre, so what opens to its right is in view.
   const fx = W < 760 ? W * 0.08 : n.d >= 5 ? W * 0.3 : W * 0.32;
   const t = d3.zoomIdentity.translate(fx - target * n.x, H / 2 + yOff - target * n.y).scale(target);
-  svg.transition().duration(1000).ease(d3.easeCubicInOut).call(zoom.transform, t);
+  fly(svg.transition().duration(1000).ease(d3.easeCubicInOut)).call(zoom.transform, t);
 }
 d3.select("#z-in").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1.5));
 d3.select("#z-out").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1 / 1.5));
@@ -534,7 +539,7 @@ function showDetail(n) {
     b.append(isCount ? "span" : "code").attr("class", isCount ? "cnt" : null).text(right);
   };
   if (n.lvl === -1) {
-    fact(count(0), "CMs"); fact(count(1), "Engineers"); fact(peopleAll, "People");
+    fact(1, "PD"); fact(count(0), "CMs"); fact(count(1), "Engineers"); fact(peopleAll, "People");
     nodes.filter((c) => c.lvl === 0).forEach((c) => row(c.color, c.name, `Construction Manager · ${c.cat}`, c.people, true, () => select(c, true)));
     note.attr("hidden", null).text("Zoom into a Construction Manager to see the engineers, groups and crews under them.");
   } else if (n.lvl === 0 || n.lvl === 1) {
