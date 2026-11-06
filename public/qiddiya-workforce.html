@@ -5,19 +5,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a full-screen topographic night map of the Qiddiya site; the workforce
-   hierarchy sits on it as map pins that unfold level by level as you zoom in.
+/* Layout: a full-screen blueprint sheet of the Qiddiya site; the workforce tree runs
+   left to right on it (site → CM → engineer → group → job title → person) and
+   unfolds level by level as you zoom in.
    Overlay cards float above the map (title, level ladder, details, controls). */
 :root {
-  --ground: #0c1416;        /* desert night */
-  --ground-2: #111c1f;
-  --contour: #1e3034;
-  --contour-hi: #2a4146;
+  --ground: #0b2746;        /* blueprint navy */
+  --ground-2: #0e2f55;
   --ink: #e9eef0;
-  --ink-2: #a7b6ba;
-  --ink-3: #6f8287;
-  --card: rgba(13, 22, 24, 0.86);
-  --card-line: rgba(160, 190, 196, 0.16);
+  --ink-2: #b3c7dc;
+  --ink-3: #7f9bb8;
+  --card: rgba(7, 26, 48, 0.9);
+  --card-line: rgba(170, 205, 240, 0.18);
   --elec: #f3b33f;          /* Electrical */
   --plumb: #3cc6cf;         /* Plumbing */
   --grp-a: #7cc4ff;
@@ -44,10 +43,17 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 .node { cursor: pointer; }
 .node .halo { fill: none; stroke-width: 1.5; opacity: .5; }
 .node .dot { stroke: var(--ground); stroke-width: 2; }
-.node .lbl { font-family: var(--display); font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--ground); stroke-width: 4px; stroke-linejoin: round; letter-spacing: .02em; }
-.node .sub { font-family: var(--mono); fill: var(--ink-2); paint-order: stroke; stroke: var(--ground); stroke-width: 4px; stroke-linejoin: round; }
-.node .tag { font-family: var(--display); font-weight: 700; letter-spacing: .16em; paint-order: stroke; stroke: var(--ground); stroke-width: 4px; }
-.node:hover .lbl, .node:focus-visible .lbl { fill: #fff; }
+.node .box { transition: filter .2s; filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+.node .lbl { font-family: var(--display); font-weight: 600; fill: var(--ink); letter-spacing: .02em; }
+.node .sub { font-family: var(--mono); fill: var(--ink-2); }
+.node .lbl.dark { fill: #10233a; }
+.node .sub.dark { fill: rgba(16,35,58,.78); }
+.node .tag { font-family: var(--display); font-weight: 700; letter-spacing: .16em; }
+.node .plbl { font-family: var(--body); font-weight: 500; fill: var(--ink); paint-order: stroke; stroke: var(--ground); stroke-width: 4px; stroke-linejoin: round; }
+.node .pid { font-family: var(--mono); fill: var(--ink-3); paint-order: stroke; stroke: var(--ground); stroke-width: 4px; }
+.node:hover .box, .node:focus-visible .box { filter: drop-shadow(0 0 10px rgba(255,255,255,.35)); }
+.node.sel .box { stroke: #fff; stroke-width: 2.5; }
+.node.sel .plbl { fill: var(--elec); }
 .node:focus-visible { outline: none; }
 .node:focus-visible .halo { opacity: 1; stroke-width: 2.5; }
 .node.sel .halo { opacity: 1; stroke-width: 2.5; }
@@ -83,7 +89,7 @@ h1 span { color: var(--elec); }
 .search input { width: 100%; box-sizing: border-box; font: 13px var(--body); color: var(--ink); background: rgba(255,255,255,.05); border: 1px solid var(--card-line); border-radius: 10px; padding: 9px 12px 9px 34px; outline: none; }
 .search input:focus { border-color: var(--elec); background: rgba(255,255,255,.08); }
 .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
-.results { list-style: none; margin: 6px 0 0; padding: 4px; max-height: 220px; overflow: auto; border: 1px solid var(--card-line); border-radius: 10px; background: rgba(8,14,15,.96); }
+.results { list-style: none; margin: 6px 0 0; padding: 4px; max-height: 220px; overflow: auto; border: 1px solid var(--card-line); border-radius: 10px; background: rgba(6,22,42,.97); }
 .results button { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 7px 9px; border-radius: 7px; cursor: pointer; font-size: 13px; }
 .results button:hover, .results button:focus-visible { background: rgba(255,255,255,.07); }
 .results small { grid-column: 1; color: var(--ink-3); font-size: 11.5px; }
@@ -144,7 +150,7 @@ h1 span { color: var(--elec); }
   .stat b { font-size: 21px; }
   #detail { top: auto; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto; max-height: 42%; }
   #detail.min .bd, #detail.min .facts { display: none; }
-  #zoom { bottom: auto; top: calc(262px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
+  #zoom { flex-direction: row; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); top: auto; right: max(12px, env(safe-area-inset-right, 0px)); }
   #detail .hd { cursor: pointer; }
   #detail .hd::after { content: "Tap for details"; display: block; margin-top: 8px; font-size: 11px; color: var(--ink-3); }
   #detail:not(.min) .hd::after { content: "Tap to fold"; }
@@ -213,80 +219,69 @@ h1 span { color: var(--elec); }
 const DATA = {"project": "Qiddiya", "head": "Mahmoud Al Jamal", "categories": [{"category": "Electrical", "cm": {"id": "15068", "name": "Mahmoud Sami Mahmoud Samhan"}, "engineers": [{"id": "23774", "name": "Archith Gosh", "groups": [{"name": "Group A", "members": [{"id": "10913", "name": "Omar Ahmed Othman Saeed", "title": "Supervisor - Electrical", "role": "Supervisor"}, {"id": "11788", "name": "Golam Robbani Rezaul Karim", "title": "Foreman - Electrical", "role": "Foreman"}, {"id": "24519", "name": "Muhammad Asad Ajmal Muhammad Ajmal", "title": "Electrician", "role": "Electrician"}, {"id": "20411", "name": "Muhammad Riaz Habib Khan", "title": "Electrician", "role": "Electrician"}, {"id": "17093", "name": "Shahid Muhammad Amin", "title": "Electrician", "role": "Electrician"}, {"id": "15636", "name": "Md Aminul Islam", "title": "Electrician", "role": "Electrician"}, {"id": "18293", "name": "Muhammad Junaid Muhammad Ajaib", "title": "Electrician", "role": "Electrician"}, {"id": "19643", "name": "Md Shahwaz Ansari", "title": "Electrician", "role": "Electrician"}, {"id": "20077", "name": "Bhuttu Ali", "title": "Electrician", "role": "Electrician"}, {"id": "17696", "name": "Shahbaz Tajdin", "title": "Electrician", "role": "Electrician"}]}, {"name": "Group B", "members": [{"id": "300298", "name": "Shaji Muhammed Kunju", "title": "Supervisor - Electrical", "role": "Supervisor"}, {"id": "16545", "name": "Mostafa Abdelhahafiz A Abdelmawgoud", "title": "Foreman - Electrical", "role": "Foreman"}, {"id": "16363", "name": "Md Soriful Islam", "title": "Electrician", "role": "Electrician"}, {"id": "24265", "name": "Usman Ali Muhammad Ramzan", "title": "Electrician", "role": "Electrician"}, {"id": "24584", "name": "Khalil Ullah Muhammad Saeed", "title": "Electrician", "role": "Electrician"}, {"id": "22901", "name": "Junaid Alam Pervaiz Alam", "title": "Electrician", "role": "Electrician"}, {"id": "22675", "name": "Salman Khan", "title": "Electrician", "role": "Electrician"}, {"id": "21276", "name": "Bharat Bahadur B K", "title": "Electrician", "role": "Electrician"}, {"id": "11535", "name": "Mohammad Farukh Aas Mohammad", "title": "Electrician", "role": "Electrician"}, {"id": "14916", "name": "Maroof Ali Khan", "title": "Electrician", "role": "Electrician"}]}]}, {"id": "15092", "name": "Muhammad Younis Ghulam Nabi", "groups": [{"name": "Group A", "members": [{"id": "14837", "name": "Muhammad Ishtiaq Muhammad Ashfaq", "title": "Supervisor - Electrical", "role": "Supervisor"}, {"id": "11792", "name": "Romzan Ali Mohammad Soliman", "title": "Foreman - Electrical", "role": "Foreman"}, {"id": "18582", "name": "Sharif Miah", "title": "Electrician", "role": "Electrician"}, {"id": "13442", "name": "Dilip Mukhiya", "title": "Electrician", "role": "Electrician"}, {"id": "17988", "name": "Mohsin Zafar Zafar Iqbal", "title": "Electrician", "role": "Electrician"}, {"id": "16516", "name": "Md Amir Hossian", "title": "Electrician", "role": "Electrician"}, {"id": "17371", "name": "Awais Khan Abdul Majeed", "title": "Electrician", "role": "Electrician"}, {"id": "18587", "name": "Wajid Nisar Nisar Ahmed Khan", "title": "Electrician", "role": "Electrician"}, {"id": "23008", "name": "Muhammad Alyan Muhammad Akram", "title": "Electrician", "role": "Electrician"}, {"id": "24155", "name": "Sayeed Anwar", "title": "Electrician", "role": "Electrician"}]}, {"name": "Group B", "members": [{"id": "10900", "name": "Unnikrishnan Nair Sasidharan Nair", "title": "Supervisor - Electrical", "role": "Supervisor"}, {"id": "12534", "name": "Ashraf Hussain", "title": "Foreman - Electrical", "role": "Foreman"}, {"id": "24237", "name": "Wajir Ali", "title": "Electrician", "role": "Electrician"}, {"id": "300363", "name": "Mohammad Aurangjeb Alam", "title": "Electrician", "role": "Electrician"}, {"id": "14798", "name": "Mohammad Sabir Khan", "title": "Electrician", "role": "Electrician"}, {"id": "18141", "name": "Waseem Ahmad", "title": "Electrician", "role": "Electrician"}, {"id": "22943", "name": "Ihsan Ali Muhammad Latif", "title": "Electrician", "role": "Electrician"}, {"id": "23075", "name": "Ramnaresh Mahara", "title": "Electrician", "role": "Electrician"}, {"id": "10021", "name": "Nafis Anjum Md Zahir Naushad", "title": "Electrician", "role": "Electrician"}, {"id": "11278", "name": "Sumon Ali Janbar Ali", "title": "Electrician", "role": "Electrician"}]}]}]}, {"category": "Plumbing", "cm": {"id": "13198", "name": "Omar Mohamed Saad Abdelwahab"}, "engineers": [{"id": "26404", "name": "Abdul Rahman Abdullad", "groups": [{"name": "Group A", "members": [{"id": "16822", "name": "Mohammad Tabis Shabir Ahmed", "title": "Supervisor - Plumbing", "role": "Supervisor"}, {"id": "25086", "name": "Salman Khan Noor Mohammad", "title": "Foreman - Plumbing", "role": "Foreman"}, {"id": "23230", "name": "Riyaj Imran Gulshan", "title": "Plumber", "role": "Plumber"}, {"id": "14104", "name": "Mohammad Rasel Fakir", "title": "Plumber", "role": "Plumber"}, {"id": "13505", "name": "Mohammad Fahim", "title": "Plumber", "role": "Plumber"}, {"id": "18260", "name": "Rajan Ram", "title": "Plumber", "role": "Plumber"}, {"id": "17451", "name": "Mohammad Tanweer", "title": "Plumber", "role": "Plumber"}, {"id": "18158", "name": "Jogeswar Malik", "title": "Plumber", "role": "Plumber"}, {"id": "23026", "name": "Muhammad Sajjad Muhammad Ilyas", "title": "Plumber", "role": "Plumber"}, {"id": "20532", "name": "Muhammad Azad Alam", "title": "Plumber", "role": "Plumber"}]}, {"name": "Group B", "members": [{"id": "16080", "name": "Mamun Abu Miah", "title": "Supervisor - Plumbing", "role": "Supervisor"}, {"id": "23699", "name": "Asim Aslam Muhammad Aslam", "title": "Foreman - Plumbing", "role": "Foreman"}, {"id": "18214", "name": "Mohammad Rizwan", "title": "Plumber", "role": "Plumber"}, {"id": "20845", "name": "Jiji Chandran", "title": "Plumber", "role": "Plumber"}, {"id": "18330", "name": "Syed Israr Ali Kazmi Gulzar Hussain", "title": "Plumber", "role": "Plumber"}, {"id": "22724", "name": "Mohd Abdul Rahim Shaikh", "title": "Plumber", "role": "Plumber"}, {"id": "18263", "name": "Zeeshan Ali Shafarish Ali", "title": "Plumber", "role": "Plumber"}, {"id": "24660", "name": "Raja Rameez Ahmed Raja Jamil Akhtar", "title": "Plumber", "role": "Plumber"}, {"id": "24464", "name": "Razi Ahmad", "title": "Plumber", "role": "Plumber"}, {"id": "11771", "name": "Intasar Ahmad Rijavanu", "title": "Plumber", "role": "Plumber"}]}]}, {"id": "26436", "name": "Abdullatif Adnan M Azizalrahman", "groups": [{"name": "Group A", "members": [{"id": "10593", "name": "Rahmankhan Khadarkhan Khadarkhan", "title": "Supervisor - Plumbing", "role": "Supervisor"}, {"id": "14212", "name": "Adeel ur Rahman", "title": "Foreman - Plumbing", "role": "Foreman"}, {"id": "18058", "name": "Meraj Ahamad", "title": "Plumber", "role": "Plumber"}, {"id": "16741", "name": "Mohammad Naseem Ansari", "title": "Plumber", "role": "Plumber"}, {"id": "10749", "name": "Monsur Ali Sekandar Ali", "title": "Plumber", "role": "Plumber"}, {"id": "11281", "name": "Md Eyasin Hossan", "title": "Plumber", "role": "Plumber"}, {"id": "16547", "name": "Palus Faruk Hossain", "title": "Plumber", "role": "Plumber"}, {"id": "22515", "name": "Prem KumarTamang", "title": "Plumber", "role": "Plumber"}, {"id": "14274", "name": "Ali Faheem Khalid Khan", "title": "Plumber", "role": "Plumber"}, {"id": "21171", "name": "Mohammad Rizwan Mohammad Sabir", "title": "Plumber", "role": "Plumber"}]}, {"name": "Group B", "members": [{"id": "10593", "name": "Rahmankhan Khadarkhan Khadarkhan", "title": "Supervisor - Plumbing", "role": "Supervisor"}, {"id": "16993", "name": "Deepak Kumar Sasmal", "title": "Foreman - Plumbing", "role": "Foreman"}, {"id": "13046", "name": "Mohammad Naeem Ahmed", "title": "Plumber", "role": "Plumber"}, {"id": "13055", "name": "Dhadul Islam", "title": "Plumber", "role": "Plumber"}, {"id": "13316", "name": "Manoj Gajmer", "title": "Plumber", "role": "Plumber"}, {"id": "15084", "name": "Umair Ul Hassan Muhammad Ashraf", "title": "Plumber", "role": "Plumber"}, {"id": "18216", "name": "Mohd Aarif", "title": "Plumber", "role": "Plumber"}, {"id": "22769", "name": "Mojiburrahman Atiqurrahman", "title": "Plumber", "role": "Plumber"}, {"id": "24301", "name": "Visal Mohammad Shakeel", "title": "Plumber", "role": "Plumber"}, {"id": "22728", "name": "Hazrat Ali", "title": "Plumber", "role": "Plumber"}]}]}]}]};
 
 /* ===================== hierarchy & layout (world units) ===================== */
+// A left-to-right tree, like the site's org chart: Qiddiya → Construction Manager →
+// Engineer → Group → job titles → each person. Every level opens to the right.
 const CAT_COLOR = { Electrical: "var(--elec)", Plumbing: "var(--plumb)" };
-const CAT_HEX = { Electrical: "#f3b33f", Plumbing: "#3cc6cf" };
 const GRP_COLOR = { "Group A": "var(--grp-a)", "Group B": "var(--grp-b)", "Group C": "var(--grp-c)" };
 const ROLE_COLOR = { Supervisor: "var(--sup)", Foreman: "var(--fore)", Crew: "var(--crew)" };
-const WORLD = { w: 2400, h: 1600 };
-const HUB = { x: 1200, y: 760 };
-// Level shown when the map's pixel scale reaches this value (zoom-to-detail ladder).
+// Column (x) of each level in world units, and the pixel scale at which it appears.
+const COL = [0, 470, 1050, 1440, 1590, 1830];
 const LEVELS = [
-  { key: "cm", label: "Construction Manager", s: 0 },
-  { key: "eng", label: "Engineer", s: 0.9 },
-  { key: "grp", label: "Group", s: 1.9 },
-  { key: "role", label: "Role in group", s: 3.6 },
-  { key: "ppl", label: "Each person", s: 7.5 },
+  { key: "cm", label: "Construction Manager", m: 0, min: 0 },
+  { key: "eng", label: "Engineer", m: 1.2, min: 0.3 },
+  { key: "grp", label: "Group", m: 1.5, min: 0.4 },
+  { key: "role", label: "Job title", m: 2.0, min: 0.95 },
+  { key: "ppl", label: "Each person", m: 3.0, min: 1.2 },
 ];
-const R = { eng: 270, grp: 118, role: 46, ppl: 24 };
-const pol = (o, r, a) => ({ x: o.x + r * Math.cos(a), y: o.y + r * Math.sin(a) });
-const spread = (n, width) => Array.from({ length: n }, (_, i) => (n === 1 ? 0 : -width / 2 + (width * i) / (n - 1)));
+LEVELS.forEach((L) => (L.s = 0));
 
-const nodes = [], links = [], byId = new Map();
-const add = (n) => { nodes.push(n); byId.set(n.key, n); return n; };
-const hub = add({ key: "hub", lvl: -1, kind: "Project", name: DATA.project, meta: "Project Head · " + DATA.head, x: HUB.x, y: HUB.y, color: "var(--hub)", parent: null });
-
-DATA.categories.forEach((c, ci) => {
-  const dir = ci === 0 ? Math.PI : 0; // first category west of the hub, second east
-  const cmPos = pol(HUB, 560, dir + (ci === 0 ? 0.06 : -0.06));
-  const color = CAT_COLOR[c.category] || "var(--ink)";
+// Build a d3 hierarchy from the sheet.
+const tree = { kind: "Project", name: DATA.project, meta: "Project Head · " + DATA.head, lvl: -1, children: [] };
+DATA.categories.forEach((c) => {
   const people = c.engineers.reduce((s, e) => s + e.groups.reduce((t, g) => t + g.members.length, 0), 0);
-  const cm = add({ key: "cm-" + ci, lvl: 0, kind: "Construction Manager", cat: c.category, name: c.cm.name, id: c.cm.id, meta: `${c.category} · ID ${c.cm.id}`, ...cmPos, color, parent: hub, people, angle: dir });
-  links.push({ a: hub, b: cm, lvl: 0, color });
-  const eAngles = spread(c.engineers.length, 1.5);
-  c.engineers.forEach((e, ei) => {
-    const ea = dir + eAngles[ei];
-    const ep = pol(cmPos, R.eng, ea);
+  const cm = { lvl: 0, kind: "Construction Manager", cat: c.category, name: c.cm.name, id: c.cm.id, meta: `${c.category} · ID ${c.cm.id}`, people, color: CAT_COLOR[c.category] || "var(--ink)", children: [] };
+  tree.children.push(cm);
+  c.engineers.forEach((e) => {
     const eppl = e.groups.reduce((t, g) => t + g.members.length, 0);
-    const en = add({ key: `eng-${ci}-${ei}`, lvl: 1, kind: "Engineer", cat: c.category, name: e.name, id: e.id, meta: `Engineer ${c.category} · ID ${e.id}`, ...ep, color, parent: cm, people: eppl, angle: ea });
-    links.push({ a: cm, b: en, lvl: 1, color });
-    const gAngles = spread(e.groups.length, 1.25);
-    e.groups.forEach((g, gi) => {
-      const ga = ea + gAngles[gi];
-      const gp = pol(ep, R.grp, ga);
-      const gc = GRP_COLOR[g.name] || "var(--grp-c)";
-      const gn = add({ key: `grp-${ci}-${ei}-${gi}`, lvl: 2, kind: "Group", cat: c.category, name: g.name, meta: `${e.name} · ${g.members.length} people`, ...gp, color: gc, parent: en, people: g.members.length, members: g.members, angle: ga });
-      links.push({ a: en, b: gn, lvl: 2, color: gc });
-      // Roles: supervisor, foreman and the crew (electricians / plumbers).
+    const en = { lvl: 1, kind: "Engineer", cat: c.category, name: e.name, id: e.id, meta: `Engineer ${c.category} · ID ${e.id}`, people: eppl, color: cm.color, children: [] };
+    cm.children.push(en);
+    e.groups.forEach((g) => {
+      const gn = { lvl: 2, kind: "Group", cat: c.category, name: g.name, meta: `${e.name} · ${g.members.length} people`, people: g.members.length, members: g.members, color: GRP_COLOR[g.name] || "var(--grp-c)", children: [] };
+      en.children.push(gn);
       const sup = g.members.filter((m) => m.role === "Supervisor");
       const fore = g.members.filter((m) => m.role === "Foreman");
       const crew = g.members.filter((m) => m.role !== "Supervisor" && m.role !== "Foreman");
-      const trade = crew[0]?.role || "Crew";
-      const roleDefs = [
-        ...sup.map((m) => ({ type: "Supervisor", m })),
-        ...fore.map((m) => ({ type: "Foreman", m })),
-        ...(crew.length ? [{ type: "Crew", crew, trade }] : []),
-      ];
-      const rAngles = spread(roleDefs.length, 1.7);
-      roleDefs.forEach((rd, ri) => {
-        const ra = ga + rAngles[ri];
-        const rp = pol(gp, R.role, ra);
-        if (rd.type === "Crew") {
-          const cn = add({ key: `crew-${ci}-${ei}-${gi}`, lvl: 3, kind: rd.trade + "s", cat: c.category, name: `${rd.crew.length} ${rd.trade}s`, meta: `${g.name} crew`, ...rp, color: ROLE_COLOR.Crew, parent: gn, people: rd.crew.length, members: rd.crew, angle: ra, role: "Crew" });
-          links.push({ a: gn, b: cn, lvl: 3, color: ROLE_COLOR.Crew });
-          const wA = spread(rd.crew.length, Math.PI * 1.55);
-          rd.crew.forEach((m, wi) => {
-            const wp = pol(rp, R.ppl, ra + wA[wi]);
-            const wn = add({ key: `p-${m.id}-${ci}${ei}${gi}`, lvl: 4, kind: m.role, cat: c.category, name: m.name, id: m.id, meta: `${m.title} · ID ${m.id}`, ...wp, color: ROLE_COLOR.Crew, parent: cn, person: m, angle: ra + wA[wi] });
-            links.push({ a: cn, b: wn, lvl: 4, color: ROLE_COLOR.Crew });
-          });
-        } else {
-          const rn = add({ key: `p-${rd.m.id}-${ci}${ei}${gi}`, lvl: 3, kind: rd.type, cat: c.category, name: rd.m.name, id: rd.m.id, meta: `${rd.m.title} · ID ${rd.m.id}`, ...rp, color: ROLE_COLOR[rd.type], parent: gn, person: rd.m, angle: ra, role: rd.type });
-          links.push({ a: gn, b: rn, lvl: 3, color: ROLE_COLOR[rd.type] });
-        }
-      });
+      sup.forEach((m) => gn.children.push({ lvl: 3, kind: "Supervisor", role: "Supervisor", cat: c.category, name: m.name, id: m.id, meta: `${m.title} · ID ${m.id}`, person: m, color: ROLE_COLOR.Supervisor }));
+      fore.forEach((m) => gn.children.push({ lvl: 3, kind: "Foreman", role: "Foreman", cat: c.category, name: m.name, id: m.id, meta: `${m.title} · ID ${m.id}`, person: m, color: ROLE_COLOR.Foreman }));
+      if (crew.length) {
+        const trade = crew[0].role;
+        gn.children.push({ lvl: 3, kind: trade + "s", role: "Crew", cat: c.category, name: `${crew.length} ${trade}s`, meta: `${g.name} crew`, people: crew.length, members: crew, color: ROLE_COLOR.Crew,
+          children: crew.map((m) => ({ lvl: 4, kind: m.role, cat: c.category, name: m.name, id: m.id, meta: `${m.title} · ID ${m.id}`, person: m, color: ROLE_COLOR.Crew })) });
+      }
     });
   });
 });
+const root = d3.hierarchy(tree);
+// Leaves 18 units apart; job titles and different branches get more room so their labels never touch.
+d3.tree().nodeSize([18, 1]).separation((a, b) => {
+  if (a.parent !== b.parent) return a.depth <= 3 ? 4 : 2.4;
+  return a.data.lvl === 4 && b.data.lvl === 4 ? 1 : 2.6;
+})(root);
+
+const nodes = [], links = [], byId = new Map();
+root.each((h) => {
+  const n = h.data;
+  n.key = h.ancestors().map((a) => a.parent ? a.parent.children.indexOf(a) : 0).join("-");
+  n.x = COL[h.depth];
+  n.y = h.x;
+  n.parent = h.parent ? h.parent.data : null;
+  if (n.lvl === -1) n.color = "var(--hub)";
+  nodes.push(n); byId.set(n.key, n);
+  if (n.parent) links.push({ a: n.parent, b: n, lvl: n.lvl });
+});
+const hub = nodes[0];
+const WORLD = { w: COL[5] + 260, h: d3.max(nodes, (n) => n.y) - d3.min(nodes, (n) => n.y) };
+const Y0 = d3.min(nodes, (n) => n.y), Y1 = d3.max(nodes, (n) => n.y);
 
 const count = (lvl) => nodes.filter((n) => n.lvl === lvl).length;
 const peopleAll = DATA.categories.reduce((s, c) => s + c.engineers.reduce((t, e) => t + e.groups.reduce((u, g) => u + g.members.length, 0), 0), 0);
@@ -295,38 +290,8 @@ d3.select("#s-eng").text(count(1));
 d3.select("#s-grp").text(count(2));
 d3.select("#s-ppl").text(peopleAll);
 
-/* ===================== terrain (canvas, procedural contours) ===================== */
-function noise2(seed) {
-  // Small value-noise with smooth interpolation, summed over octaves (fbm).
-  const p = new Uint8Array(512); let s = seed;
-  const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
-  const perm = d3.shuffle(d3.range(256), rnd); for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
-  const val = (x, y) => p[(p[x & 255] + y) & 511] / 255;
-  const sm = (t) => t * t * (3 - 2 * t);
-  const n = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = sm(xf), v = sm(yf);
-    const a = val(xi, yi), b = val(xi + 1, yi), c = val(xi, yi + 1), d = val(xi + 1, yi + 1);
-    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
-  return (x, y) => { let t = 0, amp = 1, f = 1, norm = 0; for (let o = 0; o < 5; o++) { t += amp * n(x * f, y * f); norm += amp; amp *= 0.5; f *= 2; } return t / norm; };
-}
-const GW = 240, GH = 160, nz = noise2(7);
-const grid = new Float64Array(GW * GH);
-for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-  const x = i / GW, y = j / GH;
-  // A north-south escarpment ridge (Tuwaiq) running down the west of the site, plus noise.
-  const ridge = Math.exp(-Math.pow((x - 0.2 - 0.05 * Math.sin(y * 6)) / 0.09, 2)) * 0.55;
-  const wadi = -Math.exp(-Math.pow((y - 0.62 - 0.08 * Math.sin(x * 5)) / 0.05, 2)) * 0.18;
-  grid[j * GW + i] = nz(x * 3.2 + 3, y * 3.2 + 1) * 1.15 + ridge + wadi;
-}
-const thresholds = d3.range(0.25, 1.5, 0.04);
-const contours = d3.contours().size([GW, GH]).thresholds(thresholds)(grid);
+/* ===================== background: site-plan blueprint ===================== */
 const canvas = document.getElementById("terrain"), ctx = canvas.getContext("2d");
-const toWorld = d3.geoTransform({ point(x, y) { this.stream.point((x / GW) * WORLD.w * 1.3 - WORLD.w * 0.15, (y / GH) * WORLD.h * 1.3 - WORLD.h * 0.15); } });
-const ROADS = [
-  // Route 40 (Riyadh – Makkah) running in from the north-east, and the site spine.
-  [[2700, -100], [2250, 260], [1820, 520], [1380, 700], [900, 860], [300, 1120], [-200, 1300]],
-  [[1200, 760], [1240, 1100], [1330, 1500], [1380, 1800]],
-];
-
 let W = 0, H = 0, dpr = 1, transform = d3.zoomIdentity, fitS = 1;
 function resize() {
   dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -337,152 +302,168 @@ function resize() {
 function drawTerrain() {
   const t = transform;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const g = ctx.createRadialGradient(t.applyX(HUB.x), t.applyY(HUB.y), 0, t.applyX(HUB.x), t.applyY(HUB.y), Math.max(W, H) * 0.9);
-  g.addColorStop(0, "#132024"); g.addColorStop(1, "#0a1113");
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, "#0d2f57"); g.addColorStop(1, "#0a2341");
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.save(); ctx.translate(t.x, t.y); ctx.scale(t.k, t.k);
-  const path = d3.geoPath(toWorld, ctx);
-  contours.forEach((c, i) => {
-    ctx.beginPath(); path(c);
-    // faint elevation tint: higher ground a touch lighter and warmer
-    ctx.fillStyle = `rgba(${150 + i},${140 + i},${110},${0.012})`; ctx.fill();
-    const major = i % 4 === 0;
-    ctx.strokeStyle = major ? "rgba(70,110,116,.42)" : "rgba(52,82,88,.30)";
-    ctx.lineWidth = (major ? 1.1 : 0.7) / t.k;
+  // Engineering grid: fine lines every 20 units, bold every 100, at any zoom.
+  const x0 = t.invertX(0), x1 = t.invertX(W), y0 = t.invertY(0), y1 = t.invertY(H);
+  [[20, "rgba(170,205,240,.055)", 0.6], [100, "rgba(170,205,240,.11)", 1], [500, "rgba(190,220,250,.16)", 1.2]].forEach(([step, col, lw]) => {
+    if (step * t.k < 7) return;
+    ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+    for (let x = Math.floor(x0 / step) * step; x <= x1; x += step) { const sx = Math.round(t.applyX(x)) + 0.5; ctx.moveTo(sx, 0); ctx.lineTo(sx, H); }
+    for (let y = Math.floor(y0 / step) * step; y <= y1; y += step) { const sy = Math.round(t.applyY(y)) + 0.5; ctx.moveTo(0, sy); ctx.lineTo(W, sy); }
     ctx.stroke();
   });
-  // Roads
-  ROADS.forEach((r, i) => {
-    ctx.beginPath(); r.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-    ctx.strokeStyle = "rgba(10,17,19,.7)"; ctx.lineWidth = (i ? 6 : 8) / t.k; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
-    ctx.strokeStyle = i ? "rgba(140,160,164,.18)" : "rgba(214,170,98,.22)"; ctx.lineWidth = (i ? 1.5 : 2.2) / t.k; ctx.setLineDash(i ? [6 / t.k, 6 / t.k] : []); ctx.stroke(); ctx.setLineDash([]);
-  });
-  // Coordinate grid (approx. lat / long over the Qiddiya site)
-  ctx.strokeStyle = "rgba(120,150,156,.10)"; ctx.lineWidth = 1 / t.k;
-  for (let x = 0; x <= WORLD.w; x += 300) { ctx.beginPath(); ctx.moveTo(x, -400); ctx.lineTo(x, WORLD.h + 400); ctx.stroke(); }
-  for (let y = 0; y <= WORLD.h; y += 300) { ctx.beginPath(); ctx.moveTo(-400, y); ctx.lineTo(WORLD.w + 400, y); ctx.stroke(); }
-  ctx.restore();
+  // Site boundary and title block (drawing-sheet conventions).
+  const bx = t.applyX(-180), by = t.applyY(Y0 - 160), bw = (WORLD.w + 360) * t.k, bh = (Y1 - Y0 + 320) * t.k;
+  ctx.setLineDash([10, 6]); ctx.strokeStyle = "rgba(200,225,250,.28)"; ctx.lineWidth = 1.2; ctx.strokeRect(bx, by, bw, bh); ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(200,225,250,.42)"; ctx.font = "600 11px 'IBM Plex Mono', monospace";
+  ctx.fillText("QIDDIYA SITE · RIYADH PROVINCE · OPERATION / MEP GROUPING", bx + 10, by - 10);
+  ctx.textAlign = "right"; ctx.fillText("SHEET 01 · NOT TO SCALE", bx + bw - 10, by + bh + 18); ctx.textAlign = "left";
 }
 
 /* ===================== SVG ===================== */
 const svg = d3.select("#map");
-const defs = svg.append("defs");
-const glow = defs.append("filter").attr("id", "glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
-glow.append("feGaussianBlur").attr("stdDeviation", 3).attr("result", "b");
-const fm = glow.append("feMerge"); fm.append("feMergeNode").attr("in", "b"); fm.append("feMergeNode").attr("in", "SourceGraphic");
-
-const world = svg.append("g").attr("class", "world");
 const geo = svg.append("g").attr("class", "geo");
-const linkLayers = [0, 1, 2, 3, 4].map((l) => world.append("g").attr("class", "layer").attr("data-l", l));
+const linkLayers = [0, 1, 2, 3, 4].map((l) => svg.append("g").attr("class", "layer links").attr("data-l", l));
 const nodeLayers = [-1, 0, 1, 2, 3, 4].map((l) => svg.append("g").attr("class", "layer nodes").attr("data-l", l));
+const geoSel = geo.selectAll("text").data([]).join("text");
 
 links.forEach((L) => {
-  const mx = (L.a.x + L.b.x) / 2, my = (L.a.y + L.b.y) / 2;
-  const dx = L.b.x - L.a.x, dy = L.b.y - L.a.y;
-  const bend = L.lvl <= 1 ? 0.12 : 0.06;
-  linkLayers[L.lvl].append("path").attr("class", "link")
-    .attr("d", `M${L.a.x},${L.a.y} Q${mx - dy * bend},${my + dx * bend} ${L.b.x},${L.b.y}`)
-    .attr("stroke", L.color).attr("stroke-width", [2.2, 1.8, 1.5, 1.2, 1][L.lvl]).attr("stroke-opacity", [0.75, 0.6, 0.55, 0.5, 0.42][L.lvl]);
+  L.el = linkLayers[L.lvl].append("path").attr("class", "link")
+    .attr("stroke", L.b.lvl === 2 ? L.b.color : L.b.lvl >= 3 ? "var(--sup)" : L.b.color)
+    .attr("stroke-width", [2.2, 1.9, 1.6, 1.3, 1][L.lvl]).attr("stroke-opacity", [0.85, 0.75, 0.7, 0.6, 0.45][L.lvl]);
 });
 
-// Geographic labels (world positions, drawn at constant screen size)
-const GEO = [
-  { x: 330, y: 300, t: "Tuwaiq Escarpment", cls: "geo-label", size: 13 },
-  { x: 2150, y: 330, t: "Route 40 · Riyadh 40 km ↗", cls: "geo-small", size: 11 },
-  { x: 1200, y: 1440, t: "Qiddiya · Riyadh Province", cls: "geo-label", size: 13 },
-];
-const geoSel = geo.selectAll("text").data(GEO).join("text").attr("class", (d) => d.cls).attr("text-anchor", "middle").text((d) => d.t);
-
-// Nodes (screen-space groups, repositioned on zoom so marks keep a constant size)
-const SIZE = { "-1": 9, 0: 13, 1: 10, 2: 9, 3: 7, 4: 4.5 };
-const LBL = { "-1": 17, 0: 22, 1: 17, 2: 16, 3: 14, 4: 12 };
+// Each node is a box (like the org chart) drawn in screen space, so it keeps a
+// readable size at any zoom; its left edge sits on the node's world position.
+const FONT = { "-1": 17, 0: 17, 1: 15, 2: 14, 3: 13, 4: 12.5 };
 nodes.forEach((n) => {
   const g = nodeLayers[n.lvl + 1].append("g").attr("class", "node").attr("tabindex", n.lvl <= 0 ? 0 : -1)
     .attr("role", "button").attr("aria-label", `${n.kind}: ${n.name}`).datum(n);
   n.el = g;
-  const r = SIZE[n.lvl];
-  if (n.lvl <= 0) g.append("circle").attr("class", "pulse").attr("stroke", n.color).attr("r", 14);
-  g.append("circle").attr("class", "halo").attr("r", r + 6).attr("stroke", n.color);
-  if (n.lvl === 2) {
-    g.append("rect").attr("class", "dot").attr("x", -r).attr("y", -r).attr("width", 2 * r).attr("height", 2 * r).attr("rx", 3).attr("fill", n.color);
-  } else if (n.role === "Crew") {
-    g.append("circle").attr("class", "dot").attr("r", r + 1).attr("fill", "var(--ground-2)").attr("stroke", n.color).attr("stroke-width", 2);
-  } else {
-    g.append("circle").attr("class", "dot").attr("r", r).attr("fill", n.color).attr("filter", n.lvl <= 1 ? "url(#glow)" : null);
-  }
-  // Label placement: outward from the parent so labels fan away from the centre.
-  const out = n.angle ?? -Math.PI / 2;
-  const right = Math.cos(out) >= -0.2;
-  const anchor = n.lvl <= 0 ? "middle" : right ? "start" : "end";
-  const dx = n.lvl <= 0 ? 0 : (right ? 1 : -1) * (r + 8);
-  const dy0 = n.lvl <= 0 ? (n.lvl === -1 ? -r - 34 : r + 26) : 4;
-  if (n.lvl === 0) g.append("text").attr("class", "tag").attr("text-anchor", "middle").attr("y", -r - 14).attr("font-size", 12).attr("fill", n.color).text(n.cat.toUpperCase());
   const words = n.name.split(" ");
   n.short = n.lvl >= 0 && n.lvl <= 1 && words.length > 2 ? `${words[0]} ${words[words.length - 1]}` : n.name;
-  n.lblEl = g.append("text").attr("class", "lbl").attr("text-anchor", anchor).attr("x", dx).attr("y", dy0).attr("font-size", LBL[n.lvl]).text(n.name);
+  if (n.lvl === 4) {
+    // Each person: a dot and their name, no box.
+    g.append("circle").attr("class", "dot").attr("r", 4).attr("cx", 4).attr("fill", n.color);
+    n.lblEl = g.append("text").attr("class", "plbl").attr("x", 14).attr("y", 4).attr("font-size", FONT[4]).text(n.name);
+    g.append("text").attr("class", "pid").attr("y", 4).attr("font-size", 10.5).text(n.id);
+    n.box = { w: 0, h: 12 };
+    return;
+  }
+  const solid = n.lvl === 2 || n.lvl === 3; // groups and job titles are filled boxes, like the chart
+  const rect = g.append("rect").attr("class", "box").attr("rx", n.lvl <= 0 ? 10 : 8)
+    .attr("fill", solid ? n.color : "rgba(9,30,56,.92)").attr("stroke", n.color).attr("stroke-width", solid ? 0 : 1.6);
+  if (n.lvl === 0) g.append("text").attr("class", "tag").attr("x", 14).attr("font-size", 10.5).attr("fill", n.color).text(n.cat.toUpperCase());
+  n.lblEl = g.append("text").attr("class", solid ? "lbl dark" : "lbl").attr("x", 14).attr("font-size", FONT[n.lvl]).text(n.name);
   const sub = n.lvl === -1 ? n.meta
     : n.lvl === 0 ? `Construction Manager · ${n.people} people`
-    : n.lvl === 1 ? `Engineer · ID ${n.id} · ${n.people} people`
+    : n.lvl === 1 ? `Engineer · ID ${n.id}`
     : n.lvl === 2 ? `${n.people} people`
-    : n.lvl === 3 ? (n.person ? `${n.kind} · ID ${n.id}` : `${n.members.length} in crew`)
-    : `ID ${n.id}`;
-  g.append("text").attr("class", "sub").attr("text-anchor", anchor).attr("x", dx).attr("y", dy0 + (n.lvl <= 0 ? 17 : 15)).attr("font-size", n.lvl <= 0 ? 12 : n.lvl === 4 ? 10 : 11).text(sub);
+    : n.person ? `${n.kind} · ID ${n.id}` : `Crew · ${n.members.length} people`;
+  n.subEl = g.append("text").attr("class", solid ? "sub dark" : "sub").attr("x", 14).attr("font-size", n.lvl <= 0 ? 11.5 : 10.5).text(sub);
+  n.rect = rect;
   g.on("click", (ev) => { ev.stopPropagation(); select(n, true); })
    .on("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(n, true); } });
 });
+nodes.filter((n) => n.lvl === 4).forEach((n) => n.el.on("click", (ev) => { ev.stopPropagation(); select(n, true); })
+  .on("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(n, true); } }));
+
+// Size every box to its text (again once the web fonts have loaded).
+function sizeBoxes() {
+  nodes.forEach((n) => {
+    if (n.lvl === 4) {
+      const w = n.lblEl.node().getComputedTextLength();
+      n.el.select(".pid").attr("x", 14 + w + 8);
+      n.box = { w: 14 + w + 8 + 40, h: 12 };
+      return;
+    }
+    const tag = n.lvl === 0;
+    // Phones: the site box shows just its name, so it fits beside the managers.
+    if (n.lvl === -1) n.subEl.text(window.innerWidth < 760 ? "" : n.meta);
+    const w = Math.max(n.lblEl.node().getComputedTextLength(), n.subEl.node().getComputedTextLength()) + 28;
+    const h = tag ? 62 : n.lvl === -1 ? 50 : n.lvl === 3 ? 40 : 44;
+    n.box = { w, h };
+    n.rect.attr("x", 0).attr("y", -h / 2).attr("width", w).attr("height", h);
+    const top = -h / 2;
+    if (tag) { n.el.select(".tag").attr("y", top + 17); n.lblEl.attr("y", top + 36); n.subEl.attr("y", top + 52); }
+    else if (n.lvl === -1 && window.innerWidth < 760) { n.rect.attr("height", 34).attr("y", -17); n.lblEl.attr("y", 6).attr("x", 14); }
+    else { n.lblEl.attr("y", top + (n.lvl === -1 ? 22 : n.lvl === 3 ? 18 : 20)).attr("x", 14); n.subEl.attr("y", top + (n.lvl === -1 ? 39 : n.lvl === 3 ? 33 : 35)); }
+  });
+}
+sizeBoxes();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { sizeBoxes(); render(); });
 
 /* ===================== zoom ===================== */
-const zoom = d3.zoom().scaleExtent([0.15, 16]).on("zoom", (ev) => { transform = ev.transform; render(); });
+const zoom = d3.zoom().scaleExtent([0.12, 6]).on("zoom", (ev) => { transform = ev.transform; render(); });
 svg.call(zoom).on("dblclick.zoom", null);
 svg.on("click", () => select(null));
 
 const smooth = (a, b, v) => Math.max(0, Math.min(1, (v - a) / (b - a)));
-const lvlOpacity = (l, s) => (l <= 0 ? 1 : smooth(LEVELS[l].s * 0.82, LEVELS[l].s, s));
+const lvlOpacity = (l, s) => (l <= 0 ? 1 : smooth(LEVELS[l].s * 0.85, LEVELS[l].s, s));
 let currentLevel = 0;
 function render() {
   const t = transform, s = t.k;
-  world.attr("transform", t);
-  geoSel.attr("x", (d) => t.applyX(d.x)).attr("y", (d) => t.applyY(d.y)).attr("font-size", (d) => d.size).attr("opacity", Math.max(0.25, 1 - s / 6));
-  linkLayers.forEach((g, l) => g.attr("opacity", lvlOpacity(l, s)).style("pointer-events", "none"));
-  nodeLayers.forEach((g, i) => { const l = i - 1, o = lvlOpacity(l, s); g.attr("opacity", o).style("pointer-events", o > 0.5 ? "auto" : "none").style("display", o === 0 ? "none" : null);
+  const op = [];
+  nodeLayers.forEach((g, i) => { const l = i - 1, o = lvlOpacity(l, s); op[l + 1] = o; g.attr("opacity", o).style("pointer-events", o > 0.5 ? "auto" : "none").style("display", o === 0 ? "none" : null);
     g.selectAll(".node").attr("tabindex", o > 0.5 ? 0 : -1); });
+  linkLayers.forEach((g, l) => g.attr("opacity", lvlOpacity(l, s)).style("display", lvlOpacity(l, s) === 0 ? "none" : null));
   const narrow = W < 760 && s < LEVELS[2].s;
-  nodes.forEach((n) => { n.el.attr("transform", `translate(${t.applyX(n.x)},${t.applyY(n.y)})`); if (n.lblEl) n.lblEl.text(narrow ? n.short : n.name); });
+  nodes.forEach((n) => {
+    n.sx = t.applyX(n.x); n.sy = t.applyY(n.y);
+    n.el.attr("transform", `translate(${n.sx},${n.sy})`);
+    if (n.lblEl && n.lvl <= 1) n.lblEl.text(narrow ? n.short : n.name);
+  });
+  // Links: from the right edge of the parent box to the left edge of the child, as a smooth S.
+  links.forEach((L) => {
+    if (lvlOpacity(L.lvl, s) === 0) return;
+    const x1 = L.a.sx + (L.a.box ? L.a.box.w : 0), y1 = L.a.sy, x2 = L.b.sx, y2 = L.b.sy;
+    const mx = x1 + Math.max(12, (x2 - x1) / 2);
+    L.el.attr("d", `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+  });
   let lv = 0; LEVELS.forEach((L, i) => { if (s >= L.s) lv = i; });
   if (lv !== currentLevel) { currentLevel = lv; paintLadder(); }
-  const lat = (24.62 - (t.invertY(H / 2) / WORLD.h) * 0.07).toFixed(3), lon = (46.27 + (t.invertX(W / 2) / WORLD.w) * 0.12).toFixed(3);
+  const lat = (24.62 - ((t.invertY(H / 2) - Y0) / (Y1 - Y0 || 1)) * 0.07).toFixed(3), lon = (46.27 + (t.invertX(W / 2) / WORLD.w) * 0.12).toFixed(3);
   d3.select("#coord").text(`${lat}°N ${lon}°E`);
-  if (s > fitS * 1.4) hideHint();
+  if (s > fitS * 1.3) hideHint();
   drawTerrain();
 }
 
 const levelsOl = d3.select("#levels");
-levelsOl.selectAll("li").data(LEVELS).join("li").html((d) => `<i></i><span></span><em></em>`)
-  .each(function (d) { d3.select(this).select("span").text(d.label); d3.select(this).select("em").text(d.key === "cm" ? "×1" : `×${(d.s / fitS || d.s).toFixed(1)}`); });
+levelsOl.selectAll("li").data(LEVELS).join("li").html(() => `<i></i><span></span><em></em>`)
+  .each(function (d) { d3.select(this).select("span").text(d.label); });
 function paintLadder() {
   levelsOl.selectAll("li").attr("class", (d, i) => (i === currentLevel ? "on" : i < currentLevel ? "done" : null));
   levelsOl.selectAll("li").select("em").text((d) => (d.s <= 0 ? "×1" : `×${Math.max(1, d.s / fitS).toFixed(1)}`));
 }
 
 function fitView(animate) {
-  const pad = W < 760 ? 40 : 80;
-  const xs = nodes.filter((n) => n.lvl <= 1).map((n) => n.x), ys = nodes.filter((n) => n.lvl <= 1).map((n) => n.y);
-  const bx = [d3.min(xs) - 160, d3.max(xs) + 160], by = [d3.min(ys) - 140, d3.max(ys) + 140];
-  const topPad = W < 760 ? 260 : 40, botPad = W < 760 ? 190 : 40;
-  const s = Math.min((W - 2 * pad) / (bx[1] - bx[0]), (H - topPad - botPad) / (by[1] - by[0]), LEVELS[1].s * 0.78);
+  const narrowScreen = W < 760;
+  const padX = narrowScreen ? 24 : 70;
+  const topPad = narrowScreen ? 260 : 40, botPad = narrowScreen ? 190 : 40;
+  const left = narrowScreen ? 24 : Math.min(440, W * 0.3); // keep clear of the title card on wide screens
+  const bx = [-30, WORLD.w], by = [Y0 - 60, Y1 + 60];
+  let s = Math.min((W - left - padX) / (bx[1] - bx[0]), (H - topPad - botPad) / (by[1] - by[0]));
+  // Phones: start on the site and its two managers at a readable size instead of the whole tree.
+  if (narrowScreen) { const cmW = d3.max(nodes.filter((n) => n.lvl === 0), (n) => n.box.w); s = Math.min(0.5, (W - 36 - cmW) / COL[1]); by[0] = by[1] = hub.y; }
   fitS = s;
-  const t = d3.zoomIdentity.translate(W / 2 - s * (bx[0] + bx[1]) / 2, topPad + (H - topPad - botPad) / 2 - s * (by[0] + by[1]) / 2).scale(s);
+  // Each level appears after a modest zoom, never smaller than what keeps its labels apart.
+  LEVELS.forEach((L) => (L.s = L.m ? Math.max(L.m * s, L.min) : 0));
+  const t = d3.zoomIdentity.translate(left - s * bx[0], topPad + (H - topPad - botPad) / 2 - s * (by[0] + by[1]) / 2).scale(s);
   (animate ? svg.transition().duration(900).ease(d3.easeCubicInOut) : svg).call(zoom.transform, t);
   paintLadder();
 }
 function flyTo(n, s) {
-  const target = Math.min(16, s);
-  const yOff = W < 760 ? -H * 0.14 : 0;
-  const t = d3.zoomIdentity.translate(W / 2 - target * n.x, H / 2 + yOff - target * n.y).scale(target);
+  const target = Math.min(6, s);
+  const yOff = W < 760 ? -H * 0.12 : 0;
+  // Put the node a little left of centre, so what opens to its right is in view.
+  const fx = W < 760 ? W * 0.08 : n.lvl >= 3 ? W * 0.3 : W * 0.36;
+  const t = d3.zoomIdentity.translate(fx - target * n.x, H / 2 + yOff - target * n.y).scale(target);
   svg.transition().duration(1000).ease(d3.easeCubicInOut).call(zoom.transform, t);
 }
-d3.select("#z-in").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1.6));
-d3.select("#z-out").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1 / 1.6));
+d3.select("#z-in").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1.5));
+d3.select("#z-out").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1 / 1.5));
 d3.select("#z-home").on("click", () => { select(null); fitView(true); });
 
 let hintDone = false;
@@ -576,7 +557,7 @@ if (window.innerWidth < 760) d3.select("#detail").classed("min", true);
 d3.select("#detail .hd").on("click", (ev) => { if (W < 760 && !ev.target.closest("button")) d3.select("#detail").classed("min", !d3.select("#detail").classed("min")); });
 
 /* ===================== start ===================== */
-window.addEventListener("resize", () => { resize(); render(); });
+window.addEventListener("resize", () => { resize(); sizeBoxes(); render(); });
 resize();
 fitView(false);
 select(null);
