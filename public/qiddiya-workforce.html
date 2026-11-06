@@ -237,7 +237,7 @@ const LEVELS = [
   { key: "role", label: "Job title", m: 3.0, min: 0.95 },
   { key: "ppl", label: "Each person", m: 3.8, min: 1.2 },
 ];
-const opened = new Set();
+const opened = new Map(); // node → the zoom it was opened at; zooming well out closes it again
 LEVELS.forEach((L) => (L.s = 0));
 
 // Build a d3 hierarchy from the sheet.
@@ -413,6 +413,9 @@ const autoOp = (d, s) => (d === 0 ? 1 : smooth(LEVELS[d].s * 0.85, LEVELS[d].s, 
 let currentLevel = 0;
 function render() {
   const t = transform, s = t.k;
+  // Zooming out past where a branch was opened closes it (and everything under it).
+  opened.forEach((k, m) => { if (s < k * 0.8) opened.delete(m); });
+  nodes.forEach((n) => { if (n !== hub && opened.has(n) && !opened.has(n.parent)) opened.delete(n); });
   // A node shows when its parent is open (tapped) or the zoom has reached its level.
   nodes.forEach((n) => {
     n.vis = n === hub ? 1 : Math.max(autoOp(n.d, s), opened.has(n.parent) ? 1 : 0) * n.parent.vis;
@@ -490,7 +493,12 @@ const pathOf = (n) => { const p = []; let c = n; while (c) { p.unshift(c); c = c
 const childrenOf = (n) => nodes.filter((c) => c.parent === n);
 function select(n, fly) {
   selected = n;
-  if (n) pathOf(n).forEach((m) => opened.add(m));
+  if (n) {
+    const kidD = Math.min(n.d + 1, LEVELS.length - 1);
+    const at = fly ? (n === hub ? fitS : Math.max(transform.k, fitS, LEVELS[kidD].min * 1.05, LEVELS[n.d].min)) : Math.max(transform.k, LEVELS[n.d].min * 1.3, fitS);
+    pathOf(n).forEach((m) => { if (!opened.has(m)) opened.set(m, at); });
+    opened.set(n, Math.min(opened.get(n), at));
+  }
   if (n) hideHint();
   nodes.forEach((m) => m.el.classed("sel", m === n));
   // Dim everything outside the selected branch.
