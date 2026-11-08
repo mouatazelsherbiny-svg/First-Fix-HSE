@@ -180,28 +180,15 @@ function IncidentsOverview() {
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
       }}
     >
-      {/* ---- Header: logo | INCIDENTS + subtitle ......... filter · HSE ANALYTICS ---- */}
-      <header className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-white/[0.07] pb-4">
-        <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/ff-mark.png" alt="" className="h-12 w-12 object-contain sm:h-[60px] sm:w-[60px]" />
-          <span className="text-[28px] font-extrabold tracking-tight sm:text-[38px]">First Fix</span>
-        </div>
-        <span className="hidden h-14 w-[2px] rounded-full bg-gradient-to-b from-transparent via-[#f36f24] to-transparent shadow-[0_0_8px_rgba(243,111,36,0.8)] sm:block" />
-        <div className="min-w-0">
-          <h1 className="text-[28px] font-extrabold uppercase leading-none tracking-wide sm:text-[40px]">Incidents</h1>
-          <p className="mt-1.5 text-[15px] font-medium text-white/90 sm:text-[19px]">HSE Incident Summary at a Glance</p>
-        </div>
-        <div className="ms-auto flex flex-wrap items-center gap-x-6 gap-y-2">
+      {/* ---- Header (same as PMV): title on the left, project filter on the right ---- */}
+      <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
+        <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
+          Incidents
+        </span>
+        <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Incident Summary at a Glance</h1>
+        <div className="ms-auto flex flex-col items-end gap-2.5">
           <ProjectFilter className="!text-white/75" />
-          <span className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden>
-              <rect x="2" y="13" width="5" height="9" rx="1.5" fill="#f36f24" />
-              <rect x="9.5" y="8" width="5" height="14" rx="1.5" fill="#f36f24" />
-              <rect x="17" y="2" width="5" height="20" rx="1.5" fill="#f36f24" />
-            </svg>
-            <span className="text-base font-medium tracking-[0.28em] text-white/90 sm:text-[19px]">HSE ANALYTICS</span>
-          </span>
         </div>
       </header>
 
