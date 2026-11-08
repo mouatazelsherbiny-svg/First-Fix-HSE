@@ -318,7 +318,12 @@ function ObservationsList() {
               </label>
             )}
           </div>
-          <MonthArea points={monthly} />
+          {/* On phones the chart scrolls sideways so its labels stay readable. */}
+          <div className="-mx-1 overflow-x-auto px-1">
+            <div className="min-w-[560px] sm:min-w-0">
+              <MonthArea points={monthly} />
+            </div>
+          </div>
         </section>
         <section className={`${CARD} min-w-0 p-4 sm:p-5`} style={{ background: CARD_BG }}>
           <div className="mb-3 flex items-center gap-3">
