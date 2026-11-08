@@ -312,49 +312,51 @@ function niceAxis(max: number) {
   return { top, ticks: Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step) };
 }
 
-/** Glowing horizontal bars with value labels and a numeric axis; largest first, scrolls when long. */
+const ROW_H = 40; // px per bar row
+const VISIBLE_ROWS = 6; // rows shown before the list scrolls (e.g. KSP … ROSEWOOD)
+
+/** Glowing horizontal bars with value labels and a numeric axis; largest first, scrolls after six rows.
+ *  Names are never cut: the label column is as wide as the longest name. */
 function HorizontalBars({ rows }: { rows: { name: string; value: number }[] }) {
   if (rows.length === 0) return <Empty />;
   const { top, ticks } = niceAxis(rows[0].value * 1.08);
   const pct = (v: number) => `${(v / top) * 100}%`;
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="max-h-[28rem] overflow-y-auto pe-2">
-        <div className="relative grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)] sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] gap-x-3">
-          {rows.map((r) => (
-            <div key={r.name} className="contents">
-              <span className="truncate py-1.5 text-end text-[16px] text-white/90 sm:text-[18px]" title={r.name}>
-                {r.name}
-              </span>
-              <div className="relative flex items-center border-s border-white/30 py-1.5">
-                {/* Vertical gridlines */}
-                {ticks.slice(1).map((tk) => (
-                  <span key={tk} className="pointer-events-none absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: pct(tk) }} />
-                ))}
-                <div
-                  className="relative h-[22px] rounded-e-[5px]"
-                  style={{
-                    width: pct(r.value),
-                    minWidth: 4,
-                    background: "linear-gradient(180deg, #ffab52 0%, #ff7a1a 45%, #e8590c 100%)",
-                    boxShadow: "0 0 12px rgba(255,122,26,0.55)",
-                  }}
-                />
-                <span className="relative ms-2 text-[16px] font-semibold tabular-nums sm:text-[18px]">{r.value.toLocaleString("en-US")}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Axis */}
-      <div className="grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)] sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] gap-x-3 pe-2">
-        <span />
-        <div className="relative h-6 border-t border-white/30">
-          {ticks.map((tk) => (
-            <span key={tk} className="absolute top-1 -translate-x-1/2 text-sm tabular-nums text-white/80" style={{ left: pct(tk) }}>
-              {tk.toLocaleString("en-US")}
+    <div className="overflow-y-auto pe-2" style={{ maxHeight: ROW_H * VISIBLE_ROWS + 28 }}>
+      <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3">
+        {rows.map((r) => (
+          <div key={r.name} className="contents">
+            <span className="flex items-center justify-end whitespace-nowrap text-end text-[15px] text-white/90 sm:text-[18px]" style={{ height: ROW_H }}>
+              {r.name}
             </span>
-          ))}
+            <div className="relative flex items-center border-s border-white/30" style={{ height: ROW_H }}>
+              {/* Vertical gridlines */}
+              {ticks.slice(1).map((tk) => (
+                <span key={tk} className="pointer-events-none absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: pct(tk) }} />
+              ))}
+              <div
+                className="relative h-[22px] rounded-e-[5px]"
+                style={{
+                  width: pct(r.value),
+                  minWidth: 4,
+                  background: "linear-gradient(180deg, #ffab52 0%, #ff7a1a 45%, #e8590c 100%)",
+                  boxShadow: "0 0 12px rgba(255,122,26,0.55)",
+                }}
+              />
+              <span className="relative ms-2 text-[15px] font-semibold tabular-nums sm:text-[18px]">{r.value.toLocaleString("en-US")}</span>
+            </div>
+          </div>
+        ))}
+        {/* Axis: stays pinned under the visible rows while the list scrolls */}
+        <span className="sticky bottom-0 h-7" style={{ background: "#141416" }} />
+        <div className="sticky bottom-0 h-7 border-t border-white/30" style={{ background: "#141416" }}>
+          <div className="relative h-full">
+            {ticks.map((tk) => (
+              <span key={tk} className="absolute top-1 -translate-x-1/2 text-sm tabular-nums text-white/80" style={{ left: pct(tk) }}>
+                {tk.toLocaleString("en-US")}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -363,29 +365,28 @@ function HorizontalBars({ rows }: { rows: { name: string; value: number }[] }) {
 
 function Severity({ rows, total }: { rows: { name: string; value: number; color: string }[]; total: number }) {
   const pct = (v: number) => (total ? (v / total) * 100 : 0);
+  // Circle beside the three rows, so this card is no taller than the bars next to it.
   return (
-    <div className="flex flex-1 flex-col justify-center">
-      <div className="flex justify-center">
-        <div
-          className="flex h-52 w-52 flex-col items-center justify-center rounded-full border-[3px] border-[#f36f24] text-center"
-          style={{ boxShadow: "0 0 30px rgba(243,111,36,0.6), inset 0 0 26px rgba(243,111,36,0.28)" }}
-        >
-          <HardHat className="h-10 w-10 text-white/90" strokeWidth={1.4} />
-          <span className="mt-1 text-6xl font-extrabold leading-none tabular-nums">{total.toLocaleString("en-US")}</span>
-          <span className="mt-1.5 text-lg text-white/90">Total Incidents</span>
-        </div>
+    <div className="flex flex-1 flex-col items-center gap-6 sm:flex-row">
+      <div
+        className="flex h-44 w-44 shrink-0 flex-col items-center justify-center rounded-full border-[3px] border-[#f36f24] text-center"
+        style={{ boxShadow: "0 0 30px rgba(243,111,36,0.6), inset 0 0 26px rgba(243,111,36,0.28)" }}
+      >
+        <HardHat className="h-8 w-8 text-white/90" strokeWidth={1.4} />
+        <span className="mt-1 text-5xl font-extrabold leading-none tabular-nums">{total.toLocaleString("en-US")}</span>
+        <span className="mt-1.5 text-base text-white/90">Total Incidents</span>
       </div>
-      <ul className="mt-6 space-y-4">
+      <ul className="w-full min-w-0 flex-1 space-y-4">
         {rows.map((r) => (
           <li key={r.name}>
-            <div className="flex items-center gap-3 text-xl font-medium sm:text-2xl">
-              <span className="h-6 w-6 shrink-0 rounded-md" style={{ background: r.color, boxShadow: `0 0 10px ${r.color}99` }} />
+            <div className="flex items-center gap-3 text-lg font-medium sm:text-xl">
+              <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: r.color, boxShadow: `0 0 10px ${r.color}99` }} />
               <span className="flex-1">{r.name}</span>
-              <span className="w-16 text-end font-bold tabular-nums">{r.value.toLocaleString("en-US")}</span>
-              <span className="w-20 text-end font-bold tabular-nums">{pct(r.value).toFixed(1)}%</span>
+              <span className="w-14 text-end font-bold tabular-nums">{r.value.toLocaleString("en-US")}</span>
+              <span className="w-[4.5rem] text-end font-bold tabular-nums">{pct(r.value).toFixed(1)}%</span>
             </div>
-            <div className="mt-2 ps-9">
-              <div className="h-[18px] w-full overflow-hidden rounded-full bg-white/[0.08]">
+            <div className="mt-2 ps-8">
+              <div className="h-4 w-full overflow-hidden rounded-full bg-white/[0.08]">
                 <div
                   className="h-full rounded-full"
                   style={{ width: `${Math.max(r.value ? 2 : 0, pct(r.value))}%`, background: r.color, boxShadow: `0 0 10px ${r.color}aa` }}
@@ -419,7 +420,7 @@ function TeamPie({ rows }: { rows: { name: string; value: number; color: string 
   });
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 sm:flex-row">
-      <svg viewBox="-150 -130 300 260" className="w-full max-w-[22rem] overflow-visible">
+      <svg viewBox="-150 -130 300 260" className="w-full max-w-[17rem] overflow-visible">
         <defs>
           <filter id="teamGlow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="7" />
