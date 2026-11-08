@@ -155,10 +155,10 @@ function ObservationsList() {
     return {
       total: active.length,
       kpis: [
-        { key: "total", label: "Total No. of Observations", img: "/brand/observations/total.png", value: active.length, series: last12(active) },
-        { key: "open", label: "Open", img: "/brand/observations/open.png", value: open.length, series: last12(open) },
-        { key: "closed", label: "Closed", img: "/brand/observations/closed.png", value: closed.length, series: last12(closed) },
-        { key: "gp", label: "Good Practice (G.P)", img: "/brand/observations/gp.png", value: gp.length, series: last12(gp) },
+        { key: "total", label: "Total No. of Observations", img: "/brand/observations/total.svg", value: active.length, series: last12(active) },
+        { key: "open", label: "Open", img: "/brand/observations/open.svg", value: open.length, series: last12(open) },
+        { key: "closed", label: "Closed", img: "/brand/observations/closed.svg", value: closed.length, series: last12(closed) },
+        { key: "gp", label: "Good Practice (G.P)", img: "/brand/observations/gp.svg", value: gp.length, series: last12(gp) },
       ],
       topTypes: countBy(hazards, typeLabel).slice(0, 3),
       topProjects: countBy(active, (o) => o.projectName).slice(0, 3),

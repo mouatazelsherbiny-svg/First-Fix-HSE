@@ -14,11 +14,15 @@ export default function ProjectFilter({ className = "" }: { className?: string }
       <select
         value={project}
         onChange={(e) => setProject(e.target.value)}
-        className={`input-field !w-auto min-w-[12rem] !py-2 ${project ? "!border-brand-orange font-semibold" : ""}`}
+        // Black box with white text on every page; the open list is dark too.
+        className={`input-field !w-auto min-w-[12rem] !border-white/25 !bg-black !py-2 !text-white [color-scheme:dark] ${project ? "!border-brand-orange font-semibold" : ""}`}
+        style={{ backgroundColor: "#000", color: "#fff" }}
       >
-        <option value="">All projects</option>
+        <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
+          All projects
+        </option>
         {projects.map((p) => (
-          <option key={p} value={p}>
+          <option key={p} value={p} style={{ backgroundColor: "#000", color: "#fff" }}>
             {p}
           </option>
         ))}
