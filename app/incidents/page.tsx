@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Montserrat } from "next/font/google";
 import { HardHat } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -82,6 +82,12 @@ const SEVERITY_LEVELS = [
   { name: "Moderate", color: "#facc15", match: [] as string[] }, // everything else
 ];
 
+const TEAM_COLORS: Record<string, string> = {
+  "First Fix": ORANGE,
+  "Not specified": "#cbd5e1",
+  Subcontractor: "#3f4656",
+};
+
 const norm = (v: string | null | undefined) => (v ?? "").trim().toLowerCase();
 
 function matches(incident: Incident, list: string[]) {
@@ -94,6 +100,17 @@ function severityOf(incident: Incident) {
     if (level.match.length && matches(incident, level.match)) return level.name;
   }
   return "Moderate";
+}
+
+function teamOf(incident: Incident) {
+  const team = (incident.team ?? "").trim();
+  if (team) {
+    if (/first\s*fix/i.test(team)) return "First Fix";
+    if (/sub/i.test(team)) return "Subcontractor";
+    return team;
+  }
+  if ((incident.subcontractorName ?? "").trim()) return "Subcontractor";
+  return "Not specified";
 }
 
 function countBy(items: Incident[], key: (i: Incident) => string) {
@@ -148,7 +165,9 @@ function IncidentsOverview() {
       value: incidents.filter((i) => severityOf(i) === l.name).length,
       color: l.color,
     }));
-    return { cards, perProject, severity };
+    const perType = countBy(incidents, (i) => i.incidentCategory || "Not specified");
+    const team = countBy(incidents, teamOf).map((s) => ({ ...s, color: TEAM_COLORS[s.name] ?? "#94a3b8" }));
+    return { cards, perProject, severity, perType, team };
   }, [incidents]);
 
   const total = incidents.length;
@@ -206,6 +225,16 @@ function IncidentsOverview() {
             </Panel>
             <Panel title="Incident By Severity">
               <Severity rows={data.severity} total={total} />
+            </Panel>
+          </div>
+
+          {/* ---- Per type | Team ---- */}
+          <div className="mt-5 grid gap-5 xl:grid-cols-2">
+            <Panel title="Incidents Per Type">
+              <HorizontalBars rows={data.perType} />
+            </Panel>
+            <Panel title="Incident By Team">
+              <TeamPie rows={data.team} />
             </Panel>
           </div>
         </>
@@ -376,6 +405,80 @@ function Severity({ rows, total }: { rows: { name: string; value: number; color:
                 />
               </div>
             </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Full pie with a soft orange glow, percentage labels outside, and a legend with count and share. */
+function TeamPie({ rows }: { rows: { name: string; value: number; color: string }[] }) {
+  const total = rows.reduce((s, r) => s + r.value, 0);
+  const [hover, setHover] = useState<string | null>(null);
+  if (total === 0) return <Empty />;
+  const R = 100;
+  let start = -Math.PI / 2 + 0.0001;
+  const slices = rows.map((r) => {
+    const angle = (r.value / total) * Math.PI * 2;
+    const a0 = start;
+    const a1 = start + angle;
+    start = a1;
+    const mid = (a0 + a1) / 2;
+    const large = angle > Math.PI ? 1 : 0;
+    const p = (a: number, rad = R) => `${(rad * Math.cos(a)).toFixed(2)},${(rad * Math.sin(a)).toFixed(2)}`;
+    const d = angle >= Math.PI * 2 - 0.001 ? `M${p(0)} A${R},${R} 0 1 1 ${p(Math.PI)} A${R},${R} 0 1 1 ${p(0)} Z` : `M0,0 L${p(a0)} A${R},${R} 0 ${large} 1 ${p(a1)} Z`;
+    return { ...r, d, mid, share: r.value / total };
+  });
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 sm:flex-row">
+      <svg viewBox="-150 -130 300 260" className="w-full max-w-[22rem] overflow-visible">
+        <defs>
+          <filter id="teamGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="7" />
+          </filter>
+        </defs>
+        <circle r={R + 2} fill="none" stroke={ORANGE} strokeWidth="6" opacity="0.75" filter="url(#teamGlow)" />
+        {slices.map((s) => (
+          <path
+            key={s.name}
+            d={s.d}
+            fill={s.color}
+            stroke="#e9eef5"
+            strokeOpacity="0.85"
+            strokeWidth="1.5"
+            opacity={hover && hover !== s.name ? 0.55 : 1}
+            onMouseEnter={() => setHover(s.name)}
+            onMouseLeave={() => setHover(null)}
+          >
+            <title>{`${s.name}: ${s.value.toLocaleString("en-US")} (${(s.share * 100).toFixed(1)}%)`}</title>
+          </path>
+        ))}
+        <circle r={R} fill="none" stroke="#ffb066" strokeWidth="1.5" opacity="0.9" />
+        {slices
+          .filter((s) => s.share >= 0.06 && s.share < 0.5)
+          .map((s) => (
+            <text
+              key={s.name}
+              x={(R + 26) * Math.cos(s.mid)}
+              y={(R + 26) * Math.sin(s.mid)}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="#fff"
+              fontSize="17"
+              fontWeight="500"
+            >
+              {Math.round(s.share * 100)}%
+            </text>
+          ))}
+      </svg>
+      <ul className="w-full max-w-sm space-y-4">
+        {slices.map((s) => (
+          <li key={s.name} className="flex items-center gap-3 text-lg sm:text-xl" onMouseEnter={() => setHover(s.name)} onMouseLeave={() => setHover(null)}>
+            <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: s.color }} />
+            <span className="min-w-0 flex-1 truncate font-medium">{s.name}</span>
+            <span className="w-14 text-end font-bold tabular-nums">{s.value.toLocaleString("en-US")}</span>
+            <span className="w-16 text-end tabular-nums text-white/85">{(s.share * 100).toFixed(1)}%</span>
           </li>
         ))}
       </ul>
