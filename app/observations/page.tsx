@@ -268,7 +268,7 @@ function ObservationsList() {
           Observations
         </span>
         <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
-        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Observations Summary at a Glance</h1>
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Observations Summary</h1>
         <div className="ms-auto flex flex-wrap items-center justify-end gap-3">
           <ProjectFilter className="!text-white/75" />
           <ExportExcelButton
