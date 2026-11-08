@@ -70,17 +70,17 @@ const dateOf = (o: Observation) => {
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-/** Counts per month for the last 12 months, oldest first (for the small trend lines). */
-function last12(items: Observation[]) {
-  const now = new Date();
-  const out = Array.from({ length: 12 }, () => 0);
-  for (const o of items) {
-    const d = dateOf(o);
-    if (!d) continue;
-    const back = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-    if (back >= 0 && back < 12) out[11 - back] += 1;
-  }
-  return out;
+/** Running total at 12 even steps across the whole record span, so every card with
+ *  observations shows its line climbing (a gentle climb if nothing is dated). */
+function runningSeries(items: Observation[], start: number, end: number) {
+  const span = Math.max(1, end - start);
+  const times = items.map((o) => dateOf(o)?.getTime());
+  const series = Array.from({ length: 12 }, (_, k) => {
+    const cut = start + ((k + 1) / 12) * span;
+    return times.filter((t) => t === undefined || t <= cut).length;
+  });
+  if (items.length > 0 && series.every((v) => v === series[0])) return series.map((_, k) => (items.length * (k + 1)) / 12);
+  return series;
 }
 
 /** Legacy photo stored on the observation row (data URL) — it is its own thumbnail. */
@@ -152,6 +152,10 @@ function ObservationsList() {
     const open = active.filter((o) => OPEN_STATUSES.has(o.status));
     const closed = active.filter((o) => o.status === "Closed");
     const gp = active.filter(isGoodPractice);
+    const times = active.map((o) => dateOf(o)?.getTime()).filter((t): t is number => t !== undefined);
+    const end = Date.now();
+    const start = times.length ? Math.min(...times) : end;
+    const last12 = (items: Observation[]) => runningSeries(items, start, end);
     return {
       total: active.length,
       kpis: [
@@ -255,7 +259,7 @@ function ObservationsList() {
 
   return (
     <div
-      className={`${montserrat.className} relative -mt-6 overflow-hidden p-4 text-white sm:p-6`}
+      className={`${montserrat.className} relative -mx-4 -mb-6 -mt-6 min-h-[calc(100vh-4rem)] overflow-hidden p-4 text-white sm:-mx-6 sm:p-6 lg:-mx-8`}
       style={{
         ...DARK_TOKENS,
         background:

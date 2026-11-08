@@ -106,7 +106,7 @@ function PmvPageContent() {
 
   return (
     <div
-      className={`${montserrat.className} relative -mt-6 overflow-hidden p-4 text-white sm:p-6`}
+      className={`${montserrat.className} relative -mx-4 -mb-6 -mt-6 min-h-[calc(100vh-4rem)] overflow-hidden p-4 text-white sm:-mx-6 sm:p-6 lg:-mx-8`}
       style={{
         background:
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
@@ -250,25 +250,27 @@ function Panel({ className = "", children }: { className?: string; children: Rea
   );
 }
 
+/** Same size and layout as the KPI cards on Observations and Incidents. */
 function KpiCard({ icon: Icon, label, value, share }: { icon: LucideIcon; label: string; value: number; share: number }) {
   return (
     <div
-      className="flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 pb-4 pt-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
+      className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
       style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
     >
-      <div className="flex items-center gap-4">
-        <Icon className="h-10 w-10 shrink-0 text-white/75" strokeWidth={1.4} />
+      <div className="flex items-center gap-2 sm:gap-4">
+        <Icon className="h-11 w-11 shrink-0 text-white/85 sm:h-[60px] sm:w-[60px]" strokeWidth={1.4} />
+        <span className="h-12 w-px shrink-0 bg-white/20 sm:h-16" />
         <div className="min-w-0">
-          <p className="text-[30px] font-bold leading-none tabular-nums">{value.toLocaleString("en-US")}</p>
-          <p className="mt-1.5 truncate text-sm font-medium tracking-wide text-white/70">{label}</p>
+          <p className="text-[24px] font-bold leading-none tabular-nums sm:text-[34px]">{value.toLocaleString("en-US")}</p>
+          <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[16px]">{label}</p>
         </div>
       </div>
-      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
             width: `${Math.max(value ? 4 : 0, Math.min(1, share) * 100)}%`,
-            background: `linear-gradient(90deg, #e2551a, ${ORANGE_HI})`,
+            background: `linear-gradient(90deg, #ffb03a, ${ORANGE} 55%, #e2551a)`,
             boxShadow: "0 0 8px rgba(243,111,36,0.8)",
           }}
         />
@@ -383,7 +385,7 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
   return (
     <>
       {/* ---- KPI row ---- */}
-      <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
         <KpiCard icon={Truck} label={t.pmv.totalPmv} value={s.totalPmv} share={share(vehicleStatus.active, s.totalPmv)} />
         <KpiCard icon={CalendarClock} label={t.pmv.dueForInspection} value={s.dueForInspection} share={share(s.dueForInspection, s.totalPmv)} />
         <KpiCard icon={UserCheck} label={t.pmv.authorizedOperators} value={s.authorizedOperators} share={share(s.authorizedOperators, s.totalOperators)} />

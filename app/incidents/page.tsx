@@ -128,6 +128,18 @@ const dateOf = (i: Incident) => {
   return d && !Number.isNaN(d.getTime()) ? d : null;
 };
 
+/** Running total at 12 even steps between start and end (undated records count from the start).
+ *  If nothing is dated but there are records, a gentle climb to the total. */
+function runningSeries(times: (number | undefined)[], total: number, start: number, end: number) {
+  const span = Math.max(1, end - start);
+  const series = Array.from({ length: 12 }, (_, k) => {
+    const cut = start + ((k + 1) / 12) * span;
+    return times.filter((t) => t === undefined || t <= cut).length;
+  });
+  if (total > 0 && series.every((v) => v === series[0])) return series.map((_, k) => Math.round((total * (k + 1)) / 12 * 10) / 10);
+  return series;
+}
+
 // ---------------------------------------------------------------------------
 
 function IncidentsOverview() {
@@ -145,19 +157,14 @@ function IncidentsOverview() {
   }, []);
 
   const data = useMemo(() => {
-    // Last 12 months, oldest first, for each card's small trend line.
-    const now = new Date();
-    const monthIndex = (d: Date) => (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+    // Small trend line per card: running total over the whole record span, 12 steps,
+    // so every card with incidents shows its line climbing.
+    const times = incidents.map((i) => dateOf(i)?.getTime()).filter((t): t is number => t !== undefined);
+    const end = Date.now();
+    const start = times.length ? Math.min(...times) : end;
     const cards = CARDS.map((c) => {
       const rows = incidents.filter((i) => matches(i, c.match));
-      const series = Array.from({ length: 12 }, () => 0);
-      rows.forEach((i) => {
-        const d = dateOf(i);
-        if (!d) return;
-        const back = monthIndex(d);
-        if (back >= 0 && back < 12) series[11 - back] += 1;
-      });
-      return { ...c, value: rows.length, series };
+      return { ...c, value: rows.length, series: runningSeries(rows.map((i) => dateOf(i)?.getTime()), rows.length, start, end) };
     });
     const perProject = countBy(incidents, (i) => i.projectName || "Not specified");
     const severity = SEVERITY_LEVELS.map((l) => ({
@@ -174,7 +181,7 @@ function IncidentsOverview() {
 
   return (
     <div
-      className={`${montserrat.className} relative -mt-6 overflow-hidden p-4 text-white sm:p-6`}
+      className={`${montserrat.className} relative -mx-4 -mb-6 -mt-6 min-h-[calc(100vh-4rem)] overflow-hidden p-4 text-white sm:-mx-6 sm:p-6 lg:-mx-8`}
       style={{
         background:
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
@@ -322,7 +329,7 @@ function HorizontalBars({ rows }: { rows: { name: string; value: number }[] }) {
   const { top, ticks } = niceAxis(rows[0].value * 1.08);
   const pct = (v: number) => `${(v / top) * 100}%`;
   return (
-    <div className="overflow-y-auto pe-2" style={{ maxHeight: ROW_H * VISIBLE_ROWS + 28 }}>
+    <div className="overflow-y-auto pe-5" style={{ maxHeight: ROW_H * VISIBLE_ROWS + 28 }}>
       <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3">
         {rows.map((r) => (
           <div key={r.name} className="contents">
