@@ -490,7 +490,7 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
       </div>
 
       {/* ---- Upcoming inspections | Expiring documents ---- */}
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,7.4fr)_minmax(0,4.6fr)]">
         <Panel className="min-w-0 overflow-x-auto">
           <h2 className="text-lg font-bold leading-tight sm:text-xl">{t.pmv.upcomingInspectionsTitle}</h2>
           <p className="mt-0.5 text-sm text-white/70">{t.pmv.dueForInspectionSubtitle}</p>
