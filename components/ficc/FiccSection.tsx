@@ -34,7 +34,7 @@ const FICC_FILTERS: FilterColumn<Incident>[] = [
   { key: "project", get: (i) => i.projectName },
   { key: "type", get: (i) => i.incidentCategory },
   { key: "location", get: (i) => i.incidentLocation },
-  { key: "date", get: (i) => fmtDay(i.incidentDate) },
+  { key: "date", get: (i) => fmtDay(i.incidentDate), sortBy: (i) => (i.incidentDate ? Date.parse(i.incidentDate) : null) },
   { key: "status", get: (i) => i.iirStatus },
 ];
 

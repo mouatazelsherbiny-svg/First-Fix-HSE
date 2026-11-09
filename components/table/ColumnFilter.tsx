@@ -8,13 +8,18 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Filter, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Filter, Search, X } from "lucide-react";
 
 export interface FilterColumn<T> {
   key: string;
   /** The text a row shows in this column (what the filter lists and matches). */
   get: (row: T) => string | null | undefined;
+  /** Date columns: the row's time (ms). Adds "Newest first / Oldest first" to the
+   *  column's menu and lists its values in date order. */
+  sortBy?: (row: T) => number | null | undefined;
 }
+
+export type SortDir = "desc" | "asc";
 
 const EMPTY = "(Blank)";
 const norm = (v: string | null | undefined) => (v ?? "").toString().trim() || EMPTY;
@@ -24,6 +29,7 @@ const norm = (v: string | null | undefined) => (v ?? "").toString().trim() || EM
  *  value list is only built when its filter is opened, so big tables stay fast. */
 export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
   const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [sort, setSort] = useState<{ key: string; dir: SortDir } | null>(null);
 
   // values[i][c] = text of row i in column c.
   const values = useMemo(() => rows.map((r) => columns.map((c) => norm(c.get(r)))), [rows, columns]);
@@ -36,10 +42,20 @@ export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
     [columns, selected]
   );
 
+  // Each row's time for the date columns (only for columns that have sortBy).
+  const times = useMemo(
+    () => columns.map((c) => (c.sortBy ? rows.map((r) => Number(c.sortBy!(r)) || 0) : null)),
+    [rows, columns]
+  );
+
   const filtered = useMemo(() => {
-    if (!activeSets.length) return rows;
-    return rows.filter((_, i) => activeSets.every(([c, set]) => set.has(values[i][c])));
-  }, [rows, values, activeSets]);
+    let idx = rows.map((_, i) => i);
+    if (activeSets.length) idx = idx.filter((i) => activeSets.every(([c, set]) => set.has(values[i][c])));
+    const ci = sort ? colIndex.get(sort.key) : undefined;
+    const tm = ci === undefined ? null : times[ci];
+    if (sort && tm) idx.sort((a, b) => (sort.dir === "desc" ? tm[b] - tm[a] : tm[a] - tm[b]));
+    return !activeSets.length && !(sort && tm) ? rows : idx.map((i) => rows[i]);
+  }, [rows, values, activeSets, sort, colIndex, times]);
 
   /** Values for one column, counted over the rows that pass the *other* columns' filters. */
   const optionsFor = (key: string) => {
@@ -47,13 +63,20 @@ export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
     if (ci === undefined) return [];
     const others = activeSets.filter(([c]) => c !== ci);
     const counts = new Map<string, number>();
+    const when = new Map<string, number>();
+    const tm = times[ci];
     for (let i = 0; i < values.length; i++) {
       if (others.length && !others.every(([c, set]) => set.has(values[i][c]))) continue;
       const v = values[i][ci];
       counts.set(v, (counts.get(v) ?? 0) + 1);
+      if (tm && !when.has(v)) when.set(v, tm[i]);
     }
+    // Date columns list newest first (or oldest first when that sort is on).
+    const asc = sort?.key === key && sort.dir === "asc";
     return Array.from(counts, ([value, count]) => ({ value, count })).sort((a, b) =>
-      a.value === EMPTY ? 1 : b.value === EMPTY ? -1 : a.value.localeCompare(b.value, undefined, { numeric: true })
+      a.value === EMPTY ? 1 : b.value === EMPTY ? -1
+        : tm ? (asc ? 1 : -1) * ((when.get(a.value) ?? 0) - (when.get(b.value) ?? 0))
+        : a.value.localeCompare(b.value, undefined, { numeric: true })
     );
   };
 
@@ -61,10 +84,19 @@ export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
     getOptions: () => optionsFor(key),
     selected: selected[key] ?? [],
     onChange: (vals: string[]) => setSelected((prev) => ({ ...prev, [key]: vals })),
+    ...(times[colIndex.get(key) ?? -1]
+      ? {
+          sort: sort?.key === key ? sort.dir : null,
+          onSort: (dir: SortDir | null) => setSort(dir ? { key, dir } : null),
+        }
+      : {}),
   });
 
-  const activeCount = activeSets.length;
-  const clearAll = () => setSelected({});
+  const activeCount = activeSets.length + (sort ? 1 : 0);
+  const clearAll = () => {
+    setSelected({});
+    setSort(null);
+  };
 
   return { filtered, header, activeCount, clearAll };
 }
@@ -76,6 +108,8 @@ export function ColumnFilter({
   selected,
   onChange,
   align = "start",
+  sort,
+  onSort,
 }: {
   label: React.ReactNode;
   /** Built only while the list is open. */
@@ -83,13 +117,16 @@ export function ColumnFilter({
   selected: string[];
   onChange: (values: string[]) => void;
   align?: "start" | "center";
+  /** Date columns only: the current order and how to change it. */
+  sort?: SortDir | null;
+  onSort?: (dir: SortDir | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const btn = useRef<HTMLButtonElement>(null);
   const pop = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
-  const active = selected.length > 0;
+  const active = selected.length > 0 || !!sort;
 
   useLayoutEffect(() => {
     if (!open || !btn.current) return;
@@ -123,7 +160,7 @@ export function ColumnFilter({
   }, [open]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const options = useMemo(() => (open ? getOptions() : []), [open, selected]);
+  const options = useMemo(() => (open ? getOptions() : []), [open, selected, sort]);
   const shown = options.filter((o) => o.value.toLowerCase().includes(q.trim().toLowerCase()));
   const toggle = (v: string) => onChange(selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v]);
 
@@ -153,6 +190,32 @@ export function ColumnFilter({
             style={{ top: pos.top, left: pos.left, background: "#161618" }}
             onClick={(e) => e.stopPropagation()}
           >
+            {onSort && (
+              <div className="mb-2.5 grid grid-cols-2 gap-1.5 border-b border-white/10 pb-2.5">
+                {(
+                  [
+                    ["desc", "Newest first", ArrowDown],
+                    ["asc", "Oldest first", ArrowUp],
+                  ] as const
+                ).map(([dir, text, Icon]) => {
+                  const on = sort === dir;
+                  return (
+                    <button
+                      key={dir}
+                      type="button"
+                      onClick={() => onSort(on ? null : dir)}
+                      aria-pressed={on}
+                      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-semibold transition ${
+                        on ? "border-[#f36f24] bg-[#f36f24] text-white" : "border-white/15 text-white/80 hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {text}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <label className="relative mb-2 block">
               <Search className="pointer-events-none absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/45" />
               <input

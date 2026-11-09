@@ -287,7 +287,7 @@ const INSPECTION_FILTERS: FilterColumn<InspectionRow>[] = [
   { key: "id", get: (r) => r.pmvId },
   { key: "type", get: (r) => r.type },
   { key: "description", get: (r) => r.description },
-  { key: "due", get: (r) => (r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "") },
+  { key: "due", get: (r) => (r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : ""), sortBy: (r) => (r.dueDate ? Date.parse(r.dueDate) : null) },
   { key: "status", get: (r) => r.status },
 ];
 

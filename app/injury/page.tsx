@@ -60,7 +60,7 @@ const kpiOf = (i: Incident): KpiKey | null => {
 /** Columns the details table can be filtered by (header funnels). */
 const INJ_FILTERS: FilterColumn<Incident>[] = [
   { key: "no", get: (i) => (i.incidentNumber == null ? "" : String(i.incidentNumber)) },
-  { key: "date", get: (i) => dateOf(i)?.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) },
+  { key: "date", get: (i) => dateOf(i)?.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }), sortBy: (i) => dateOf(i)?.getTime() },
   { key: "project", get: (i) => i.projectName },
   { key: "classification", get: (i) => i.classification || i.incidentCategory },
   { key: "body", get: (i) => i.bodyPart },

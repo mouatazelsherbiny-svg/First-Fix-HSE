@@ -65,7 +65,7 @@ const OBS_FILTERS: FilterColumn<Observation>[] = [
   { key: "classification", get: (o) => o.classification },
   { key: "risk", get: (o) => (isGoodPractice(o) ? GOOD_PRACTICE : o.riskRating) },
   { key: "status", get: (o) => (isGoodPractice(o) && o.status !== "Cancelled" ? GOOD_PRACTICE : o.status) },
-  { key: "date", get: (o) => shortDate(o.createdAt) },
+  { key: "date", get: (o) => shortDate(o.createdAt), sortBy: (o) => Date.parse(o.createdAt) },
 ];
 
 function isGoodPractice(o: Observation) {
