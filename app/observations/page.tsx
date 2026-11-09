@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
-import { BarChart3, ChevronDown, FolderOpen, Search, Tag, UserRound, type LucideIcon } from "lucide-react";
+import { BarChart3, ChevronDown, FolderOpen, LockKeyhole, LockKeyholeOpen, Search, Tag, ThumbsUp, UserRound, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -155,14 +155,24 @@ function ObservationsList() {
     const times = active.map((o) => dateOf(o)?.getTime()).filter((t): t is number => t !== undefined);
     const end = Date.now();
     const start = times.length ? Math.min(...times) : end;
-    const last12 = (items: Observation[]) => runningSeries(items, start, end);
+    const last12 = (items: Observation[]) => {
+      const now = new Date();
+      const monthly = Array.from({ length: 12 }, () => 0);
+      items.forEach((o) => {
+        const d = dateOf(o);
+        if (!d) return;
+        const back = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+        if (back >= 0 && back < 12) monthly[11 - back] += 1;
+      });
+      return monthly.some((v) => v > 0) ? monthly : runningSeries(items, start, end);
+    };
     return {
       total: active.length,
       kpis: [
-        { key: "total", label: "Total No. of Observations", img: "/brand/observations/total.svg", value: active.length, series: last12(active) },
-        { key: "open", label: "Open", img: "/brand/observations/open.svg", value: open.length, series: last12(open) },
-        { key: "closed", label: "Closed", img: "/brand/observations/closed.svg", value: closed.length, series: last12(closed) },
-        { key: "gp", label: "Good Practice (G.P)", img: "/brand/observations/gp.svg", value: gp.length, series: last12(gp) },
+        { key: "total", label: "Total No. of Observations", icon: ChecklistDoc, value: active.length, series: last12(active) },
+        { key: "open", label: "Open", icon: LockKeyholeOpen, value: open.length, series: last12(open) },
+        { key: "closed", label: "Closed", icon: LockKeyhole, value: closed.length, series: last12(closed) },
+        { key: "gp", label: "Good Practice (G.P)", icon: ThumbsUp, value: gp.length, series: last12(gp) },
       ],
       topTypes: countBy(hazards, typeLabel).slice(0, 3),
       topProjects: countBy(active, (o) => o.projectName).slice(0, 3),
@@ -287,7 +297,7 @@ function ObservationsList() {
       {/* ---- KPI cards ---- */}
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {summary.kpis.map((k) => (
-          <KpiCard key={k.key} label={k.label} img={k.img} value={k.value} series={k.series} share={k.key === "total" ? 1 : summary.total ? k.value / summary.total : 0} />
+          <KpiCard key={k.key} label={k.label} icon={k.icon} value={k.value} series={k.series} share={k.key === "total" ? 1 : summary.total ? k.value / summary.total : 0} />
         ))}
       </div>
 
@@ -473,27 +483,34 @@ function ObservationsList() {
 
 // ---------------------------------------------------------------------------
 
-function KpiCard({ label, img, value, series, share }: { label: string; img: string; value: number; series: number[]; share: number }) {
+/** Outline sheet with a folded corner and three ticked rows (same stroke style as the lucide icons). */
+function ChecklistDoc({ className, strokeWidth = 1.3 }: { className?: string; strokeWidth?: number }) {
   return (
-    <div className={`${CARD} flex min-w-0 flex-col justify-between gap-4 px-3 pb-4 pt-4 sm:px-5`} style={{ background: CARD_BG }}>
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={img} alt="" className="h-11 w-11 shrink-0 object-contain sm:h-[72px] sm:w-[72px]" />
-        <span className="h-12 w-px shrink-0 bg-white/20 sm:h-16" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 2.5h10l4.5 4.5v13a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 20V4A1.5 1.5 0 0 1 5 2.5Z" />
+      <path d="M15 2.5V7h4.5" />
+      <path d="m6.5 9.5 1 1 2-2M11.5 9.5h5M6.5 13.5l1 1 2-2M11.5 13.5h5M6.5 17.5l1 1 2-2M11.5 17.5h5" />
+    </svg>
+  );
+}
+
+function KpiCard({ label, icon: Icon, value, series, share }: { label: string; icon: LucideIcon | typeof ChecklistDoc; value: number; series: number[]; share: number }) {
+  return (
+    <div className={`${CARD} flex min-w-0 flex-col justify-between gap-4 px-3 pb-4 pt-4 sm:px-6`} style={{ background: CARD_BG }}>
+      <div className="flex items-center gap-3 sm:gap-6">
+        <Icon className="h-10 w-10 shrink-0 text-white/90 sm:h-14 sm:w-14" strokeWidth={1.3} />
         <div className="min-w-0">
-          <p className="text-[24px] font-bold leading-none tabular-nums sm:text-[34px]">{value.toLocaleString("en-US")}</p>
-          <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[16px]">
-            {label}
-          </p>
+          <p className="text-[24px] font-extrabold leading-none tabular-nums sm:text-[38px]">{value.toLocaleString("en-US")}</p>
+          <p className="mt-2 text-[12px] font-medium leading-tight text-white/90 sm:text-[17px]">{label}</p>
         </div>
-        <Sparkline values={series} className="ms-auto hidden h-9 w-12 min-w-[2.5rem] shrink-0 self-start sm:block" />
+        <Sparkline values={series} className="ms-auto hidden h-9 w-20 min-w-[3rem] shrink self-start sm:block" />
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
             width: `${Math.max(value ? 4 : 0, share * 100)}%`,
-            background: `linear-gradient(90deg, #ffb03a, ${ORANGE} 55%, #e2551a)`,
+            background: `linear-gradient(90deg, #e2551a, ${ORANGE} 60%, ${ORANGE_HI})`,
             boxShadow: "0 0 8px rgba(243,111,36,0.8)",
           }}
         />
@@ -506,8 +523,10 @@ function KpiCard({ label, img, value, series, share }: { label: string; img: str
 function Sparkline({ values, className }: { values: number[]; className?: string }) {
   const W = 80;
   const H = 30;
-  const max = Math.max(1, ...values);
-  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - (v / max) * (H - 8)]);
+  // Scaled between the lowest and highest month so the ups and downs show clearly.
+  const min = Math.min(...values);
+  const range = Math.max(1, Math.max(...values) - min);
+  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - ((v - min) / range) * (H - 8)]);
   let d = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] ?? pts[i];
