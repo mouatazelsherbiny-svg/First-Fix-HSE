@@ -319,6 +319,7 @@ root.each((h) => {
   if (n.parent) links.push({ a: n.parent, b: n, lvl: Math.max(0, n.lvl) });
 });
 const hubs = nodes.filter((n) => n.hub);
+const byDepth = d3.groups(nodes, (n) => n.d).sort((a, b) => a[0] - b[0]).map((g) => g[1]);
 const hub = hubs[0];
 // Only the project picked in the list shows on the map.
 let activeProj = null;
@@ -441,7 +442,9 @@ function sizeBoxes() {
       n.lblEl.text(n.short); n.wShort = Math.max(n.lblEl.node().getComputedTextLength(), subW) + 28;
       n.lblEl.text(n.name); n.wFull = Math.max(n.lblEl.node().getComputedTextLength(), subW) + 28;
     }
+    if (n.lvl === 2 || n.lvl === 3) n.lblEl.text(n.name);
     const w = phone && n.wShort ? n.wShort : Math.max(n.lblEl.node().getComputedTextLength(), subW) + 28;
+    if (n.lvl === 2 || n.lvl === 3) { n.fullW = w; n.textW = n.lblEl.node().getComputedTextLength(); }
     const h = tag ? 62 : n.lvl === -1 ? 50 : n.lvl === 3 ? 40 : 44;
     n.box = { w, h };
     n.rect.attr("x", 0).attr("y", -h / 2).attr("width", w).attr("height", h);
@@ -467,26 +470,50 @@ function render() {
   // Zooming out past where a branch was opened closes it (and everything under it).
   if (!flying) opened.forEach((k, m) => { if (s < k * 0.8) opened.delete(m); });
   nodes.forEach((n) => { if (!n.hub && opened.has(n) && !opened.has(n.parent)) opened.delete(n); });
-  // A node shows when its parent is open (tapped) or the zoom has reached its level.
-  nodes.forEach((n) => {
-    n.vis = n.proj !== activeProj ? 0 : n.hub ? 1 : Math.max(autoOp(n.d, s), opened.has(n.parent) ? 1 : 0) * n.parent.vis;
-    n.el.attr("opacity", n.vis).style("pointer-events", n.vis > 0.5 ? "auto" : "none").style("display", n.vis === 0 ? "none" : null).attr("tabindex", n.vis > 0.5 ? 0 : -1);
-  });
-  links.forEach((L) => L.el.attr("opacity", L.b.vis).style("display", L.b.vis === 0 ? "none" : null));
   const narrow = W < 760 && s < LEVELS[4].s;
   nodes.forEach((n) => {
     n.sx = t.applyX(n.x); n.sy = t.applyY(n.y);
     n.el.attr("transform", `translate(${n.sx},${n.sy})`);
     if (n.lblEl && n.lvl <= 1) n.lblEl.text(narrow ? n.short : n.name);
     if (n.wShort && W < 760) { n.box.w = narrow ? n.wShort : n.wFull; n.rect.attr("width", n.box.w); }
+    // Groups and job titles: a long name is cut short ("…") so its box never runs into the next column.
+    if (n.fullW) {
+      const w = Math.min(n.fullW, Math.max(150, (COL[n.d + 1] - COL[n.d]) * s - 34));
+      if (w !== n.box.w) {
+        n.box.w = w; n.rect.attr("width", w);
+        if (w < n.fullW) { const keep = Math.max(3, Math.floor(n.name.length * (w - 28) / n.textW) - 1); n.lblEl.text(n.name.slice(0, keep).trimEnd() + "…"); }
+        else n.lblEl.text(n.name);
+      }
+    }
   });
+  // A node shows when its parent is open (tapped) or the zoom has reached its level —
+  // unless it would sit on top of another name in its column: then the tapped branch wins
+  // and the rest wait until there is room (zoom in).
+  const pri = new Set();
+  if (selected) { pathOf(selected).forEach((m) => pri.add(m)); childrenOf(selected).forEach((m) => pri.add(m)); }
+  byDepth.forEach((list) => {
+    const cand = [];
+    list.forEach((n) => {
+      n.vis = n.proj !== activeProj ? 0 : n.hub ? 1 : Math.max(autoOp(n.d, s), opened.has(n.parent) ? 1 : 0) * n.parent.vis;
+      if (n.vis > 0 && !n.hub && n.sy > -60 && n.sy < H + 60) cand.push(n);
+    });
+    cand.sort((a, b) => (pri.has(b) - pri.has(a)) || (opened.has(b.parent) - opened.has(a.parent)) || a.sy - b.sy);
+    const kept = [];
+    cand.forEach((n) => {
+      const h = (n.lvl === 4 ? 15 : n.box.h) / 2;
+      if (kept.some(([y, k]) => Math.abs(y - n.sy) < h + k + 3)) n.vis = 0; else kept.push([n.sy, h]);
+    });
+  });
+  nodes.forEach((n) => n.el.attr("opacity", n.vis).style("pointer-events", n.vis > 0.5 ? "auto" : "none").style("display", n.vis === 0 ? "none" : null).attr("tabindex", n.vis > 0.5 ? 0 : -1));
+  links.forEach((L) => L.el.attr("opacity", L.b.vis).style("display", L.b.vis === 0 ? "none" : null));
 
-  // Links: straight lines like an org chart — out of the parent, down a shared spine
-  // just to its right, then across to each child (arrow at the child).
+  // Links: straight lines like an org chart — straight out of the parent, down a shared
+  // spine just before the children's column, then a short arrow into each child. The long
+  // run stays on the parent's own line, so it never crosses the parent's neighbours.
   links.forEach((L) => {
     if (L.b.vis === 0) return;
     const x1 = L.a.sx + (L.a.box ? L.a.box.w : 0), y1 = L.a.sy, x2 = L.b.sx - (L.b.lvl === 4 ? 0 : 1), y2 = L.b.sy;
-    const mx = x1 + Math.max(8, Math.min(26, (x2 - x1) / 2)), dy = y2 - y1, sg = Math.sign(dy), r = Math.min(7, Math.abs(dy) / 2, (x2 - mx) / 2, mx - x1);
+    const mx = x2 - Math.max(8, Math.min(26, (x2 - x1) / 2)), dy = y2 - y1, sg = Math.sign(dy), r = Math.min(7, Math.abs(dy) / 2, (x2 - mx) / 2, mx - x1);
     L.el.attr("d", Math.abs(dy) < 1 ? `M${x1},${y1} H${x2}`
       : `M${x1},${y1} H${mx - r} Q${mx},${y1} ${mx},${y1 + sg * r} V${y2 - sg * r} Q${mx},${y2} ${mx + r},${y2} H${x2}`);
   });
@@ -526,12 +553,15 @@ function fitView(animate, keepOpen) {
   (animate ? fly(svg.transition().duration(900).ease(d3.easeCubicInOut)) : svg).call(zoom.transform, t);
   paintLadder();
 }
-function flyTo(n, s, cy = n.y) {
+function flyTo(n, s, cy = n.y, kx = null) {
   const target = Math.min(6, s);
   const yOff = W < 760 ? H * 0.08 : 0;
   // Put the node a little left of centre, so what opens to its right is in view.
   const fx = W < 760 ? W * 0.08 : n.d >= 5 ? W * 0.3 : W * 0.32;
-  const t = d3.zoomIdentity.translate(fx - target * n.x, H / 2 + yOff - target * cy).scale(target);
+  let tx = fx - target * n.x;
+  // Phones: if the opened names would start off the right edge, slide left so they're in view.
+  if (W < 760 && kx != null) tx -= Math.max(0, tx + target * kx - Math.max(16, W - 300));
+  const t = d3.zoomIdentity.translate(tx, H / 2 + yOff - target * cy).scale(target);
   fly(svg.transition().duration(1000).ease(d3.easeCubicInOut)).call(zoom.transform, t);
 }
 d3.select("#z-in").on("click", () => svg.transition().duration(350).call(zoom.scaleBy, 1.5));
@@ -558,7 +588,7 @@ function openView(n) {
   const colK = (n.box.w + 40) / gap;
   const readK = LEVELS[kidD].min * 1.05;
   const base = n.hub ? fitS : Math.min(Math.max(transform.k, 1), screenK);
-  return { k: Math.min(6, Math.max(colK, readK, Math.min(fitK, base))), cy: (y0 + y1) / 2 };
+  return { k: Math.min(6, Math.max(colK, readK, Math.min(fitK, base))), cy: (y0 + y1) / 2, kx: kids[0].x };
 }
 function select(n, fly) {
   selected = n;
@@ -574,7 +604,7 @@ function select(n, fly) {
   const keep = new Set();
   if (n) { pathOf(n).forEach((m) => keep.add(m)); (function down(m) { childrenOf(m).forEach((c) => { keep.add(c); down(c); }); })(n); }
   nodes.forEach((m) => m.el.classed("dim", !!n && !n.hub && !keep.has(m)));
-  if (view) flyTo(n, view.k, view.cy);
+  if (view) flyTo(n, view.k, view.cy, view.kx);
   showDetail(n);
   render();
 }
