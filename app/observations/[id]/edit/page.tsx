@@ -62,7 +62,7 @@ function ObservationEdit() {
       setSaved(true);
       setTimeout(() => {
         setSaved(false);
-        router.push(`/observations/${observation.id}`);
+        router.push("/observations"); // straight back to the list (observations now open in a box there)
       }, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
@@ -72,7 +72,7 @@ function ObservationEdit() {
   return (
     <div>
       <Link
-        href={`/observations/${observation.id}`}
+        href="/observations"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"
       >
         &larr; {t.detail.back}
