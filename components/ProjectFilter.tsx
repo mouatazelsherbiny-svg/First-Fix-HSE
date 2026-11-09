@@ -19,7 +19,7 @@ export default function ProjectFilter({ className = "" }: { className?: string }
         style={{ backgroundColor: "#000", color: "#fff" }}
       >
         <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
-          All Projects
+          All PROJECTS
         </option>
         {projects.map((p) => (
           <option key={p} value={p} style={{ backgroundColor: "#000", color: "#fff" }}>
