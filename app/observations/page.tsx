@@ -6,7 +6,7 @@ import { Montserrat } from "next/font/google";
 import { ChevronDown, FolderOpen, LockKeyhole, LockKeyholeOpen, Search, Tag, ThumbsUp, UserRound, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
-import ConfirmDialog from "@/components/ConfirmDialog";
+import ObservationModal from "@/components/observations/ObservationModal";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import { BarList, MonthAreaChart, PILL_SELECT, SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
@@ -132,12 +132,11 @@ function Pill({ value, label }: { value: string; label?: string }) {
 
 function ObservationsList() {
   const { t, locale } = useLanguage();
-  const { observations, isLoading, updateObservation } = useObservations();
+  const { observations, isLoading, getById } = useObservations();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
-  const [cancelTarget, setCancelTarget] = useState<Observation | null>(null);
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [cancelError, setCancelError] = useState("");
+  // The observation open in the box in the middle of the page.
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // The whole page is dark, like Injury, PMV and Incidents: paint the app's content area black while here.
   useEffect(() => {
@@ -149,20 +148,6 @@ function ObservationsList() {
       main.style.background = prev;
     };
   }, []);
-
-  const handleCancelObservation = async () => {
-    if (!cancelTarget) return;
-    setIsCancelling(true);
-    setCancelError("");
-    try {
-      await updateObservation(cancelTarget.id, { status: "Cancelled" });
-      setCancelTarget(null);
-    } catch {
-      setCancelError(t.detail.cancelError);
-    } finally {
-      setIsCancelling(false);
-    }
-  };
 
   // The project filter in the header already narrows `observations`; the text search only narrows the table.
   const byProject = observations;
@@ -419,9 +404,9 @@ function ObservationsList() {
                 {pageItems.map((o) => {
                   const gp = isGoodPractice(o);
                   return (
-                    <tr key={o.id} className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]">
+                    <tr key={o.id} onClick={() => setOpenId(o.id)} className="cursor-pointer border-b border-white/[0.07] last:border-0 hover:bg-white/[0.04]">
                       <td className="px-3 py-2.5 font-bold">#{o.reportNumber}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                         <PhotoThumbPair
                           observationPhoto={rowPhoto(o.observationPhotos) ?? linkedPhotos.get(o.id)?.observation[0]}
                           closeOutPhoto={rowPhoto(o.closeOutPhotos) ?? linkedPhotos.get(o.id)?.closeOut[0]}
@@ -437,19 +422,14 @@ function ObservationsList() {
                         {gp && o.status !== "Cancelled" ? <Pill value={GOOD_PRACTICE} /> : <Pill value={o.status} />}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2.5 text-white/90">{fmtDate(o.createdAt)}</td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-4 font-semibold">
-                          <Link href={`/observations/${o.id}`} className="text-[#ffa31a] hover:underline">
+                          <button type="button" onClick={() => setOpenId(o.id)} className="text-[#ffa31a] hover:underline">
                             {t.list.view}
-                          </Link>
+                          </button>
                           <Link href={`/observations/${o.id}/edit`} className="text-[#ffa31a] hover:underline">
                             {t.list.edit}
                           </Link>
-                          {o.status !== "Cancelled" && (
-                            <button type="button" onClick={() => setCancelTarget(o)} className="font-medium text-white hover:text-red-400 hover:underline">
-                              {t.list.cancel}
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -486,21 +466,7 @@ function ObservationsList() {
         </div>
       )}
 
-      {cancelTarget && (
-        <ConfirmDialog
-          title={t.detail.cancelConfirmTitle}
-          message={t.detail.cancelConfirmMessage}
-          confirmLabel={isCancelling ? t.detail.cancelling : t.detail.cancelConfirmConfirm}
-          cancelLabel={t.common.close}
-          isBusy={isCancelling}
-          error={cancelError}
-          onConfirm={handleCancelObservation}
-          onClose={() => {
-            setCancelError("");
-            setCancelTarget(null);
-          }}
-        />
-      )}
+      {openId && getById(openId) && <ObservationModal observation={getById(openId)!} onClose={() => setOpenId(null)} />}
     </div>
   );
 }
