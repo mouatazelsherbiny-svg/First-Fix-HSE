@@ -20,12 +20,13 @@ import {
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
+import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePmvDashboard, type PmvOwnershipFilter } from "@/lib/usePmvDashboard";
 import { PMV_LOG_DEFINITIONS, PMV_BUCKET_IMAGES } from "@/lib/pmvLogs";
 import PmvLogTable from "@/components/pmv/PmvLogTable";
 import EquipmentTracker from "@/components/pmv/EquipmentTracker";
-import type { InspectionStatus, PmvTypeBreakdown } from "@/types/pmv";
+import type { InspectionStatus, PmvTypeBreakdown, UpcomingInspection } from "@/types/pmv";
 
 // Same geometric sans as the Injury page.
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
@@ -280,6 +281,16 @@ function KpiCard({ icon: Icon, label, value, share, series }: { icon: LucideIcon
   );
 }
 
+/** Columns the Upcoming Inspections table can be filtered by (header funnels). */
+type InspectionRow = UpcomingInspection;
+const INSPECTION_FILTERS: FilterColumn<InspectionRow>[] = [
+  { key: "id", get: (r) => r.pmvId },
+  { key: "type", get: (r) => r.type },
+  { key: "description", get: (r) => r.description },
+  { key: "due", get: (r) => (r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "") },
+  { key: "status", get: (r) => r.status },
+];
+
 /** Small glowing trend line. */
 function Sparkline({ values, className }: { values: number[]; className?: string }) {
   const W = 80;
@@ -404,6 +415,9 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
   } = usePmvDashboard(ownership);
 
   const share = (part: number, whole: number) => (whole > 0 ? part / whole : 0);
+  // Header funnels on the Upcoming Inspections table.
+  const inspectionFilters = useColumnFilters<InspectionRow>(upcomingInspections, INSPECTION_FILTERS);
+  const inspectionRows = inspectionFilters.filtered;
 
   // At least 1 so a chart with no data yet doesn't divide by zero.
   const maxTypeTotal = Math.max(1, ...byType.map((row) => row.total));
@@ -541,22 +555,28 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
           <table className="mt-4 w-full text-start text-sm">
             <thead>
               <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
-                <th className="rounded-s-lg px-3 py-2.5 text-start">{t.pmv.colPmvId}</th>
-                <th className="px-3 py-2.5 text-start">{t.pmv.colType}</th>
-                <th className="px-3 py-2.5 text-start">{t.pmv.colDescription}</th>
-                <th className="px-3 py-2.5 text-start">{t.pmv.colDueDate}</th>
-                <th className="rounded-e-lg px-3 py-2.5 text-start">{t.pmv.colStatus}</th>
+                <th className="rounded-s-lg whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.pmv.colPmvId} {...inspectionFilters.header("id")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.pmv.colType} {...inspectionFilters.header("type")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.pmv.colDescription} {...inspectionFilters.header("description")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.pmv.colDueDate} {...inspectionFilters.header("due")} /></th>
+                <th className="rounded-e-lg whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.pmv.colStatus} {...inspectionFilters.header("status")} /></th>
               </tr>
             </thead>
             <tbody>
-              {upcomingInspections.length === 0 ? (
+              {inspectionRows.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-white/50">
-                    {t.common.noDataYet}
+                    {inspectionFilters.activeCount > 0 ? (
+                      <button type="button" onClick={inspectionFilters.clearAll} className="font-semibold text-[#ff8a3d] hover:underline">
+                        Clear filters
+                      </button>
+                    ) : (
+                      t.common.noDataYet
+                    )}
                   </td>
                 </tr>
               ) : (
-                upcomingInspections.map((row) => (
+                inspectionRows.map((row) => (
                   <tr key={row.pmvId} className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]">
                     <td className="whitespace-nowrap px-3 py-3 font-bold">{row.pmvId}</td>
                     <td className="px-3 py-3 text-white/85">{row.type}</td>

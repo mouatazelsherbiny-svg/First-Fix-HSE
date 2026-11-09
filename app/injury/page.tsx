@@ -19,6 +19,7 @@ import {
 import { Area, AreaChart, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
+import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import BodyFigure from "@/components/injury/BodyFigure";
 import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
@@ -56,6 +57,15 @@ const kpiOf = (i: Incident): KpiKey | null => {
   const c = norm(i.classification) || norm(i.incidentCategory);
   return KPIS.find((k) => k.match.some((m) => m.toLowerCase() === c))?.key ?? null;
 };
+/** Columns the details table can be filtered by (header funnels). */
+const INJ_FILTERS: FilterColumn<Incident>[] = [
+  { key: "no", get: (i) => (i.incidentNumber == null ? "" : String(i.incidentNumber)) },
+  { key: "date", get: (i) => dateOf(i)?.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) },
+  { key: "project", get: (i) => i.projectName },
+  { key: "classification", get: (i) => i.classification || i.incidentCategory },
+  { key: "body", get: (i) => i.bodyPart },
+];
+
 const dateOf = (i: Incident) => {
   const d = i.incidentDate ? new Date(i.incidentDate) : null;
   return d && !Number.isNaN(d.getTime()) ? d : null;
@@ -175,6 +185,9 @@ function InjuryOverview() {
   const monthData = stats.months.map((value, m) => ({ name: monthLabels[m], value }));
 
   const total = filtered.length;
+  // Header funnels narrow only the details table.
+  const columnFilters = useColumnFilters(filtered, INJ_FILTERS);
+  const tableRows = columnFilters.filtered;
   const dateFmt = (d: Date | null) =>
     d ? d.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" }) : "—";
 
@@ -398,13 +411,13 @@ function InjuryOverview() {
                   />
                 </label>
               </div>
-              {filtered.length === 0 ? (
+              {tableRows.length === 0 && columnFilters.activeCount === 0 ? (
                 <p className="py-10 text-center text-sm text-white/50">{t.injury.empty}</p>
               ) : (
                 <div className="max-h-[370px] overflow-auto rounded-lg">
                   <table className="w-full min-w-[680px] table-fixed text-start text-sm">
                     <colgroup>
-                      <col className="w-12" />
+                      <col className="w-16" />
                       <col className="w-[6.75rem]" />
                       <col className="w-[7.25rem]" />
                       <col className="w-[7.5rem]" />
@@ -413,16 +426,16 @@ function InjuryOverview() {
                     </colgroup>
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
-                        <th className="rounded-s-lg px-3 py-2.5 text-start">#</th>
-                        <th className="px-3 py-2.5 text-start">{t.injury.colDate}</th>
-                        <th className="px-3 py-2.5 text-start">{t.injury.colProject}</th>
-                        <th className="px-3 py-2.5 text-start">{t.injury.colClassification}</th>
-                        <th className="px-3 py-2.5 text-start">{t.injury.colBodyPart}</th>
+                        <th className="rounded-s-lg whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={"#"} {...columnFilters.header("no")} /></th>
+                        <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.injury.colDate} {...columnFilters.header("date")} /></th>
+                        <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.injury.colProject} {...columnFilters.header("project")} /></th>
+                        <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.injury.colClassification} {...columnFilters.header("classification")} /></th>
+                        <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.injury.colBodyPart} {...columnFilters.header("body")} /></th>
                         <th className="rounded-e-lg px-3 py-2.5 text-start">{t.injury.colDescription}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map((i) => (
+                      {tableRows.map((i) => (
                         <tr key={i.id} className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]">
                           <td className="whitespace-nowrap px-3 py-2.5 font-bold">{i.incidentNumber ?? "—"}</td>
                           <td className="whitespace-nowrap px-3 py-2.5 text-white/80">{dateFmt(dateOf(i))}</td>

@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import ExportExcelButton from "@/components/ExportExcelButton";
+import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import { BarList, MonthAreaChart, PILL_SELECT, SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
 import { PhotoThumbPair, useLinkedPhotosForObservations, type PhotoUrl } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
@@ -47,6 +48,19 @@ const GOOD_PRACTICE = "Good Practice";
 const OPEN_STATUSES = new Set(["Open", "In Progress", "Overdue"]);
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const PAGE_SIZE = 100;
+
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+/** Columns the table can be filtered by (header funnels). */
+const OBS_FILTERS: FilterColumn<Observation>[] = [
+  { key: "report", get: (o) => `#${o.reportNumber}` },
+  { key: "project", get: (o) => o.projectName },
+  { key: "type", get: (o) => typeLabel(o) },
+  { key: "classification", get: (o) => o.classification },
+  { key: "risk", get: (o) => (isGoodPractice(o) ? GOOD_PRACTICE : o.riskRating) },
+  { key: "status", get: (o) => (isGoodPractice(o) && o.status !== "Cancelled" ? GOOD_PRACTICE : o.status) },
+  { key: "date", get: (o) => shortDate(o.createdAt) },
+];
 
 function isGoodPractice(o: Observation) {
   return o.observationType === GOOD_PRACTICE || o.classification === GOOD_PRACTICE;
@@ -206,7 +220,7 @@ function ObservationsList() {
     return counts.slice(0, upTo).map((value, i) => ({ label: MONTHS[i], value }));
   }, [summary.active, shownYear]);
 
-  const filtered = useMemo(() => {
+  const searched = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return byProject;
     return byProject.filter(
@@ -216,11 +230,14 @@ function ObservationsList() {
         o.observationType.toLowerCase().includes(q)
     );
   }, [byProject, query]);
+  // Header funnels narrow the searched rows further.
+  const columnFilters = useColumnFilters(searched, OBS_FILTERS);
+  const filtered = columnFilters.filtered;
 
   // Keep the rendered table light — page the (already client-filtered) results.
   useEffect(() => {
     setPage(0);
-  }, [query]);
+  }, [query, filtered.length]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
@@ -347,7 +364,7 @@ function ObservationsList() {
         <div className={`${CARD} flex items-center justify-center py-16`} style={{ background: CARD_BG }}>
           <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#f36f24] border-t-transparent" />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : byProject.length === 0 ? (
         <div className={`${CARD} flex flex-col items-center justify-center py-16 text-center`} style={{ background: CARD_BG }}>
           <p className="text-sm font-medium text-white/60">{t.list.empty}</p>
           <Link href="/observations/new" className="btn-primary mt-4">
@@ -367,18 +384,30 @@ function ObservationsList() {
             <table className="w-full min-w-[980px] text-start text-sm">
               <thead className="sticky top-0 z-10">
                 <tr className={TH_ROW}>
-                  <th className="rounded-s-lg whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.reportNumber}</th>
+                  <th className="rounded-s-lg whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.list.col.reportNumber} align="start" {...columnFilters.header("report")} /></th>
                   <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.photos}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.project}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.type}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.classification}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.risk}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.status}</th>
-                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.date}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.list.col.project} align="start" {...columnFilters.header("project")} /></th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.list.col.type} align="start" {...columnFilters.header("type")} /></th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.list.col.classification} align="start" {...columnFilters.header("classification")} /></th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-center"><ColumnFilter label={t.list.col.risk} align="center" {...columnFilters.header("risk")} /></th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-center"><ColumnFilter label={t.list.col.status} align="center" {...columnFilters.header("status")} /></th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.list.col.date} align="start" {...columnFilters.header("date")} /></th>
                   <th className="rounded-e-lg whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.actions}</th>
                 </tr>
               </thead>
               <tbody>
+                {pageItems.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="px-3 py-10 text-center text-sm text-white/55">
+                      No observations match these filters.{" "}
+                      {columnFilters.activeCount > 0 && (
+                        <button type="button" onClick={columnFilters.clearAll} className="font-semibold text-[#ff8a3d] hover:underline">
+                          Clear filters
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {pageItems.map((o) => {
                   const gp = isGoodPractice(o);
                   return (

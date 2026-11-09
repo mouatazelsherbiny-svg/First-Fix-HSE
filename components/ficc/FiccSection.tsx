@@ -14,6 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import { useAuth } from "@/context/AuthContext";
 import FiccFormModal from "@/components/ficc/FiccFormModal";
+import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import { SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
 import type { FiccInput, Incident } from "@/types/incident";
 
@@ -23,6 +24,19 @@ import type { FiccInput, Incident } from "@/types/incident";
 // incidents row (and the client-side fetch of the whole table) reasonable.
 const MAX_IIR_FILE_BYTES = 10 * 1024 * 1024;
 const PAGE_SIZE = 100;
+
+const fmtDay = (v: string | null | undefined) =>
+  v ? new Date(v).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "";
+
+/** Columns the FICC table can be filtered by (header funnels). */
+const FICC_FILTERS: FilterColumn<Incident>[] = [
+  { key: "report", get: (i) => `#${i.incidentNumber}` },
+  { key: "project", get: (i) => i.projectName },
+  { key: "type", get: (i) => i.incidentCategory },
+  { key: "location", get: (i) => i.incidentLocation },
+  { key: "date", get: (i) => fmtDay(i.incidentDate) },
+  { key: "status", get: (i) => i.iirStatus },
+];
 
 const CARD = "rounded-2xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]";
 const CARD_BG = "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)";
@@ -102,7 +116,7 @@ export default function FiccSection() {
     [incidents]
   );
 
-  const ficcRecords = useMemo(() => {
+  const searched = useMemo(() => {
     const all = [...incidents]
       .filter((i) => !category || i.incidentCategory?.trim() === category)
       .sort((a, b) => (b.incidentDate ?? "").localeCompare(a.incidentDate ?? ""));
@@ -116,10 +130,13 @@ export default function FiccSection() {
         String(i.incidentNumber).includes(q)
     );
   }, [incidents, query, category]);
+  // Header funnels narrow the searched rows further.
+  const columnFilters = useColumnFilters(searched, FICC_FILTERS);
+  const ficcRecords = columnFilters.filtered;
 
   useEffect(() => {
     setPage(0);
-  }, [query, category]);
+  }, [query, category, ficcRecords.length]);
 
   const totalPages = Math.max(1, Math.ceil(ficcRecords.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
@@ -199,12 +216,12 @@ export default function FiccSection() {
           <table className="w-full min-w-[980px] text-start text-sm text-white">
             <thead className="sticky top-0 z-10">
               <tr className={TH_ROW}>
-                <th className="whitespace-nowrap rounded-s-lg px-3 py-2.5 text-start">{t.ficc.colReportNumber}</th>
-                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colProject}</th>
-                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colType}</th>
-                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colLocation}</th>
-                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colDate}</th>
-                <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.ficc.colStatus}</th>
+                <th className="whitespace-nowrap rounded-s-lg px-3 py-2.5 text-start"><ColumnFilter label={t.ficc.colReportNumber} align="start" {...columnFilters.header("report")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.ficc.colProject} align="start" {...columnFilters.header("project")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.ficc.colType} align="start" {...columnFilters.header("type")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.ficc.colLocation} align="start" {...columnFilters.header("location")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start"><ColumnFilter label={t.ficc.colDate} align="start" {...columnFilters.header("date")} /></th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-center"><ColumnFilter label={t.ficc.colStatus} align="center" {...columnFilters.header("status")} /></th>
                 <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colDeadline}</th>
                 <th className="whitespace-nowrap rounded-e-lg px-3 py-2.5 text-center">{t.common.actions}</th>
               </tr>
@@ -219,7 +236,16 @@ export default function FiccSection() {
               ) : ficcRecords.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-10 text-center text-white/55">
-                    {t.common.noDataYet}
+                    {columnFilters.activeCount > 0 ? (
+                      <>
+                        No records match these filters.{" "}
+                        <button type="button" onClick={columnFilters.clearAll} className="font-semibold text-[#ff8a3d] hover:underline">
+                          Clear filters
+                        </button>
+                      </>
+                    ) : (
+                      t.common.noDataYet
+                    )}
                   </td>
                 </tr>
               ) : (
