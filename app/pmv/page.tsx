@@ -261,7 +261,7 @@ function KpiCard({ icon: Icon, label, value, share, series }: { icon: LucideIcon
         <Icon className="h-11 w-11 shrink-0 text-white/85 sm:h-[60px] sm:w-[60px]" strokeWidth={1.4} />
         <span className="h-12 w-px shrink-0 bg-white/20 sm:h-16" />
         <div className="min-w-0">
-          <p className="text-[24px] font-bold leading-none tabular-nums sm:text-[34px]">{value.toLocaleString("en-US")}</p>
+          <p className="text-[24px] font-extrabold leading-none tabular-nums sm:text-[36px]">{value.toLocaleString("en-US")}</p>
           <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[16px]">{label}</p>
         </div>
         <Sparkline values={series} className="ms-auto hidden h-10 w-24 min-w-[3rem] shrink self-start sm:block" />
@@ -284,8 +284,10 @@ function KpiCard({ icon: Icon, label, value, share, series }: { icon: LucideIcon
 function Sparkline({ values, className }: { values: number[]; className?: string }) {
   const W = 80;
   const H = 30;
-  const max = Math.max(1, ...values);
-  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - (v / max) * (H - 8)]);
+  // Scaled between the lowest and highest point so the ups and downs show clearly.
+  const min = values.length ? Math.min(...values) : 0;
+  const range = Math.max(1, (values.length ? Math.max(...values) : 0) - min);
+  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - ((v - min) / range) * (H - 8)]);
   let d = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] ?? pts[i];
