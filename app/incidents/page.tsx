@@ -5,6 +5,7 @@ import { Montserrat } from "next/font/google";
 import { HardHat } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
+import FiccSection from "@/components/ficc/FiccSection";
 import { useIncidents } from "@/context/IncidentsContext";
 import type { Incident } from "@/types/incident";
 
@@ -231,6 +232,9 @@ function IncidentsOverview() {
               <TeamPie rows={data.team} />
             </Panel>
           </div>
+
+          {/* ---- FICC records (was its own page) ---- */}
+          <FiccSection />
         </>
       )}
     </div>

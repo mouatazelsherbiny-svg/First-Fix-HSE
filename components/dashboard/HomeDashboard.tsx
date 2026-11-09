@@ -257,7 +257,7 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
 
 function LatestIncidents({ items }: { items: HomeDashboardData["latestIncidents"] }) {
   return (
-    <Panel title="Latest Incidents" href="/ficc">
+    <Panel title="Latest Incidents" href="/incidents#ficc">
       {items.length === 0 ? (
         <EmptyState text="No incidents recorded" />
       ) : (
@@ -864,7 +864,7 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
             title="Most LSR Violations"
             rows={data.lsrByProject}
             unit="LSR violations"
-            href="/ficc"
+            href="/incidents#ficc"
             color={LSR_COLOR}
             emptyText="No LSR violations recorded"
           />
