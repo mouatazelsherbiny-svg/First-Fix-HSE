@@ -256,25 +256,24 @@ function KpiCard({ card, value, series, share }: { card: CardDef; value: number;
   return (
     <div
       title={card.title}
-      className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 sm:px-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
+      className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
       style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
     >
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      <div className="flex items-center gap-3 sm:gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={card.img} alt="" className="h-10 w-10 shrink-0 object-contain sm:h-[60px] sm:w-[60px]" />
-        <span className="h-11 w-px shrink-0 bg-white/20" />
+        <img src={card.img} alt="" className="h-10 w-10 shrink-0 object-contain sm:h-[64px] sm:w-[64px]" />
         <div className="min-w-0">
-          <p className="text-[26px] font-bold leading-none tabular-nums sm:text-[34px]">{value.toLocaleString("en-US")}</p>
-          <p className={`mt-1.5 whitespace-nowrap font-medium text-white/85 ${card.label.length > 8 ? "text-[12px] sm:text-[14px]" : "text-[14px] sm:text-[16px]"}`}>{card.label}</p>
+          <p className="text-[26px] font-extrabold leading-none tabular-nums sm:text-[36px]">{value.toLocaleString("en-US")}</p>
+          <p className={`mt-2 whitespace-nowrap font-medium text-white/90 ${card.label.length > 8 ? "text-[12px] sm:text-[15px]" : "text-[14px] sm:text-[17px]"}`}>{card.label}</p>
         </div>
-        <Sparkline values={series} className="ms-auto hidden h-8 w-12 min-w-0 shrink sm:block" />
+        <Sparkline values={series} className="ms-auto hidden h-10 w-16 min-w-[2.5rem] shrink sm:block" />
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
             width: `${Math.max(value ? 4 : 0, share * 100)}%`,
-            background: `linear-gradient(90deg, #e2551a, ${ORANGE_HI})`,
+            background: `linear-gradient(90deg, #e2551a, ${ORANGE} 60%, ${ORANGE_HI})`,
             boxShadow: "0 0 8px rgba(243,111,36,0.8)",
           }}
         />
@@ -301,7 +300,7 @@ function Sparkline({ values, className }: { values: number[]; className?: string
   }
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={className} preserveAspectRatio="none" aria-hidden>
-      <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.2" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 3px rgba(243,111,36,0.9))" }} />
+      <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.6" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 4px rgba(243,111,36,0.95))" }} />
     </svg>
   );
 }
