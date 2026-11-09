@@ -39,7 +39,7 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 #map:active { cursor: grabbing; }
 
 /* ---------- map marks ---------- */
-.link { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.link { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
 .node { cursor: pointer; }
 .node .halo { fill: none; stroke-width: 1.5; opacity: .5; }
 .node .dot { stroke: var(--ground); stroke-width: 2; }
@@ -245,7 +245,7 @@ const CAT_COLOR = { Electrical: "var(--elec)", Plumbing: "var(--plumb)", AC: "#8
 const GRP_COLOR = { "Group A": "var(--grp-a)", "Group B": "var(--grp-b)", "Group C": "var(--grp-c)" };
 const ROLE_COLOR = { Supervisor: "var(--sup)", Foreman: "var(--fore)", Crew: "var(--crew)" };
 // Column (x) of each level in world units, and the pixel scale at which it appears.
-const COL = [0, 1500, 3100, 3680, 4070, 4260, 4500];
+const COL = [0, 1500, 3100, 3680, 4070, 4260, 4600];
 // Indexed by tree depth. Nothing past the project shows until its parent is tapped or the
 // map is zoomed past that level's scale (min = the scale that keeps its labels apart).
 const LEVELS = [
@@ -367,9 +367,23 @@ const linkLayers = [0, 1, 2, 3, 4].map((l) => svg.append("g").attr("class", "lay
 const nodeLayers = [-1, 0, 1, 2, 3, 4].map((l) => svg.append("g").attr("class", "layer nodes").attr("data-l", l));
 const geoSel = geo.selectAll("text").data([]).join("text");
 
+// Arrow heads, one per line colour.
+const defs = svg.insert("defs", ":first-child"), arrowOf = new Map();
+const arrow = (col) => {
+  if (!arrowOf.has(col)) {
+    const id = "ar" + arrowOf.size;
+    defs.append("marker").attr("id", id).attr("viewBox", "0 0 10 10").attr("refX", 9).attr("refY", 5)
+      .attr("markerWidth", 7).attr("markerHeight", 7).attr("markerUnits", "userSpaceOnUse").attr("orient", "auto")
+      .append("path").attr("d", "M0,0 L10,5 L0,10 z").attr("fill", col);
+    arrowOf.set(col, id);
+  }
+  return `url(#${arrowOf.get(col)})`;
+};
 links.forEach((L) => {
+  const col = L.b.lvl === 2 ? L.b.color : L.b.lvl >= 3 ? "var(--sup)" : L.b.color;
   L.el = linkLayers[L.lvl].append("path").attr("class", "link")
-    .attr("stroke", L.b.lvl === 2 ? L.b.color : L.b.lvl >= 3 ? "var(--sup)" : L.b.color)
+    .attr("marker-end", L.b.lvl === 4 ? null : arrow(col))
+    .attr("stroke", col)
     .attr("stroke-width", [2.2, 1.9, 1.6, 1.3, 1][L.lvl]).attr("stroke-opacity", [0.85, 0.75, 0.7, 0.6, 0.45][L.lvl]);
 });
 
@@ -467,12 +481,14 @@ function render() {
     if (n.wShort && W < 760) { n.box.w = narrow ? n.wShort : n.wFull; n.rect.attr("width", n.box.w); }
   });
 
-  // Links: from the right edge of the parent box to the left edge of the child, as a smooth S.
+  // Links: straight lines like an org chart — out of the parent, down a shared spine
+  // just to its right, then across to each child (arrow at the child).
   links.forEach((L) => {
     if (L.b.vis === 0) return;
-    const x1 = L.a.sx + (L.a.box ? L.a.box.w : 0), y1 = L.a.sy, x2 = L.b.sx, y2 = L.b.sy;
-    const mx = x1 + Math.max(12, (x2 - x1) / 2);
-    L.el.attr("d", `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+    const x1 = L.a.sx + (L.a.box ? L.a.box.w : 0), y1 = L.a.sy, x2 = L.b.sx - (L.b.lvl === 4 ? 0 : 1), y2 = L.b.sy;
+    const mx = x1 + Math.max(8, Math.min(26, (x2 - x1) / 2)), dy = y2 - y1, sg = Math.sign(dy), r = Math.min(7, Math.abs(dy) / 2, (x2 - mx) / 2, mx - x1);
+    L.el.attr("d", Math.abs(dy) < 1 ? `M${x1},${y1} H${x2}`
+      : `M${x1},${y1} H${mx - r} Q${mx},${y1} ${mx},${y1 + sg * r} V${y2 - sg * r} Q${mx},${y2} ${mx + r},${y2} H${x2}`);
   });
   let lv = 0; LEVELS.forEach((L, i) => { if (s >= L.s) lv = i; });
   if (lv !== currentLevel) { currentLevel = lv; paintLadder(); }
