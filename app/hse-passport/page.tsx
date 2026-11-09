@@ -111,7 +111,7 @@ function Landing() {
           HSE Passport
         </span>
         <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
-        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">Worker Safety Records</h1>
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">PPE - Training - Disciplinary Action</h1>
       </header>
 
       {/* ---- The three section cards ---- */}
