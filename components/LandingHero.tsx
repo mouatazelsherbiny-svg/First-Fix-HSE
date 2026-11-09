@@ -19,7 +19,7 @@ interface LandingHeroProps {
 
 // Operation Grouping button on /login (opens /qiddiya-workforce): hidden for now.
 // Set to true to show it again; the page itself stays published.
-const SHOW_OPERATION_GROUPING = false;
+const SHOW_OPERATION_GROUPING = true;
 
 export default function LandingHero({ children, variant = "default" }: LandingHeroProps) {
   const { t } = useLanguage();
