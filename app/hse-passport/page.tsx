@@ -34,7 +34,7 @@ const SECTIONS: Section[] = [
   {
     key: "ppe",
     box: [19.86, 22.64, 18.72, 54.41],
-    card: "/brand/passport/card-ppe.jpg",
+    card: "/brand/passport/card-ppe.webp",
     title: "PPE",
     label: "PPE",
     img: "/brand/passport/panel-ppe.jpg",
@@ -45,7 +45,7 @@ const SECTIONS: Section[] = [
   {
     key: "training",
     box: [40.01, 22.64, 19.56, 54.41],
-    card: "/brand/passport/card-training.jpg",
+    card: "/brand/passport/card-training.webp",
     title: "Training",
     label: "Training",
     img: "/brand/passport/panel-training.jpg",
@@ -56,7 +56,7 @@ const SECTIONS: Section[] = [
   {
     key: "disciplinary",
     box: [61.24, 22.74, 18.42, 54.41],
-    card: "/brand/passport/card-disciplinary.jpg",
+    card: "/brand/passport/card-disciplinary.webp",
     title: "Disciplinary Action",
     label: "Disciplinary Action",
     img: "/brand/passport/panel-disciplinary.jpg",
@@ -86,47 +86,57 @@ function Landing() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // Dark page like Injury: paint the app's content area black while here.
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    const prev = main.style.background;
+    main.style.background = "#0a0a0c";
+    return () => {
+      main.style.background = prev;
+    };
+  }, []);
+
   return (
     <div
-      className={`${montserrat.className} relative -mx-4 -mb-6 -mt-6 flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden sm:-mx-6 lg:-mx-8`}
-      style={{ background: "#1b1a19 url(/brand/passport/landing-bg.jpg) center / cover no-repeat" }}
+      className={`${montserrat.className} relative -mx-4 -mb-6 -mt-6 flex min-h-[calc(100vh-4rem)] flex-col overflow-hidden p-4 text-white sm:-mx-6 sm:p-6 lg:-mx-8`}
+      style={{
+        background:
+          "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
+      }}
     >
-      {/* ---- Desktop/tablet: the design itself, with each card live on top of it ---- */}
-      <div
-        className={`relative hidden aspect-[1672/941] w-full max-w-[calc((100vh-4rem)*1672/941)] transition duration-500 md:block ${
-          open ? "scale-95 opacity-0" : "opacity-100"
-        }`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/passport/landing-bg.jpg" alt="" className="absolute inset-0 h-full w-full select-none object-cover" draggable={false} />
-        {SECTIONS.map((s) => (
-          <button
-            key={s.key}
-            type="button"
-            onClick={() => setOpenKey(s.key)}
-            aria-label={s.title}
-            className="group absolute rounded-[9%/5.5%] outline-none focus-visible:ring-4 focus-visible:ring-[#f36f24]"
-            style={{ left: `${s.box[0]}%`, top: `${s.box[1]}%`, width: `${s.box[2]}%`, height: `${s.box[3]}%` }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.card}
-              alt=""
-              draggable={false}
-              className="h-full w-full rounded-[9%/5.5%] object-cover shadow-[0_18px_40px_-14px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-[1.04] group-hover:shadow-[0_0_0_2px_rgba(255,138,61,0.9),0_26px_60px_-12px_rgba(243,111,36,0.55)]"
-            />
-          </button>
-        ))}
-      </div>
+      {/* ---- Header, same as Injury / PMV / Incidents ---- */}
+      <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
+        <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
+          HSE Passport
+        </span>
+        <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">Worker Safety Records</h1>
+      </header>
 
-      {/* ---- Phones: the three cards stacked over the same backdrop ---- */}
-      <div className={`relative z-10 grid w-full max-w-sm grid-cols-1 gap-5 px-4 py-8 transition duration-500 md:hidden ${open ? "opacity-0" : "opacity-100"}`}>
-        {SECTIONS.map((s) => (
-          <button key={s.key} type="button" onClick={() => setOpenKey(s.key)} aria-label={s.title} className="overflow-hidden rounded-[24px] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.7)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={s.card} alt="" className="aspect-[4/3] w-full object-cover" />
-          </button>
-        ))}
+      {/* ---- The three section cards ---- */}
+      <div className="flex flex-1 items-center justify-center py-4">
+        <div
+          className={`grid w-full max-w-5xl grid-cols-1 gap-6 transition duration-500 sm:grid-cols-3 sm:gap-8 ${open ? "scale-95 opacity-0" : "opacity-100"}`}
+        >
+          {SECTIONS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setOpenKey(s.key)}
+              aria-label={s.title}
+              className="group mx-auto w-full max-w-[300px] rounded-[9%/5.5%] outline-none focus-visible:ring-4 focus-visible:ring-[#f36f24] max-sm:max-w-sm"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={s.card}
+                alt=""
+                draggable={false}
+                className="aspect-[313/512] w-full rounded-[9%/5.5%] object-cover shadow-[0_18px_40px_-14px_rgba(0,0,0,0.8)] transition duration-300 group-hover:-translate-y-2 group-hover:shadow-[0_0_0_2px_rgba(255,138,61,0.9),0_26px_60px_-12px_rgba(243,111,36,0.55)] max-sm:aspect-[4/3]"
+              />
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ---- Intro panel for the opened section ---- */}
