@@ -1,5 +1,6 @@
 "use client";
 
+import { FolderOpen } from "lucide-react";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
 
 /** The project picker at the top of every signed-in page (each page keeps its own choice). */
@@ -8,7 +9,8 @@ export default function ProjectFilter({ className = "" }: { className?: string }
 
   return (
     <label className={`flex items-center gap-2 text-sm font-medium text-brand-grayDark ${className}`}>
-      <span className="sr-only">Project</span>
+      <FolderOpen className="h-4 w-4 text-brand-orange" />
+      Project
       <select
         value={project}
         onChange={(e) => setProject(e.target.value)}
@@ -17,7 +19,7 @@ export default function ProjectFilter({ className = "" }: { className?: string }
         style={{ backgroundColor: "#000", color: "#fff" }}
       >
         <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
-          All Projects
+          ALL PROJECTS
         </option>
         {projects.map((p) => (
           <option key={p} value={p} style={{ backgroundColor: "#000", color: "#fff" }}>
