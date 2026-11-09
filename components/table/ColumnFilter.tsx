@@ -19,39 +19,51 @@ export interface FilterColumn<T> {
 const EMPTY = "(Blank)";
 const norm = (v: string | null | undefined) => (v ?? "").toString().trim() || EMPTY;
 
-/** Filter state for a table: returns the rows that pass, plus what each header needs. */
+/** Filter state for a table: returns the rows that pass, plus what each header needs.
+ *  Each row's column values are worked out once per data change, and a column's
+ *  value list is only built when its filter is opened, so big tables stay fast. */
 export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
   const [selected, setSelected] = useState<Record<string, string[]>>({});
 
+  // values[i][c] = text of row i in column c.
+  const values = useMemo(() => rows.map((r) => columns.map((c) => norm(c.get(r)))), [rows, columns]);
+  const colIndex = useMemo(() => new Map(columns.map((c, i) => [c.key, i])), [columns]);
+  const activeSets = useMemo(
+    () =>
+      columns
+        .map((c, i) => (selected[c.key]?.length ? ([i, new Set(selected[c.key])] as const) : null))
+        .filter((x): x is readonly [number, Set<string>] => x !== null),
+    [columns, selected]
+  );
+
   const filtered = useMemo(() => {
-    const active = columns.filter((c) => selected[c.key]?.length);
-    if (!active.length) return rows;
-    return rows.filter((r) => active.every((c) => selected[c.key].includes(norm(c.get(r)))));
-  }, [rows, columns, selected]);
+    if (!activeSets.length) return rows;
+    return rows.filter((_, i) => activeSets.every(([c, set]) => set.has(values[i][c])));
+  }, [rows, values, activeSets]);
 
   /** Values for one column, counted over the rows that pass the *other* columns' filters. */
   const optionsFor = (key: string) => {
-    const col = columns.find((c) => c.key === key);
-    if (!col) return [];
-    const others = columns.filter((c) => c.key !== key && selected[c.key]?.length);
+    const ci = colIndex.get(key);
+    if (ci === undefined) return [];
+    const others = activeSets.filter(([c]) => c !== ci);
     const counts = new Map<string, number>();
-    rows.forEach((r) => {
-      if (!others.every((c) => selected[c.key].includes(norm(c.get(r))))) return;
-      const v = norm(col.get(r));
+    for (let i = 0; i < values.length; i++) {
+      if (others.length && !others.every(([c, set]) => set.has(values[i][c]))) continue;
+      const v = values[i][ci];
       counts.set(v, (counts.get(v) ?? 0) + 1);
-    });
+    }
     return Array.from(counts, ([value, count]) => ({ value, count })).sort((a, b) =>
       a.value === EMPTY ? 1 : b.value === EMPTY ? -1 : a.value.localeCompare(b.value, undefined, { numeric: true })
     );
   };
 
   const header = (key: string) => ({
-    options: optionsFor(key),
+    getOptions: () => optionsFor(key),
     selected: selected[key] ?? [],
-    onChange: (values: string[]) => setSelected((prev) => ({ ...prev, [key]: values })),
+    onChange: (vals: string[]) => setSelected((prev) => ({ ...prev, [key]: vals })),
   });
 
-  const activeCount = Object.values(selected).filter((v) => v.length).length;
+  const activeCount = activeSets.length;
   const clearAll = () => setSelected({});
 
   return { filtered, header, activeCount, clearAll };
@@ -60,13 +72,14 @@ export function useColumnFilters<T>(rows: T[], columns: FilterColumn<T>[]) {
 /** Header cell content: the label and its filter button. */
 export function ColumnFilter({
   label,
-  options,
+  getOptions,
   selected,
   onChange,
   align = "start",
 }: {
   label: React.ReactNode;
-  options: { value: string; count: number }[];
+  /** Built only while the list is open. */
+  getOptions: () => { value: string; count: number }[];
   selected: string[];
   onChange: (values: string[]) => void;
   align?: "start" | "center";
@@ -109,6 +122,8 @@ export function ColumnFilter({
     };
   }, [open]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const options = useMemo(() => (open ? getOptions() : []), [open, selected]);
   const shown = options.filter((o) => o.value.toLowerCase().includes(q.trim().toLowerCase()));
   const toggle = (v: string) => onChange(selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v]);
 

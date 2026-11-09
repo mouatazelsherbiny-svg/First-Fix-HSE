@@ -49,7 +49,13 @@ const OPEN_STATUSES = new Set(["Open", "In Progress", "Overdue"]);
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const PAGE_SIZE = 100;
 
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+// One shared formatter: much faster than toLocaleDateString on every row.
+const EN_DATE = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
+const AR_DATE = new Intl.DateTimeFormat("ar-EG", { year: "numeric", month: "short", day: "numeric" });
+const shortDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : EN_DATE.format(d);
+};
 
 /** Columns the table can be filtered by (header funnels). */
 const OBS_FILTERS: FilterColumn<Observation>[] = [
@@ -246,8 +252,10 @@ function ObservationsList() {
   // Photos only for the rows on screen: one batched query + one signed-URL request.
   const linkedPhotos = useLinkedPhotosForObservations(pageItems.map((o) => o.id));
 
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" });
+  const fmtDate = (iso: string) => {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? "" : (locale === "ar" ? AR_DATE : EN_DATE).format(d);
+  };
 
   const exportSheets = useMemo(
     () => [
