@@ -14,6 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useIncidents } from "@/context/IncidentsContext";
 import { useAuth } from "@/context/AuthContext";
 import FiccFormModal from "@/components/ficc/FiccFormModal";
+import { SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
 import type { FiccInput, Incident } from "@/types/incident";
 
 // Base64 data URLs are this app's established convention for storing
@@ -133,48 +134,27 @@ export default function FiccSection() {
 
   return (
     <section id="ficc" className="mt-5 scroll-mt-24" style={DARK_TOKENS}>
-      {/* ---- Title + add ---- */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className={`${CARD} p-4 sm:p-5`} style={{ background: CARD_BG }}>
+      {/* ---- Title, search, category, add — as on the Injury details table ---- */}
+      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-3 text-xl font-bold sm:text-2xl">
-            <span className="h-8 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-[#ff9a4a] to-[#f36f24] shadow-[0_0_10px_rgba(243,111,36,0.8)]" />
-            {t.ficc.pageTitle}
-          </h2>
-          <p className="mt-1 ps-[18px] text-sm text-white/65">{t.ficc.pageSubtitle}</p>
+          <h2 className={TABLE_TITLE}>{t.ficc.pageTitle}</h2>
+          <p className="mt-0.5 text-xs text-white/55">{t.ficc.pageSubtitle}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#f36f24] px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_14px_rgba(243,111,36,0.55)] transition hover:bg-[#ff7d33]"
-        >
-          <Plus className="h-4 w-4" />
-          {t.ficc.addFicc}
-        </button>
-      </div>
-
-      {/* ---- Search + category ---- */}
-      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <label className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.list.search}
-            className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-2.5 pe-3 ps-9 text-sm text-white placeholder:text-white/45 outline-none focus:border-[#f36f24]"
-          />
-        </label>
-        <label className="flex items-center gap-2 text-sm font-medium text-white/75">
-          <Filter className="h-4 w-4 text-[#f36f24]" />
-          Category
-          <span className="relative">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.list.search} className={SEARCH_INPUT} />
+          </label>
+          <label className="relative flex items-center">
+            <span className="sr-only">Category</span>
+            <Filter className="pointer-events-none absolute start-3 h-3.5 w-3.5 text-[#f36f24]" />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className={`appearance-none rounded-xl border bg-black py-2 pe-9 ps-3 text-sm text-white outline-none [color-scheme:dark] focus:border-[#f36f24] ${
-                category ? "border-[#f36f24] font-semibold" : "border-white/25"
-              } min-w-[12rem]`}
-              style={{ backgroundColor: "#000", color: "#fff" }}
+              className={`appearance-none rounded-full border bg-black/40 py-1.5 pe-8 ps-8 text-sm text-white outline-none [color-scheme:dark] focus:border-[#f36f24] ${
+                category ? "border-[#f36f24] font-semibold" : "border-white/15"
+              }`}
             >
               <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
                 All Categories
@@ -185,9 +165,17 @@ export default function FiccSection() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/80" />
-          </span>
-        </label>
+            <ChevronDown className="pointer-events-none absolute end-2.5 h-4 w-4 text-white/80" />
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#f36f24] px-4 py-1.5 text-sm font-bold text-white shadow-[0_0_14px_rgba(243,111,36,0.55)] transition hover:bg-[#ff7d33]"
+          >
+            <Plus className="h-4 w-4" />
+            {t.ficc.addFicc}
+          </button>
+        </div>
       </div>
       <p className="mb-3 text-xs text-white/55">
         {ficcRecords.length.toLocaleString("en-US")} records · click a row to view its details
@@ -207,19 +195,18 @@ export default function FiccSection() {
       />
 
       {/* ---- Table ---- */}
-      <div className={`${CARD} overflow-hidden p-2 sm:p-3`} style={{ background: CARD_BG }}>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-start text-[15px] text-white">
-            <thead>
-              <tr className="bg-white/[0.06] text-[15px] font-bold text-white">
-                <th className="whitespace-nowrap rounded-s-xl px-4 py-3 text-start">{t.ficc.colReportNumber}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start">{t.ficc.colProject}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start">{t.ficc.colType}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start">{t.ficc.colLocation}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start">{t.ficc.colDate}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-center">{t.ficc.colStatus}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start">{t.ficc.colDeadline}</th>
-                <th className="whitespace-nowrap rounded-e-xl px-4 py-3 text-center">{t.common.actions}</th>
+        <div className="max-h-[560px] overflow-auto rounded-lg">
+          <table className="w-full min-w-[980px] text-start text-sm text-white">
+            <thead className="sticky top-0 z-10">
+              <tr className={TH_ROW}>
+                <th className="whitespace-nowrap rounded-s-lg px-3 py-2.5 text-start">{t.ficc.colReportNumber}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colProject}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colType}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colLocation}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colDate}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.ficc.colStatus}</th>
+                <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.ficc.colDeadline}</th>
+                <th className="whitespace-nowrap rounded-e-lg px-3 py-2.5 text-center">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -244,9 +231,9 @@ export default function FiccSection() {
                     <tr
                       key={incident.id}
                       onClick={() => setSelectedId(incident.id)}
-                      className="cursor-pointer border-b border-white/[0.07] transition last:border-0 hover:bg-white/[0.04]"
+                      className="cursor-pointer border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]"
                     >
-                      <td className="whitespace-nowrap px-4 py-3 font-bold">
+                      <td className="whitespace-nowrap px-3 py-2.5 font-bold">
                         <span className="inline-flex items-center gap-1.5">
                           #{incident.incidentNumber}
                           {(incident.incidentPhotos?.length ?? 0) > 0 && (
@@ -260,10 +247,10 @@ export default function FiccSection() {
                           )}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-white/90">{incident.projectName}</td>
-                      <td className="whitespace-nowrap px-4 py-3 text-white/90">{incident.incidentCategory}</td>
-                      <td className="px-4 py-3 text-white/90">{incident.incidentLocation || "—"}</td>
-                      <td className="whitespace-nowrap px-4 py-3 text-white/90">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-white/80">{incident.projectName}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-white/80">{incident.incidentCategory}</td>
+                      <td className="px-3 py-2.5 text-white/80">{incident.incidentLocation || "—"}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-white/90">
                         {incident.incidentDate
                           ? new Date(incident.incidentDate).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
                               year: "numeric",
@@ -272,10 +259,10 @@ export default function FiccSection() {
                             })
                           : "—"}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-center">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-center">
                         {incident.iirStatus ? (
                           <span
-                            className={`inline-flex min-w-[6rem] justify-center rounded-full px-3 py-1 text-[13px] font-semibold ${
+                            className={`inline-flex min-w-[5rem] justify-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                               STATUS_PILL[incident.iirStatus] ?? "bg-white/15 text-white"
                             }`}
                           >
@@ -285,7 +272,7 @@ export default function FiccSection() {
                           <span className="text-white/45">—</span>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {isOpen && remaining !== null ? (
                           overdue ? (
                             <span className="text-sm font-semibold text-red-400">{t.ficc.deadlinePassed}</span>
@@ -298,7 +285,7 @@ export default function FiccSection() {
                           <span className="text-white/45">—</span>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
                         {isOpen ? (
                           <button
                             type="button"

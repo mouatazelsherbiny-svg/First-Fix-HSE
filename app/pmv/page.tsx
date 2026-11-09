@@ -254,19 +254,19 @@ function Panel({ className = "", children }: { className?: string; children: Rea
 function KpiCard({ icon: Icon, label, value, share, series }: { icon: LucideIcon; label: string; value: number; share: number; series: number[] }) {
   return (
     <div
-      className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
+      className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 pb-4 pt-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
       style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
     >
-      <div className="flex items-center gap-2 sm:gap-4">
-        <Icon className="h-11 w-11 shrink-0 text-white/85 sm:h-[60px] sm:w-[60px]" strokeWidth={1.4} />
-        <span className="h-12 w-px shrink-0 bg-white/20 sm:h-16" />
+      <div className="flex items-center gap-4">
+        <Icon className="h-9 w-9 shrink-0 text-white/75" strokeWidth={1.4} />
+        <span className="h-10 w-px shrink-0 bg-white/20" />
         <div className="min-w-0">
-          <p className="text-[24px] font-extrabold leading-none tabular-nums sm:text-[36px]">{value.toLocaleString("en-US")}</p>
-          <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[16px]">{label}</p>
+          <p className="text-[30px] font-bold leading-none tabular-nums">{value.toLocaleString("en-US")}</p>
+          <p className="mt-1.5 text-sm font-medium tracking-wide text-white/70">{label}</p>
         </div>
-        <Sparkline values={series} className="ms-auto hidden h-10 w-24 min-w-[3rem] shrink self-start sm:block" />
+        <Sparkline values={series} className="ms-auto h-8 w-20 shrink-0" />
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
@@ -367,7 +367,7 @@ function StatusOverview({
   ];
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <h2 className="text-lg font-bold leading-tight sm:text-xl">{title}</h2>
+      <h2 className="text-base font-semibold leading-tight sm:text-[17px]">{title}</h2>
       <p className="mt-0.5 text-sm text-white/70">{subtitle}</p>
       <div className="relative mx-auto mt-4 h-40 w-40">
         <SegmentRing {...counts} />
@@ -452,7 +452,7 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
         <Panel>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold leading-tight sm:text-xl">{t.pmv.byTypeTitle}</h2>
+              <h2 className="text-base font-semibold leading-tight sm:text-[17px]">{t.pmv.byTypeTitle}</h2>
               <p className="mt-0.5 text-sm text-white/70">{t.pmv.byTypeSubtitle}</p>
             </div>
             <div className="inline-flex rounded-xl border border-white/15 bg-black/30 p-1">
@@ -536,11 +536,11 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
       {/* ---- Upcoming inspections | Expiring documents ---- */}
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,7.4fr)_minmax(0,4.6fr)]">
         <Panel className="min-w-0 overflow-x-auto">
-          <h2 className="text-lg font-bold leading-tight sm:text-xl">{t.pmv.upcomingInspectionsTitle}</h2>
+          <h2 className="text-base font-semibold leading-tight sm:text-[17px]">{t.pmv.upcomingInspectionsTitle}</h2>
           <p className="mt-0.5 text-sm text-white/70">{t.pmv.dueForInspectionSubtitle}</p>
           <table className="mt-4 w-full text-start text-sm">
             <thead>
-              <tr className="bg-white/[0.05] text-xs font-semibold text-white/85">
+              <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
                 <th className="rounded-s-lg px-3 py-2.5 text-start">{t.pmv.colPmvId}</th>
                 <th className="px-3 py-2.5 text-start">{t.pmv.colType}</th>
                 <th className="px-3 py-2.5 text-start">{t.pmv.colDescription}</th>
@@ -586,10 +586,10 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
         </Panel>
 
         <Panel className="min-w-0 overflow-x-auto">
-          <h2 className="text-lg font-bold leading-tight sm:text-xl">{t.pmv.expiringDocumentsTitle}</h2>
+          <h2 className="text-base font-semibold leading-tight sm:text-[17px]">{t.pmv.expiringDocumentsTitle}</h2>
           <table className="mt-4 w-full text-start text-sm">
             <thead>
-              <tr className="bg-white/[0.05] text-xs font-semibold text-white/85">
+              <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
                 <th className="rounded-s-lg px-3 py-2.5 text-start">{t.pmv.colDocumentType}</th>
                 <th className="rounded-e-lg px-3 py-2.5 text-end">{t.pmv.colCount}</th>
               </tr>

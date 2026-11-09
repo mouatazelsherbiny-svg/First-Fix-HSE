@@ -6,6 +6,7 @@ import { HardHat } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
 import FiccSection from "@/components/ficc/FiccSection";
+import { BarList } from "@/components/charts/InjuryStyle";
 import { useIncidents } from "@/context/IncidentsContext";
 import type { Incident } from "@/types/incident";
 
@@ -216,7 +217,7 @@ function IncidentsOverview() {
           {/* ---- Per project | Severity ---- */}
           <div className="grid gap-5 xl:grid-cols-2">
             <Panel title="Incidents Per Project">
-              <HorizontalBars rows={data.perProject} />
+              <BarList rows={data.perProject} visibleRows={6} empty="No FICC records yet" />
             </Panel>
             <Panel title="Incident By Severity">
               <Severity rows={data.severity} total={total} />
@@ -226,7 +227,7 @@ function IncidentsOverview() {
           {/* ---- Per type | Team ---- */}
           <div className="mt-5 grid gap-5 xl:grid-cols-2">
             <Panel title="Incidents Per Type">
-              <HorizontalBars rows={data.perType} />
+              <BarList rows={data.perType} visibleRows={6} empty="No FICC records yet" />
             </Panel>
             <Panel title="Incident By Team">
               <TeamPie rows={data.team} />
@@ -247,10 +248,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
       className="flex min-w-0 flex-col rounded-2xl border border-white/[0.08] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:p-6"
       style={{ background: PANEL_BG }}
     >
-      <h2 className="mb-5 flex items-center gap-3 text-xl font-bold sm:text-2xl">
-        <span className="h-8 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-[#ff9a4a] to-[#f36f24] shadow-[0_0_10px_rgba(243,111,36,0.8)]" />
-        {title}
-      </h2>
+      <h2 className="mb-4 text-base font-semibold leading-tight sm:text-[17px]">{title}</h2>
       {children}
     </section>
   );
@@ -260,19 +258,19 @@ function KpiCard({ card, value, series, share }: { card: CardDef; value: number;
   return (
     <div
       title={card.title}
-      className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
+      className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 pb-4 pt-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
       style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
     >
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={card.img} alt="" className="h-10 w-10 shrink-0 object-contain sm:h-[64px] sm:w-[64px]" />
+        <img src={card.img} alt="" className="h-10 w-10 shrink-0 object-contain" />
         <div className="min-w-0">
-          <p className="text-[26px] font-extrabold leading-none tabular-nums sm:text-[36px]">{value.toLocaleString("en-US")}</p>
-          <p className={`mt-2 whitespace-nowrap font-medium text-white/90 ${card.label.length > 8 ? "text-[12px] sm:text-[15px]" : "text-[14px] sm:text-[17px]"}`}>{card.label}</p>
+          <p className="text-[30px] font-bold leading-none tabular-nums">{value.toLocaleString("en-US")}</p>
+          <p className={`mt-1.5 text-sm font-medium tracking-wide text-white/70 whitespace-nowrap ${card.label.length > 8 ? "!text-[12px]" : ""}`}>{card.label}</p>
         </div>
-        <Sparkline values={series} className="ms-auto hidden h-10 w-16 min-w-[2.5rem] shrink sm:block" />
+        <Sparkline values={series} className="ms-auto h-8 w-16 min-w-0 shrink" />
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
@@ -313,65 +311,7 @@ function Empty() {
   return <div className="flex h-56 items-center justify-center text-sm text-white/50">No FICC records yet</div>;
 }
 
-/** "Nice" axis maximum and tick step for the bar charts. */
-function niceAxis(max: number) {
-  const raw = Math.max(1, max) / 6;
-  const pow = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
-  const top = Math.ceil(max / step) * step || step;
-  return { top, ticks: Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step) };
-}
 
-const ROW_H = 40; // px per bar row
-const VISIBLE_ROWS = 6; // rows shown before the list scrolls (e.g. KSP … ROSEWOOD)
-
-/** Glowing horizontal bars with value labels and a numeric axis; largest first, scrolls after six rows.
- *  Names are never cut: the label column is as wide as the longest name. */
-function HorizontalBars({ rows }: { rows: { name: string; value: number }[] }) {
-  if (rows.length === 0) return <Empty />;
-  const { top, ticks } = niceAxis(rows[0].value * 1.08);
-  const pct = (v: number) => `${(v / top) * 100}%`;
-  return (
-    <div className="overflow-y-auto pe-5" style={{ maxHeight: ROW_H * VISIBLE_ROWS + 28 }}>
-      <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3">
-        {rows.map((r) => (
-          <div key={r.name} className="contents">
-            <span className="flex items-center justify-end whitespace-nowrap text-end text-[15px] text-white/90 sm:text-[18px]" style={{ height: ROW_H }}>
-              {r.name}
-            </span>
-            <div className="relative flex items-center border-s border-white/30" style={{ height: ROW_H }}>
-              {/* Vertical gridlines */}
-              {ticks.slice(1).map((tk) => (
-                <span key={tk} className="pointer-events-none absolute inset-y-0 w-px bg-white/[0.07]" style={{ left: pct(tk) }} />
-              ))}
-              <div
-                className="relative h-[22px] rounded-e-[5px]"
-                style={{
-                  width: pct(r.value),
-                  minWidth: 4,
-                  background: "linear-gradient(180deg, #ffab52 0%, #ff7a1a 45%, #e8590c 100%)",
-                  boxShadow: "0 0 12px rgba(255,122,26,0.55)",
-                }}
-              />
-              <span className="relative ms-2 text-[15px] font-semibold tabular-nums sm:text-[18px]">{r.value.toLocaleString("en-US")}</span>
-            </div>
-          </div>
-        ))}
-        {/* Axis: stays pinned under the visible rows while the list scrolls */}
-        <span className="sticky bottom-0 h-7" style={{ background: "#141416" }} />
-        <div className="sticky bottom-0 h-7 border-t border-white/30" style={{ background: "#141416" }}>
-          <div className="relative h-full">
-            {ticks.map((tk) => (
-              <span key={tk} className="absolute top-1 -translate-x-1/2 text-sm tabular-nums text-white/80" style={{ left: pct(tk) }}>
-                {tk.toLocaleString("en-US")}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Severity({ rows, total }: { rows: { name: string; value: number; color: string }[]; total: number }) {
   const pct = (v: number) => (total ? (v / total) * 100 : 0);

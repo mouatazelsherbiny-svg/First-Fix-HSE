@@ -75,7 +75,7 @@ export default function PmvLogTable({
       <div className="overflow-x-auto">
         <table className="w-full text-start text-sm">
           <thead>
-            <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
+            <tr className="bg-[#1d1d21] text-[13px] font-semibold text-white">
               <th className="whitespace-nowrap px-4 py-3 text-start sm:px-6">
                 {t.pmv.projectName}
               </th>

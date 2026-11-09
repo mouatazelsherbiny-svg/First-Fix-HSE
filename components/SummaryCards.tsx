@@ -55,20 +55,19 @@ function DarkSummaryCards({ cards }: { cards: SummaryCard[] }) {
           <div
             key={c.label}
             title={c.hint}
-            className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
+            className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/[0.08] px-5 pb-4 pt-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] text-white"
             style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
           >
-            <div className="flex items-center gap-2 sm:gap-4">
-              <c.icon className="h-9 w-9 shrink-0 text-white/85 sm:h-12 sm:w-12" strokeWidth={1.4} />
-              <span className="h-11 w-px shrink-0 bg-white/20 sm:h-14" />
+            <div className="flex items-center gap-4">
+              <c.icon className="h-9 w-9 shrink-0 text-white/75" strokeWidth={1.4} />
               <div className="min-w-0">
-                <p className="text-[22px] font-extrabold leading-none tabular-nums sm:text-[32px]">
+                <p className="text-[30px] font-bold leading-none tabular-nums">
                   {typeof c.value === "number" ? c.value.toLocaleString("en-US") : c.value}
                 </p>
-                <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[15px]">{c.label}</p>
+                <p className="mt-1.5 text-sm font-medium tracking-wide text-white/70">{c.label}</p>
               </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full"
                 style={{

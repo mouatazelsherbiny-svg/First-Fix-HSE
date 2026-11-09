@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
-import { BarChart3, ChevronDown, FolderOpen, LockKeyhole, LockKeyholeOpen, Search, Tag, ThumbsUp, UserRound, type LucideIcon } from "lucide-react";
+import { ChevronDown, FolderOpen, LockKeyhole, LockKeyholeOpen, Search, Tag, ThumbsUp, UserRound, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import ExportExcelButton from "@/components/ExportExcelButton";
+import { BarList, MonthAreaChart, PILL_SELECT, SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
 import { PhotoThumbPair, useLinkedPhotosForObservations, type PhotoUrl } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
@@ -101,7 +102,7 @@ const PILL: Record<string, string> = {
 
 function Pill({ value, label }: { value: string; label?: string }) {
   return (
-    <span className={`inline-flex min-w-[6.5rem] justify-center whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${PILL[value] ?? "bg-white/15 text-white"}`}>
+    <span className={`inline-flex min-w-[5.5rem] justify-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${PILL[value] ?? "bg-white/15 text-white"}`}>
       {label ?? value}
     </span>
   );
@@ -312,15 +313,14 @@ function ObservationsList() {
       <div className="mb-5 grid gap-4 xl:grid-cols-2">
         <section className={`${CARD} min-w-0 p-4 sm:p-5`} style={{ background: CARD_BG }}>
           <div className="mb-3 flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 shrink-0" style={{ color: ORANGE }} strokeWidth={2.4} />
-            <h2 className="flex-1 text-lg font-bold sm:text-xl">Observations by Month</h2>
+            <h2 className="flex-1 text-base font-semibold leading-tight sm:text-[17px]">Observations by Month</h2>
             {years.length > 0 && (
               <label className="relative">
                 <span className="sr-only">Year</span>
                 <select
                   value={shownYear}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="appearance-none rounded-full border border-white/25 bg-white/[0.04] py-1 pe-8 ps-4 text-sm font-semibold text-white outline-none focus:border-[#f36f24]"
+                  className={PILL_SELECT}
                 >
                   {years.map((y) => (
                     <option key={y} value={y} className="bg-[#18181b]">
@@ -332,34 +332,14 @@ function ObservationsList() {
               </label>
             )}
           </div>
-          {/* On phones the chart scrolls sideways so its labels stay readable. */}
-          <div className="-mx-1 overflow-x-auto px-1">
-            <div className="min-w-[560px] sm:min-w-0">
-              <MonthArea points={monthly} />
-            </div>
-          </div>
+          <MonthAreaChart id="obs-month" data={monthly.map((p) => ({ name: p.label, value: p.value }))} valueLabel="Observations" />
         </section>
         <section className={`${CARD} min-w-0 p-4 sm:p-5`} style={{ background: CARD_BG }}>
           <div className="mb-3 flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 shrink-0" style={{ color: ORANGE }} strokeWidth={2.4} />
-            <h2 className="text-lg font-bold sm:text-xl">Observations by Project</h2>
+            <h2 className="text-base font-semibold leading-tight sm:text-[17px]">Observations by Project</h2>
           </div>
-          <ProjectBars rows={summary.perProject} />
+          <BarList rows={summary.perProject.map((r) => ({ name: r.label, value: r.count }))} visibleRows={8} empty={t.list.empty} />
         </section>
-      </div>
-
-      {/* ---- Search ---- */}
-      <div className="mb-3 flex items-center">
-        <label className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.list.search}
-            className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-2.5 pe-3 ps-9 text-sm text-white placeholder:text-white/45 outline-none focus:border-[#f36f24]"
-          />
-        </label>
       </div>
 
       {/* ---- Table ---- */}
@@ -375,28 +355,35 @@ function ObservationsList() {
           </Link>
         </div>
       ) : (
-        <div className={`${CARD} overflow-hidden p-2 sm:p-3`} style={{ background: CARD_BG }}>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-start text-[15px]">
-              <thead>
-                <tr className="bg-white/[0.06] text-[15px] font-bold text-white">
-                  <th className="rounded-s-xl px-4 py-3 text-start">{t.list.col.reportNumber}</th>
-                  <th className="px-3 py-3 text-start">{t.list.col.photos}</th>
-                  <th className="px-4 py-3 text-start">{t.list.col.project}</th>
-                  <th className="px-4 py-3 text-start">{t.list.col.type}</th>
-                  <th className="px-4 py-3 text-start">{t.list.col.classification}</th>
-                  <th className="px-4 py-3 text-center">{t.list.col.risk}</th>
-                  <th className="px-4 py-3 text-center">{t.list.col.status}</th>
-                  <th className="px-4 py-3 text-start">{t.list.col.date}</th>
-                  <th className="rounded-e-xl px-4 py-3 text-center">{t.list.col.actions}</th>
+        <div className={`${CARD} p-4 sm:p-5`} style={{ background: CARD_BG }}>
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className={TABLE_TITLE}>Observation Details</h2>
+            <label className="relative w-full sm:max-w-xs">
+              <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.list.search} className={SEARCH_INPUT} />
+            </label>
+          </div>
+          <div className="max-h-[560px] overflow-auto rounded-lg">
+            <table className="w-full min-w-[980px] text-start text-sm">
+              <thead className="sticky top-0 z-10">
+                <tr className={TH_ROW}>
+                  <th className="rounded-s-lg whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.reportNumber}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.photos}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.project}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.type}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.classification}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.risk}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.status}</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 text-start">{t.list.col.date}</th>
+                  <th className="rounded-e-lg whitespace-nowrap px-3 py-2.5 text-center">{t.list.col.actions}</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((o) => {
                   const gp = isGoodPractice(o);
                   return (
-                    <tr key={o.id} className="border-b border-white/[0.07] transition last:border-0 hover:bg-white/[0.04]">
-                      <td className="px-4 py-2.5 font-bold">#{o.reportNumber}</td>
+                    <tr key={o.id} className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.03]">
+                      <td className="px-3 py-2.5 font-bold">#{o.reportNumber}</td>
                       <td className="px-3 py-2">
                         <PhotoThumbPair
                           observationPhoto={rowPhoto(o.observationPhotos) ?? linkedPhotos.get(o.id)?.observation[0]}
@@ -405,15 +392,15 @@ function ObservationsList() {
                           afterLabel={t.list.photoAfter}
                         />
                       </td>
-                      <td className="px-4 py-2.5 text-white/90">{o.projectName}</td>
-                      <td className="px-4 py-2.5 text-white/90">{o.observationType === "Others" ? o.observationTypeOther || t.form.other : o.observationType}</td>
-                      <td className="px-4 py-2.5 text-white/90">{o.classification}</td>
-                      <td className="px-4 py-2.5 text-center">{gp ? <Pill value={GOOD_PRACTICE} /> : <Pill value={o.riskRating} />}</td>
-                      <td className="px-4 py-2.5 text-center">
+                      <td className="px-3 py-2.5 text-white/80">{o.projectName}</td>
+                      <td className="px-3 py-2.5 text-white/80">{o.observationType === "Others" ? o.observationTypeOther || t.form.other : o.observationType}</td>
+                      <td className="px-3 py-2.5 text-white/80">{o.classification}</td>
+                      <td className="px-3 py-2.5 text-center">{gp ? <Pill value={GOOD_PRACTICE} /> : <Pill value={o.riskRating} />}</td>
+                      <td className="px-3 py-2.5 text-center">
                         {gp && o.status !== "Cancelled" ? <Pill value={GOOD_PRACTICE} /> : <Pill value={o.status} />}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-white/90">{fmtDate(o.createdAt)}</td>
-                      <td className="px-4 py-2.5">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-white/90">{fmtDate(o.createdAt)}</td>
+                      <td className="px-3 py-2.5">
                         <div className="flex items-center justify-center gap-4 font-semibold">
                           <Link href={`/observations/${o.id}`} className="text-[#ffa31a] hover:underline">
                             {t.list.view}
@@ -496,16 +483,16 @@ function ChecklistDoc({ className, strokeWidth = 1.3 }: { className?: string; st
 
 function KpiCard({ label, icon: Icon, value, series, share }: { label: string; icon: LucideIcon | typeof ChecklistDoc; value: number; series: number[]; share: number }) {
   return (
-    <div className={`${CARD} flex min-w-0 flex-col justify-between gap-4 px-3 pb-4 pt-4 sm:px-6`} style={{ background: CARD_BG }}>
-      <div className="flex items-center gap-3 sm:gap-6">
-        <Icon className="h-10 w-10 shrink-0 text-white/90 sm:h-14 sm:w-14" strokeWidth={1.3} />
+    <div className={`${CARD} flex min-w-0 flex-col justify-between gap-3 px-5 pb-4 pt-5`} style={{ background: CARD_BG }}>
+      <div className="flex items-center gap-4">
+        <Icon className="h-9 w-9 shrink-0 text-white/75" strokeWidth={1.4} />
         <div className="min-w-0">
-          <p className="text-[24px] font-extrabold leading-none tabular-nums sm:text-[38px]">{value.toLocaleString("en-US")}</p>
-          <p className="mt-2 text-[12px] font-medium leading-tight text-white/90 sm:text-[17px]">{label}</p>
+          <p className="text-[30px] font-bold leading-none tabular-nums">{value.toLocaleString("en-US")}</p>
+          <p className="mt-1.5 text-sm font-medium tracking-wide text-white/70">{label}</p>
         </div>
-        <Sparkline values={series} className="ms-auto hidden h-9 w-20 min-w-[3rem] shrink self-start sm:block" />
+        <Sparkline values={series} className="ms-auto h-8 w-20 shrink-0" />
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
         <div
           className="h-full rounded-full"
           style={{
@@ -544,14 +531,11 @@ function Sparkline({ values, className }: { values: number[]; className?: string
   );
 }
 
-function TopThree({ icon: Icon, title, rows, empty }: { icon: LucideIcon; title: string; rows: { label: string; count: number }[]; empty: string }) {
+function TopThree({ title, rows, empty }: { icon?: LucideIcon; title: string; rows: { label: string; count: number }[]; empty: string }) {
   const max = rows[0]?.count ?? 0;
   return (
     <section className={`${CARD} min-w-0 p-4 sm:p-5`} style={{ background: CARD_BG }}>
-      <h2 className="mb-3 flex items-center gap-3 text-lg font-bold sm:text-xl">
-        <Icon className="h-6 w-6 shrink-0" style={{ color: ORANGE }} strokeWidth={2.2} />
-        {title}
-      </h2>
+      <h2 className="mb-3 text-base font-semibold leading-tight sm:text-[17px]">{title}</h2>
       {rows.length === 0 ? (
         <p className="py-4 text-center text-sm text-white/55">{empty}</p>
       ) : (
@@ -586,93 +570,5 @@ function TopThree({ icon: Icon, title, rows, empty }: { icon: LucideIcon; title:
   );
 }
 
-/** "Nice" axis maximum and tick step. */
-function niceAxis(max: number, steps = 5) {
-  const raw = Math.max(1, max) / steps;
-  const pow = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
-  const top = Math.ceil(max / step) * step || step;
-  return { top, ticks: Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step) };
-}
 
-/** Orange area chart with a value over every month. */
-function MonthArea({ points }: { points: { label: string; value: number }[] }) {
-  const W = 640;
-  const H = 230;
-  const L = 52;
-  const R = 16;
-  const T = 26;
-  const B = 26;
-  const { top, ticks } = niceAxis(Math.max(...points.map((p) => p.value), 1) * 1.3);
-  const n = points.length;
-  const x = (i: number) => L + (n > 1 ? (i / (n - 1)) * (W - L - R) : (W - L - R) / 2);
-  const y = (v: number) => T + (1 - v / top) * (H - T - B);
-  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(n - 1).toFixed(1)},${H - B} L${x(0).toFixed(1)},${H - B} Z`;
-  if (!n) return <div className="flex h-48 items-center justify-center text-sm text-white/50">No observations yet</div>;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Observations by month">
-      <defs>
-        <linearGradient id="obsArea" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#ff7a1a" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#c2410c" stopOpacity="0.35" />
-        </linearGradient>
-      </defs>
-      {ticks.map((tk) => (
-        <g key={tk}>
-          <line x1={L} x2={W - R} y1={y(tk)} y2={y(tk)} stroke="rgba(255,255,255,0.08)" />
-          <text x={L - 8} y={y(tk) + 4} textAnchor="end" fill="rgba(255,255,255,0.85)" fontSize="12">
-            {tk.toLocaleString("en-US")}
-          </text>
-        </g>
-      ))}
-      {points.map((_, i) => (
-        <line key={i} x1={x(i)} x2={x(i)} y1={T} y2={H - B} stroke="rgba(255,255,255,0.05)" />
-      ))}
-      <path d={area} fill="url(#obsArea)" />
-      <path d={line} fill="none" stroke={ORANGE_HI} strokeWidth="2.5" style={{ filter: "drop-shadow(0 0 4px rgba(243,111,36,0.9))" }} />
-      {points.map((p, i) => (
-        <g key={p.label}>
-          <circle cx={x(i)} cy={y(p.value)} r="4.5" fill="#fff" stroke={ORANGE} strokeWidth="2.5" />
-          <text x={x(i)} y={y(p.value) - 10} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600">
-            {p.value.toLocaleString("en-US")}
-          </text>
-          <text x={x(i)} y={H - 7} textAnchor="middle" fill="rgba(255,255,255,0.85)" fontSize="12">
-            {p.label}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
 
-/** Compact glowing bars: one row per project, largest first. */
-function ProjectBars({ rows }: { rows: { label: string; count: number }[] }) {
-  if (rows.length === 0) return <div className="flex h-48 items-center justify-center text-sm text-white/50">No observations yet</div>;
-  const max = rows[0].count * 1.18;
-  return (
-    <div className="max-h-[15rem] overflow-y-auto pe-1">
-      <div className="grid grid-cols-[minmax(0,8rem)_minmax(0,1fr)] gap-x-3 gap-y-1.5 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)]">
-        {rows.map((r) => (
-          <div key={r.label} className="contents">
-            <span className="truncate text-end text-[14px] leading-5 text-white/90" title={r.label}>
-              {r.label}
-            </span>
-            <div className="flex items-center">
-              <div
-                className="h-3.5 rounded-full"
-                style={{
-                  width: `${(r.count / max) * 100}%`,
-                  minWidth: 4,
-                  background: "linear-gradient(180deg, #ffab52 0%, #ff7a1a 45%, #e8590c 100%)",
-                  boxShadow: "0 0 10px rgba(255,122,26,0.55)",
-                }}
-              />
-              <span className="ms-2 text-[14px] font-semibold tabular-nums">{r.count.toLocaleString("en-US")}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
