@@ -3,20 +3,23 @@
 /**
  * App-wide project filter.
  *
- * One selection ("All projects" or a single project) shared by every page.
+ * Each section of the app (Observations, Incidents, PMV, …) keeps its own
+ * selection ("All Projects" or a single project): picking a project on one
+ * page does not change the others.
  * The data providers (Observations, Incidents/FICC, Weekly KPI, Permits,
  * Checklists, HSE Passport) read it and hand pages only the matching rows,
  * so every card, chart and table follows the filter without page changes.
  * Look-ups by id (getById) still search all rows so detail pages keep working.
  *
- * The choice is remembered per browser (localStorage, best-effort).
+ * The choices are remembered per browser (localStorage, best-effort).
  */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { PROJECTS } from "@/lib/mockData";
 import { projectName } from "@/lib/projectNames";
 
-const STORAGE_KEY = "ff.projectFilter";
+const STORAGE_KEY = "ff.projectFilterBySection";
 
 interface ProjectFilterValue {
   /** "" means all projects. */
@@ -31,27 +34,39 @@ interface ProjectFilterValue {
 const ProjectFilterContext = createContext<ProjectFilterValue | null>(null);
 
 export function ProjectFilterProvider({ children }: { children: React.ReactNode }) {
-  const [project, setProjectState] = useState("");
+  // "/observations/123" → "observations": a page and its detail pages share one choice.
+  const pathname = usePathname() ?? "/";
+  const section = pathname.split("/")[1] || "home";
+  const [bySection, setBySection] = useState<Record<string, string>>({});
   const [known, setKnown] = useState<Set<string>>(() => new Set(PROJECTS));
 
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) setProjectState(saved);
+      if (saved) setBySection(JSON.parse(saved) as Record<string, string>);
     } catch {
       /* storage unavailable — default to all projects */
     }
   }, []);
 
-  const setProject = useCallback((p: string) => {
-    setProjectState(p);
-    try {
-      if (p) window.localStorage.setItem(STORAGE_KEY, p);
-      else window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const project = bySection[section] ?? "";
+
+  const setProject = useCallback(
+    (p: string) => {
+      setBySection((prev) => {
+        const next = { ...prev };
+        if (p) next[section] = p;
+        else delete next[section];
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    },
+    [section]
+  );
 
   const addProjects = useCallback((names: (string | null | undefined)[]) => {
     setKnown((prev) => {

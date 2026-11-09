@@ -3,7 +3,7 @@
 import { FolderOpen } from "lucide-react";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
 
-/** The app-wide project picker shown at the top of every signed-in page. */
+/** The project picker at the top of every signed-in page (each page keeps its own choice). */
 export default function ProjectFilter({ className = "" }: { className?: string }) {
   const { project, setProject, projects } = useProjectFilter();
 
@@ -19,7 +19,7 @@ export default function ProjectFilter({ className = "" }: { className?: string }
         style={{ backgroundColor: "#000", color: "#fff" }}
       >
         <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
-          All projects
+          All Projects
         </option>
         {projects.map((p) => (
           <option key={p} value={p} style={{ backgroundColor: "#000", color: "#fff" }}>
