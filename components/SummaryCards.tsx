@@ -12,7 +12,8 @@ export interface SummaryCard {
 }
 
 /** Row of headline total cards (same look as the PTW / Injury pages). */
-export default function SummaryCards({ cards }: { cards: SummaryCard[] }) {
+export default function SummaryCards({ cards, dark = false }: { cards: SummaryCard[]; dark?: boolean }) {
+  if (dark) return <DarkSummaryCards cards={cards} />;
   return (
     <div
       className={`mb-6 grid gap-4 sm:grid-cols-2 ${
@@ -35,6 +36,51 @@ export default function SummaryCards({ cards }: { cards: SummaryCard[] }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** PMV-style KPI cards for the dark dashboards: white line icon, divider, big number, label, glowing bar. */
+function DarkSummaryCards({ cards }: { cards: SummaryCard[] }) {
+  const max = Math.max(1, ...cards.map((c) => (typeof c.value === "number" ? c.value : 0)));
+  return (
+    <div
+      className={`mb-5 grid grid-cols-2 gap-3 sm:gap-4 ${
+        cards.length >= 5 ? "lg:grid-cols-5" : cards.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"
+      }`}
+    >
+      {cards.map((c) => {
+        const n = typeof c.value === "number" ? c.value : 0;
+        return (
+          <div
+            key={c.label}
+            title={c.hint}
+            className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
+            style={{ background: "linear-gradient(160deg, #1a1a1d 0%, #121214 100%)" }}
+          >
+            <div className="flex items-center gap-2 sm:gap-4">
+              <c.icon className="h-9 w-9 shrink-0 text-white/85 sm:h-12 sm:w-12" strokeWidth={1.4} />
+              <span className="h-11 w-px shrink-0 bg-white/20 sm:h-14" />
+              <div className="min-w-0">
+                <p className="text-[22px] font-extrabold leading-none tabular-nums sm:text-[32px]">
+                  {typeof c.value === "number" ? c.value.toLocaleString("en-US") : c.value}
+                </p>
+                <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[15px]">{c.label}</p>
+              </div>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.max(n ? 4 : 0, (n / max) * 100)}%`,
+                  background: "linear-gradient(90deg, #ffb03a, #f36f24 55%, #e2551a)",
+                  boxShadow: "0 0 8px rgba(243,111,36,0.8)",
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

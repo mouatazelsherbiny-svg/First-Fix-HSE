@@ -16,7 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import PassportTabs from "@/components/hsePassport/PassportTabs";
+import PassportShell from "@/components/hsePassport/PassportShell";
 import SummaryCards from "@/components/SummaryCards";
 import { Ban, ClipboardList, FileWarning, MessageSquareWarning, ShieldAlert } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
@@ -50,7 +50,7 @@ const LIFE_SAVING_RULE_ICONS: LucideIcon[] = [
 
 export default function DisciplinaryActionPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute hideProjectFilter>
       <DisciplinaryActionContent />
     </ProtectedRoute>
   );
@@ -164,18 +164,20 @@ function DisciplinaryActionContent() {
   );
 
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
+    <PassportShell
+      title="Disciplinary Action"
+      actions={
+        <>
         <ExportExcelButton
           filename={t.hse.disciplinary.title}
           sheets={exportSheets}
           disabled={(hasSelection ? scopedRecords : disciplinaryRecords).length === 0}
         />
-      </div>
-
-      <PassportTabs />
+        </>
+      }
+    >
       <SummaryCards
+        dark
         cards={[
           { label: "Total Actions", value: scopedRecords.length, icon: ClipboardList, color: "#2563EB" },
           { label: t.hse.disciplinary.verbalWarning, value: counts["Verbal Warning"], icon: MessageSquareWarning, color: "#D97706" },
@@ -377,7 +379,7 @@ function DisciplinaryActionContent() {
           )}
         </div>
       )}
-    </div>
+    </PassportShell>
   );
 }
 

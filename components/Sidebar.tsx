@@ -203,7 +203,7 @@ export default function Sidebar({
     { kind: "link", href: "/permit-to-work", label: t.nav.permitToWork, icon: ShieldCheck, count: permits.length },
     {
       kind: "link",
-      href: "/hse-passport/ppe",
+      href: "/hse-passport",
       activePrefix: "/hse-passport",
       label: t.nav.hsePassport,
       icon: IdCard,

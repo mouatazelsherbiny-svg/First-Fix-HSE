@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Footprints, Glasses, Hand, HardHat, Package, Repeat, Shirt, Upload, Users, X } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import PassportTabs from "@/components/hsePassport/PassportTabs";
+import PassportShell from "@/components/hsePassport/PassportShell";
 import SummaryCards from "@/components/SummaryCards";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
@@ -36,7 +36,7 @@ import {
 
 export default function PpePage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute hideProjectFilter>
       <PpeContent />
     </ProtectedRoute>
   );
@@ -257,9 +257,10 @@ function PpeContent() {
   ];
 
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
+    <PassportShell
+      title="PPE"
+      actions={
+        <>
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin && (
             <>
@@ -287,11 +288,12 @@ function PpeContent() {
           )}
           <ExportExcelButton filename="PPE Passport" sheets={exportSheets} disabled={filtered.length === 0} />
         </div>
-      </div>
-
-      <PassportTabs />
-      <SummaryCards cards={cards} />
+        </>
+      }
+    >
+      <SummaryCards dark cards={cards} />
       <SummaryCards
+        dark
         cards={[
           { label: "Helmet", value: totals.perItem.Helmet, icon: HardHat, color: "#F59E0B" },
           { label: "Safety Shoes", value: totals.perItem.Shoes, icon: Footprints, color: "#78716C" },
@@ -446,7 +448,7 @@ function PpeContent() {
       {addFor !== null && (
         <AddIssueModal rows={rows} initialCode={addFor} onClose={() => setAddFor(null)} onSave={saveLines} />
       )}
-    </div>
+    </PassportShell>
   );
 }
 

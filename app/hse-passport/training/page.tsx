@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import PassportTabs from "@/components/hsePassport/PassportTabs";
+import PassportShell from "@/components/hsePassport/PassportShell";
 import SummaryCards from "@/components/SummaryCards";
 import { BadgeCheck, CalendarX, Clock, GraduationCap, Users } from "lucide-react";
 import EmployeeSearch from "@/components/hsePassport/EmployeeSearch";
@@ -20,7 +20,7 @@ const BENDING_ITEMS = ["5 Duties", "First Aid", "Fire Watcher"];
 
 export default function TrainingPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute hideProjectFilter>
       <TrainingContent />
     </ProtectedRoute>
   );
@@ -76,18 +76,20 @@ function TrainingContent() {
   );
 
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hsePassport}</h1>
+    <PassportShell
+      title="Training"
+      actions={
+        <>
         <ExportExcelButton
           filename={t.hse.training.title}
           sheets={exportSheets}
           disabled={(employee ? records : trainingRecords).length === 0}
         />
-      </div>
-
-      <PassportTabs />
+        </>
+      }
+    >
       <SummaryCards
+        dark
         cards={[
           { label: "Total Trainings", value: cardRecords.length, icon: GraduationCap, color: "#2563EB" },
           { label: "Employees Trained", value: new Set(cardRecords.map((r) => r.employeeId)).size, icon: Users, color: "#F36F24" },
@@ -230,7 +232,7 @@ function TrainingContent() {
           )}
         </div>
       )}
-    </div>
+    </PassportShell>
   );
 }
 
