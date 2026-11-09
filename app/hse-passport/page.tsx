@@ -103,7 +103,7 @@ function Landing() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={s.img} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-            <span className="absolute inset-0 bg-black/35 transition group-hover:bg-black/20" />
+            <span className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/45 transition group-hover:via-black/15" />
             <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-2xl font-bold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {s.label}
             </span>
