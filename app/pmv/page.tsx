@@ -251,7 +251,7 @@ function Panel({ className = "", children }: { className?: string; children: Rea
 }
 
 /** Same size and layout as the KPI cards on Observations and Incidents. */
-function KpiCard({ icon: Icon, label, value, share }: { icon: LucideIcon; label: string; value: number; share: number }) {
+function KpiCard({ icon: Icon, label, value, share, series }: { icon: LucideIcon; label: string; value: number; share: number; series: number[] }) {
   return (
     <div
       className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] px-3 pb-4 pt-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:px-5"
@@ -264,6 +264,7 @@ function KpiCard({ icon: Icon, label, value, share }: { icon: LucideIcon; label:
           <p className="text-[24px] font-bold leading-none tabular-nums sm:text-[34px]">{value.toLocaleString("en-US")}</p>
           <p className="mt-1.5 text-[12px] font-medium leading-tight text-white/90 sm:text-[16px]">{label}</p>
         </div>
+        <Sparkline values={series} className="ms-auto hidden h-10 w-24 min-w-[3rem] shrink self-start sm:block" />
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
@@ -277,6 +278,40 @@ function KpiCard({ icon: Icon, label, value, share }: { icon: LucideIcon; label:
       </div>
     </div>
   );
+}
+
+/** Small glowing trend line. */
+function Sparkline({ values, className }: { values: number[]; className?: string }) {
+  const W = 80;
+  const H = 30;
+  const max = Math.max(1, ...values);
+  const pts = values.map((v, i) => [values.length > 1 ? (i / (values.length - 1)) * W : W / 2, H - 4 - (v / max) * (H - 8)]);
+  let d = pts.length ? `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}` : "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={className} preserveAspectRatio="none" aria-hidden>
+      <path d={d} fill="none" stroke={ORANGE_HI} strokeWidth="2.2" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 3px rgba(243,111,36,0.9))" }} />
+    </svg>
+  );
+}
+
+/** Upcoming due dates bucketed into `bins` even steps from the earliest to the latest. */
+function dueDateSeries(dates: string[], bins = 10) {
+  const t = dates.map((d) => new Date(d).getTime()).filter((n) => !Number.isNaN(n));
+  if (t.length === 0) return [];
+  const lo = Math.min(...t);
+  const span = Math.max(1, Math.max(...t) - lo);
+  const out = Array.from({ length: bins }, () => 0);
+  t.forEach((n) => (out[Math.min(bins - 1, Math.floor(((n - lo) / span) * bins))] += 1));
+  return out;
 }
 
 /** Segmented ring: one glowing tick per share of active / inactive / suspended. */
@@ -385,22 +420,29 @@ function PmvDashboard({ onOpenLog }: { onOpenLog: (logKey: string) => void }) {
   return (
     <>
       {/* ---- KPI row ---- */}
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
-        <KpiCard icon={Truck} label={t.pmv.totalPmv} value={s.totalPmv} share={share(vehicleStatus.active, s.totalPmv)} />
-        <KpiCard icon={CalendarClock} label={t.pmv.dueForInspection} value={s.dueForInspection} share={share(s.dueForInspection, s.totalPmv)} />
-        <KpiCard icon={UserCheck} label={t.pmv.authorizedOperators} value={s.authorizedOperators} share={share(s.authorizedOperators, s.totalOperators)} />
-        <KpiCard icon={FileClock} label={t.pmv.expiringDocuments} value={s.expiringDocuments} share={share(s.expiringDocuments, s.totalDocuments)} />
-        <div className="flex items-center justify-center sm:col-span-2 xl:col-span-1 xl:ps-2">
-          <div
-            className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-[3px] border-[#f36f24] text-center"
-            style={{ boxShadow: "0 0 26px rgba(243,111,36,0.55), inset 0 0 22px rgba(243,111,36,0.25)" }}
-          >
-            <span className="px-3 text-[10px] font-medium uppercase leading-tight tracking-[0.18em] text-white/85">
-              {t.pmv.totalPmv}
-            </span>
-            <span className="mt-1 text-3xl font-bold tabular-nums">{s.totalPmv.toLocaleString("en-US")}</span>
-          </div>
-        </div>
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <KpiCard icon={Truck} label={t.pmv.totalPmv} value={s.totalPmv} share={share(vehicleStatus.active, s.totalPmv)} series={byType.map((r) => r.total)} />
+        <KpiCard
+          icon={CalendarClock}
+          label={t.pmv.dueForInspection}
+          value={s.dueForInspection}
+          share={share(s.dueForInspection, s.totalPmv)}
+          series={dueDateSeries(upcomingInspections.map((r) => r.dueDate))}
+        />
+        <KpiCard
+          icon={UserCheck}
+          label={t.pmv.authorizedOperators}
+          value={s.authorizedOperators}
+          share={share(s.authorizedOperators, s.totalOperators)}
+          series={[operatorStatus.suspended, operatorStatus.inactive, operatorStatus.active, operatorStatus.onLeave]}
+        />
+        <KpiCard
+          icon={FileClock}
+          label={t.pmv.expiringDocuments}
+          value={s.expiringDocuments}
+          share={share(s.expiringDocuments, s.totalDocuments)}
+          series={expiringDocuments.map((r) => r.count)}
+        />
       </div>
 
       {/* ---- PMV by Type | Operator & Vehicle overview ---- */}
