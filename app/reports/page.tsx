@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarCheck, ChartColumn, Eye, Sparkles } from "lucide-react";
+import { ChartColumn, Eye, Flame, HeartPulse, Leaf, Sparkles, Zap } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
 import ObservationForm from "@/components/observations/ObservationForm";
-import NavCards from "@/components/NavCards";
+import PhotoCards from "@/components/PhotoCards";
 import { useLanguage } from "@/context/LanguageContext";
 import PageTitle from "@/components/PageTitle";
 
@@ -28,19 +28,19 @@ function ReportsContent() {
   const [formKey, setFormKey] = useState(0);
 
   const DAILY_VIEWS = [
-    { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye },
-    { key: "kpi" as const, label: "KPI", icon: ChartColumn },
-    { key: "good" as const, label: t.list.goodPracticeBtn.replace(/^\+\s*/, ""), icon: Sparkles },
+    { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye, image: "/brand/passport/panel-disciplinary.jpg" },
+    { key: "kpi" as const, label: "KPI", icon: ChartColumn, image: "/brand/dashboard-hero.jpg", position: "35% center" },
+    { key: "good" as const, label: t.list.goodPracticeBtn.replace(/^\+\s*/, ""), icon: Sparkles, image: "/brand/news/eyewash-rosewood.jpg", position: "center 30%" },
   ];
 
   // The 4 monthly HSE checklist templates — previously their own sidebar
   // group, now surfaced here under Reports → Monthly (see the sidebar
   // restructure). The pages themselves are unchanged.
   const monthlyChecklists = [
-    { href: "/checklists/environmental", label: t.nav.envChecklist },
-    { href: "/checklists/fire-assessment", label: t.nav.fireChecklist },
-    { href: "/checklists/safety-health", label: t.nav.shChecklist },
-    { href: "/checklists/tc-energization", label: t.nav.tcChecklist },
+    { href: "/checklists/environmental", label: t.nav.envChecklist, icon: Leaf, image: "/brand/news/walkthrough.jpg", position: "55% center" },
+    { href: "/checklists/fire-assessment", label: t.nav.fireChecklist, icon: Flame, image: "/brand/news/training-oceanarium.jpg", position: "center 25%" },
+    { href: "/checklists/safety-health", label: t.nav.shChecklist, icon: HeartPulse, image: "/brand/passport/panel-ppe.jpg" },
+    { href: "/checklists/tc-energization", label: t.nav.tcChecklist, icon: Zap, image: "/brand/sidebar-bg.jpg", position: "center 30%" },
   ];
 
   const TABS: { key: ReportTab; label: string }[] = [
@@ -75,20 +75,10 @@ function ReportsContent() {
             <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
               {t.reports.monthlyIntro}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {monthlyChecklists.map((c) => (
-                <Link
-                  key={c.href}
-                  href={c.href}
-                  className="card flex flex-col items-start gap-3 transition hover:shadow-cardHover"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-orangeLight text-brand-orange">
-                    <CalendarCheck className="h-4.5 w-4.5" />
-                  </span>
-                  <span className="text-sm font-semibold text-brand-black">{c.label}</span>
-                </Link>
-              ))}
-            </div>
+            <PhotoCards
+              className=""
+              items={monthlyChecklists.map((c) => ({ key: c.href, label: c.label, icon: c.icon, image: c.image, position: c.position, href: c.href }))}
+            />
           </div>
           <Link href="/my-checklists" className="btn-secondary inline-flex">
             {t.reports.viewMyChecklist}
@@ -96,12 +86,14 @@ function ReportsContent() {
         </div>
       ) : (
         <div>
-          <NavCards
+          <PhotoCards
             className="mb-5"
             items={DAILY_VIEWS.map((v) => ({
               key: v.key,
               label: v.label,
               icon: v.icon,
+              image: v.image,
+              position: v.position,
               active: dailyView === v.key,
               onClick: () => setDailyView(v.key),
             }))}
