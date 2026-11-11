@@ -28,19 +28,19 @@ function ReportsContent() {
   const [formKey, setFormKey] = useState(0);
 
   const DAILY_VIEWS = [
-    { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye, image: "/brand/passport/panel-disciplinary.jpg" },
-    { key: "kpi" as const, label: "KPI", icon: ChartColumn, image: "/brand/dashboard-hero.jpg", position: "35% center" },
-    { key: "good" as const, label: t.list.goodPracticeBtn.replace(/^\+\s*/, ""), icon: Sparkles, image: "/brand/news/eyewash-rosewood.jpg", position: "center 30%" },
+    { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye, color: "#f36f24" },
+    { key: "kpi" as const, label: "KPI", icon: ChartColumn, color: "#4f8fd6" },
+    { key: "good" as const, label: t.list.goodPracticeBtn.replace(/^\+\s*/, ""), icon: Sparkles, color: "#22c55e" },
   ];
 
   // The 4 monthly HSE checklist templates — previously their own sidebar
   // group, now surfaced here under Reports → Monthly (see the sidebar
   // restructure). The pages themselves are unchanged.
   const monthlyChecklists = [
-    { href: "/checklists/environmental", label: t.nav.envChecklist, icon: Leaf, image: "/brand/news/walkthrough.jpg", position: "55% center" },
-    { href: "/checklists/fire-assessment", label: t.nav.fireChecklist, icon: Flame, image: "/brand/news/training-oceanarium.jpg", position: "center 25%" },
-    { href: "/checklists/safety-health", label: t.nav.shChecklist, icon: HeartPulse, image: "/brand/passport/panel-ppe.jpg" },
-    { href: "/checklists/tc-energization", label: t.nav.tcChecklist, icon: Zap, image: "/brand/sidebar-bg.jpg", position: "center 30%" },
+    { href: "/checklists/environmental", label: t.nav.envChecklist, icon: Leaf, color: "#2dd4bf" },
+    { href: "/checklists/fire-assessment", label: t.nav.fireChecklist, icon: Flame, color: "#ef4444" },
+    { href: "/checklists/safety-health", label: t.nav.shChecklist, icon: HeartPulse, color: "#f472b6" },
+    { href: "/checklists/tc-energization", label: t.nav.tcChecklist, icon: Zap, color: "#facc15" },
   ];
 
   const TABS: { key: ReportTab; label: string }[] = [
@@ -72,17 +72,19 @@ function ReportsContent() {
       {tab === "monthly" ? (
         <div className="space-y-5">
           <div>
-            <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
+            <h2 className="mb-3 text-center text-sm font-semibold tracking-wide text-brand-gray">
               {t.reports.monthlyIntro}
             </h2>
             <PhotoCards
               className=""
-              items={monthlyChecklists.map((c) => ({ key: c.href, label: c.label, icon: c.icon, image: c.image, position: c.position, href: c.href }))}
+              items={monthlyChecklists.map((c) => ({ key: c.href, label: c.label, icon: c.icon, color: c.color, href: c.href }))}
             />
           </div>
-          <Link href="/my-checklists" className="btn-secondary inline-flex">
-            {t.reports.viewMyChecklist}
-          </Link>
+          <div className="flex justify-center">
+            <Link href="/my-checklists" className="btn-secondary inline-flex">
+              {t.reports.viewMyChecklist}
+            </Link>
+          </div>
         </div>
       ) : (
         <div>
@@ -92,8 +94,7 @@ function ReportsContent() {
               key: v.key,
               label: v.label,
               icon: v.icon,
-              image: v.image,
-              position: v.position,
+              color: v.color,
               active: dailyView === v.key,
               onClick: () => setDailyView(v.key),
             }))}
