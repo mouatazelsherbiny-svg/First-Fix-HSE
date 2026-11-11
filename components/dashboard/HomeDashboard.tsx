@@ -14,7 +14,7 @@
  * use inline rgba styles instead.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -165,21 +165,54 @@ function EmptyState({ text }: { text: string }) {
 // Hero
 // ---------------------------------------------------------------------------
 
+/** Counts up from where it is to `target` over ~2.5 s (eased), whenever target changes. */
+function useCountUp(target: number | null, duration = 2500) {
+  const [shown, setShown] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    if (target === null) return;
+    const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      from.current = target;
+      setShown(target);
+      return;
+    }
+    const start = performance.now();
+    const begin = from.current;
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = Math.round(begin + (target - begin) * eased);
+      from.current = v;
+      setShown(v);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return shown;
+}
+
 function HeroStat({
   icon: Icon,
   value,
+  format = (n) => n.toLocaleString("en-US"),
   label,
   sub,
 }: {
   icon: LucideIcon;
-  value: string;
+  /** null shows "—". */
+  value: number | null;
+  format?: (n: number) => string;
   label: string;
   sub?: string;
 }) {
+  const shown = useCountUp(value);
   return (
     <div className="flex min-w-0 flex-col items-center px-3 text-center sm:items-start sm:px-4 sm:text-start">
       <Icon className="mb-2 h-7 w-7 text-brand-orange" strokeWidth={1.75} />
-      <p className="text-xl font-extrabold leading-none text-white tabular-nums sm:text-2xl">{value}</p>
+      <p className="text-xl font-extrabold leading-none text-white tabular-nums sm:text-2xl">{value === null ? "—" : format(shown)}</p>
       <p className="mt-1.5 text-xs font-medium leading-tight text-white/80">{label}</p>
       {sub && <p className="mt-0.5 text-[10px] text-white/55">{sub}</p>}
     </div>
@@ -187,7 +220,7 @@ function HeroStat({
 }
 
 function Hero({ data }: { data: HomeDashboardData["hero"] }) {
-  const days = (n: number | null) => (n === null ? "—" : String(n).padStart(2, "0"));
+  const days = (n: number) => String(n).padStart(2, "0");
   return (
     // Full-bleed: negative margins cancel ProtectedRoute's content padding
     // (px-4 / sm:px-6 / lg:px-8, py-6) so the banner sits flush against the
@@ -234,17 +267,17 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
         >
           <HeroStat
             icon={HardHat}
-            value={data.totalSafeWorkHours.toLocaleString("en-US")}
+            value={data.totalSafeWorkHours}
             label="Total Safe Work Hours"
             sub={data.safeHoursAsOf ? `as of ${formatDate(data.safeHoursAsOf)}` : undefined}
           />
           <HeroStat
             icon={GraduationCap}
-            value={data.totalTrainingHours.toLocaleString("en-US")}
+            value={data.totalTrainingHours}
             label="Total Training Hours"
           />
-          <HeroStat icon={CalendarDays} value={days(data.daysSinceLti)} label="Days Since Last LTI" />
-          <HeroStat icon={ShieldCheck} value={days(data.daysSinceMtcRwc)} label="Days Since Last MTC / RWC" />
+          <HeroStat icon={CalendarDays} value={data.daysSinceLti} format={days} label="Days Since Last LTI" />
+          <HeroStat icon={ShieldCheck} value={data.daysSinceMtcRwc} format={days} label="Days Since Last MTC / RWC" />
           <div className="flex flex-col justify-center px-3 sm:px-4">
             <p className="text-xl font-extrabold uppercase leading-tight text-white">
               Zero Harm
