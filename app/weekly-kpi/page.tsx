@@ -68,7 +68,7 @@ function WeeklyKpiList() {
 
   return (
     <div>
-      <PageTitle section="KPI's" title="Weekly KPI Records">
+      <PageTitle section="KPI's" title="Key Project Indicator">
         <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={filtered.length === 0} />
         <Link href="/weekly-kpi/new" className="btn-primary">
           {t.weeklyKpi.newBtn}
