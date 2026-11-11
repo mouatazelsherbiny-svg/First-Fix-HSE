@@ -9,6 +9,7 @@ import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
+import PageTitle from "@/components/PageTitle";
 
 
 export default function SummaryPerformanceReportPage() {
@@ -149,10 +150,7 @@ function SummaryPerformanceReport() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.summaryReport.title}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.summaryReport.subtitle}</p>
-      </div>
+      <PageTitle section="Summary Report" title="Employee HSE Performance" />
 
       <div className="mb-6">
         <input

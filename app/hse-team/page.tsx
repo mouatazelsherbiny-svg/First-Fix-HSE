@@ -11,6 +11,7 @@ import {
   REGIONAL_HSEM_ID,
   type OrgPerson,
 } from "@/lib/orgChart";
+import PageTitle from "@/components/PageTitle";
 
 export default function HseTeamPage() {
   return (
@@ -178,10 +179,7 @@ function HseTeamTree() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-brand-black">{t.hseTeam.title}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.hseTeam.subtitle}</p>
-      </div>
+      <PageTitle section={t.hseTeam.title} title="Organization Chart" className="!mb-8" />
 
       <div className="overflow-x-auto pb-4">
         <div

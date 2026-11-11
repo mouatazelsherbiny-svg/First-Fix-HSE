@@ -9,6 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { STATUSES } from "@/lib/mockData";
 import { ObservationStatus } from "@/types/observation";
+import PageTitle from "@/components/PageTitle";
 
 export default function ObservationEditPage() {
   return (
@@ -78,12 +79,9 @@ function ObservationEdit() {
         &larr; {t.detail.back}
       </Link>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {t.list.edit} — #{observation.reportNumber}
-        </h1>
-        <p className="mt-1 text-sm text-brand-gray">{observation.projectName}</p>
-      </div>
+      <PageTitle section="Observations" title={`${t.list.edit} — #${observation.reportNumber}`}>
+        <span className="text-sm text-white/60">{observation.projectName}</span>
+      </PageTitle>
 
       {saved && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">

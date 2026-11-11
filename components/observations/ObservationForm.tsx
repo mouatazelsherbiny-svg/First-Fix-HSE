@@ -19,6 +19,7 @@ import {
   STATUSES,
 } from "@/lib/mockData";
 import { ObservationStatus } from "@/types/observation";
+import PageTitle from "@/components/PageTitle";
 
 export default function ObservationForm({
   presetType = "",
@@ -97,9 +98,9 @@ export default function ObservationForm({
             {isGoodPracticeShortcut ? t.list.goodPracticeBtn.replace(/^\+\s*/, "") : t.form.title}
           </h2>
         ) : (
-          <h1 className="text-2xl font-bold text-brand-black">{t.form.title}</h1>
+          <PageTitle section="Observations" title={t.form.title} className="!mb-0" />
         )}
-        <p className="mt-1 text-sm text-brand-gray">{t.form.subtitle}</p>
+        {embedded && <p className="mt-1 text-sm text-brand-gray">{t.form.subtitle}</p>}
       </div>
 
       {success && (

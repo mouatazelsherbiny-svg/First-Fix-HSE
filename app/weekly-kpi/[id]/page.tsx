@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
+import PageTitle from "@/components/PageTitle";
 
 export default function WeeklyKpiDetailPage() {
   return (
@@ -47,19 +48,14 @@ function WeeklyKpiDetail() {
         &larr; {t.weeklyKpi.back}
       </Link>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">
-            {t.weeklyKpi.detailTitle}
-          </h1>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.weeklyKpi.recordedOn} {dateStr}
-          </p>
-        </div>
+      <PageTitle section="KPI's" title={t.weeklyKpi.detailTitle}>
+        <span className="text-sm text-white/60">
+          {t.weeklyKpi.recordedOn} {dateStr}
+        </span>
         <Link href={`/weekly-kpi/${record.id}/edit`} className="btn-primary">
           {t.weeklyKpi.edit}
         </Link>
-      </div>
+      </PageTitle>
 
       <div className="card space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">

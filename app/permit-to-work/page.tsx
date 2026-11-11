@@ -10,6 +10,7 @@ import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
 import { getPermitProgress } from "@/lib/permitProgress";
+import PageTitle from "@/components/PageTitle";
 
 export default function PermitToWorkPage() {
   return (
@@ -42,23 +43,20 @@ function PermitList() {
 
   return (
     <div>
+      <PageTitle section={t.ptw.listTitle} title="Permits Summary">
+        <div className="flex gap-1.5">
+          <button type="button" onClick={() => router.back()} aria-label="Go back" title="Go back" className={navBtn}>
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+          </button>
+          <button type="button" onClick={() => router.forward()} aria-label="Go forward" title="Go forward" className={navBtn}>
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+          </button>
+        </div>
+      </PageTitle>
+
       {!isLoading && <PtwDashboard permits={permits} />}
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <button type="button" onClick={() => router.back()} aria-label="Go back" title="Go back" className={navBtn}>
-                <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-              </button>
-              <button type="button" onClick={() => router.forward()} aria-label="Go forward" title="Go forward" className={navBtn}>
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </button>
-            </div>
-            <h1 className="text-2xl font-bold text-brand-black">{t.ptw.listTitle}</h1>
-          </div>
-          <p className="mt-1 text-sm text-brand-gray">{t.ptw.listSubtitle}</p>
-        </div>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/project-map" className="btn-secondary gap-2">
             <MapPin className="h-4 w-4" />

@@ -2,11 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Montserrat } from "next/font/google";
-import { GraduationCap, HardHat, LayoutGrid, ShieldAlert, type LucideIcon } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import ProjectFilter from "@/components/ProjectFilter";
-import { useLanguage } from "@/context/LanguageContext";
 
 // Same geometric sans as the PMV, Incidents and Observations pages.
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
@@ -75,41 +73,15 @@ export default function PassportShell({
   );
 }
 
-/** The three sections as PMV-style tabs, plus a way back to the section cards. */
+/** A way back to the three section cards (the section tabs were removed). */
 export function PassportTabs() {
-  const { t } = useLanguage();
-  const pathname = usePathname() ?? "";
-  const tabs: { href: string; label: string; icon: LucideIcon }[] = [
-    { href: "/hse-passport/ppe", label: t.nav.ppe, icon: HardHat },
-    { href: "/hse-passport/training", label: t.nav.training, icon: GraduationCap },
-    { href: "/hse-passport/disciplinary", label: t.nav.disciplinaryAction, icon: ShieldAlert },
-  ];
   return (
-    <div className="flex flex-wrap items-center justify-end gap-3">
-      <div className="inline-flex flex-wrap rounded-xl border border-white/10 bg-white/[0.04] p-1">
-        {tabs.map((tab) => {
-          const active = pathname.startsWith(tab.href);
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                active ? "bg-[#f36f24] text-white shadow-[0_0_14px_rgba(243,111,36,0.55)]" : "text-white/75 hover:bg-white/[0.06] hover:text-white"
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </Link>
-          );
-        })}
-      </div>
-      <Link
-        href="/hse-passport"
-        className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-white/75 transition hover:bg-white/[0.08] hover:text-white"
-      >
-        <LayoutGrid className="h-4 w-4" />
-        Sections
-      </Link>
-    </div>
+    <Link
+      href="/hse-passport"
+      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-white/75 transition hover:bg-white/[0.08] hover:text-white"
+    >
+      <LayoutGrid className="h-4 w-4" />
+      Sections
+    </Link>
   );
 }

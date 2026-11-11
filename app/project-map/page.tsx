@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
 import { PROJECT_LOCATIONS } from "@/lib/projectLocations";
+import PageTitle from "@/components/PageTitle";
 
 // Leaflet touches `window` at import time, so it can only ever run in the
 // browser — loading it through next/dynamic with ssr:false keeps it out of
@@ -44,10 +45,7 @@ function ProjectMapContent() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.projectMap.title}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.projectMap.subtitle}</p>
-      </div>
+      <PageTitle section={t.projectMap.title} title="Project Sites" />
 
       {isLoading ? (
         <div className="card flex flex-col items-center justify-center py-16 text-center">

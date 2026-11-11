@@ -13,6 +13,7 @@ import {
   WEEKLY_KPI_NUMERIC_FIELDS,
   WeeklyKpiNumericField,
 } from "@/types/weeklyKpi";
+import PageTitle from "@/components/PageTitle";
 
 export default function WeeklyKpiEditPage() {
   return (
@@ -122,11 +123,7 @@ function WeeklyKpiEdit() {
         &larr; {t.weeklyKpi.back}
       </Link>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {t.weeklyKpi.edit} — {record.projectName}
-        </h1>
-      </div>
+      <PageTitle section="KPI's" title={`${t.weeklyKpi.edit} — ${record.projectName}`} />
 
       {saved && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">

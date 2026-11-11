@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Montserrat } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useThemeSettings } from "@/context/ThemeSettingsContext";
@@ -8,6 +9,9 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import ScrollReveal from "./ScrollReveal";
 import ProjectFilter from "./ProjectFilter";
+import { HeaderFilterContext } from "./PageTitle";
+
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
 
 export default function ProtectedRoute({
   children,
@@ -26,6 +30,14 @@ export default function ProtectedRoute({
   const [menuOpen, setMenuOpen] = useState(false);
   const openMenu = useCallback(() => setMenuOpen(true), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  // A page header (PageTitle) takes the project filter into itself; until then
+  // it shows above the page as before.
+  const [claimed, setClaimed] = useState(0);
+  const claim = useCallback(() => {
+    setClaimed((c) => c + 1);
+    return () => setClaimed((c) => c - 1);
+  }, []);
+  const headerFilter = useMemo(() => ({ show: !hideProjectFilter, claim }), [hideProjectFilter, claim]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -39,6 +51,14 @@ export default function ProtectedRoute({
   // own glass design. There's currently no UI to change it (the appearance
   // customizer panel was removed), so this applies whatever the stored
   // default/last-picked value is.
+  // Every signed-in page uses the dark look (globals.css → html.app-dark);
+  // print views ("bare") stay light.
+  useEffect(() => {
+    if (bare) return;
+    document.documentElement.classList.add("app-dark");
+    return () => document.documentElement.classList.remove("app-dark");
+  }, [bare]);
+
   useEffect(() => {
     document.documentElement.setAttribute("data-morphism", morphism);
     return () => {
@@ -63,14 +83,17 @@ export default function ProtectedRoute({
       {/* Clears the fixed 64px top bar and, from `lg` up, the 256px sidebar
           (TOPBAR_HEIGHT / SIDEBAR_WIDTH in Sidebar.tsx). */}
       <main className="min-h-screen pt-16 lg:ps-64">
-        <div className="px-4 py-6 sm:px-6 lg:px-8">
-          {/* App-wide project filter — every page's data follows it. */}
-          {!hideProjectFilter && (
+        <div className={`${montserrat.className} px-4 py-6 text-white sm:px-6 lg:px-8`}>
+          {/* App-wide project filter — every page's data follows it. Pages with a
+              PageTitle header show it in the header instead. */}
+          {!hideProjectFilter && claimed === 0 && (
             <div className="relative z-20 mb-4 flex justify-end">
-              <ProjectFilter />
+              <ProjectFilter className="!text-white/75" />
             </div>
           )}
-          <ScrollReveal>{children}</ScrollReveal>
+          <HeaderFilterContext.Provider value={headerFilter}>
+            <ScrollReveal>{children}</ScrollReveal>
+          </HeaderFilterContext.Provider>
         </div>
       </main>
     </div>

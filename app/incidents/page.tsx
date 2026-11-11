@@ -195,7 +195,7 @@ function IncidentsOverview() {
           Incidents
         </span>
         <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
-        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Incident Summary at a Glance</h1>
+        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">HSE Incident Summary</h1>
         <div className="ms-auto flex flex-col items-end gap-2.5">
           <ProjectFilter className="!text-white/75" />
         </div>

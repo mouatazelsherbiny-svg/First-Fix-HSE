@@ -184,7 +184,7 @@ export default function AuditForm({
                           style={
                             on
                               ? { background: YN_STYLE[v].bg, color: YN_STYLE[v].fg, borderColor: v === "NA" ? "#1F2937" : YN_STYLE[v].bg }
-                              : { background: "transparent", color: "#9CA3AF", borderColor: "#E5E7EB" }
+                              : { background: "transparent", color: "#9CA3AF", borderColor: "rgba(255,255,255,0.18)" }
                           }
                         >
                           {YN_STYLE[v].label}

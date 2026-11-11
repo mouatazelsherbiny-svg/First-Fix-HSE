@@ -12,7 +12,7 @@ export interface SummaryCard {
 }
 
 /** Row of headline total cards (same look as the PTW / Injury pages). */
-export default function SummaryCards({ cards, dark = false }: { cards: SummaryCard[]; dark?: boolean }) {
+export default function SummaryCards({ cards, dark = true }: { cards: SummaryCard[]; dark?: boolean }) {
   if (dark) return <DarkSummaryCards cards={cards} />;
   return (
     <div

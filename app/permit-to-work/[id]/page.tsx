@@ -13,6 +13,7 @@ import { PERMIT_STATUSES } from "@/lib/mockData";
 import { PermitStatus } from "@/types/permit";
 import { getPermitProgress } from "@/lib/permitProgress";
 import PermitQrCode from "@/components/PermitQrCode";
+import PageTitle from "@/components/PageTitle";
 
 export default function PermitDetailPage() {
   return (
@@ -122,15 +123,10 @@ function PermitDetail() {
         &larr; {t.ptw.back}
       </Link>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">
-            {t.ptw.detailTitle} #{permit.permitNumber}
-          </h1>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.ptw.requestedOn} {dateStr}
-          </p>
-        </div>
+      <PageTitle section={t.ptw.listTitle} title={`${t.ptw.detailTitle} #${permit.permitNumber}`}>
+        <span className="text-sm text-white/60">
+          {t.ptw.requestedOn} {dateStr}
+        </span>
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             value={permit.permitType}
@@ -148,7 +144,7 @@ function PermitDetail() {
             }
           />
         </div>
-      </div>
+      </PageTitle>
 
       {saved && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">

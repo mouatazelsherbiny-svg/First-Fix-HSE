@@ -62,12 +62,18 @@ import {
   type HomeDashboardData,
 } from "@/lib/useHomeDashboard";
 import { getProjectLocation } from "@/lib/projectLocations";
-import ProjectFilter from "@/components/ProjectFilter";
+import PageTitle from "@/components/PageTitle";
 import { GOOD_PRACTICE_POSTS, NEWS_POSTS } from "@/lib/dashboardContent";
 
 const ACCENT = "rgb(var(--brand-orange-rgb))";
-const LTIFR_COLOR = "#1f4e79";
-const LSR_COLOR = "#1f4e79";
+const LTIFR_COLOR = "#4f8fd6";
+const LSR_COLOR = "#3b82c4";
+// Dark chart styling, same as the Injury / Incidents charts.
+const GRID = "rgba(255,255,255,0.08)";
+const TICK = { fontSize: 11, fill: "#d4d4d8" };
+const TICK_MUTED = { fontSize: 11, fill: "#a1a1aa" };
+const LABEL_FILL = "#e4e4e7";
+const TOOLTIP_STYLE = { background: "#18181b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, fontSize: 12, color: "#fff" };
 const HERO_IMAGE = "/brand/dashboard-hero.jpg";
 const SLIDE_INTERVAL_MS = 6000;
 
@@ -124,17 +130,18 @@ function Panel({
 }) {
   return (
     <section
-      className={`flex min-w-0 flex-col rounded-2xl border border-brand-border bg-brand-surface p-5 shadow-card ${className}`}
+      className={`flex min-w-0 flex-col rounded-2xl border border-white/[0.08] p-4 text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:p-5 ${className}`}
+      style={{ background: "linear-gradient(160deg, #18181b 0%, #111113 100%)" }}
     >
       <header className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-base font-bold text-brand-black">
+        <h2 className="flex items-center gap-2 text-base font-semibold leading-tight text-white sm:text-[17px]">
           {icon}
           {title}
         </h2>
         {href && (
           <Link
             href={href}
-            className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-grayDark transition hover:text-brand-orange"
+            className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-white/70 transition hover:text-[#ff8a3d]"
           >
             {linkLabel}
             <ArrowRight className="h-3.5 w-3.5 text-brand-orange rtl:rotate-180" />
@@ -186,7 +193,7 @@ function Hero({ data }: { data: HomeDashboardData["hero"] }) {
     // (px-4 / sm:px-6 / lg:px-8, py-6) so the banner sits flush against the
     // top bar and the sidebar, as in the mockup.
     <section
-      className="relative -mx-4 -mt-6 overflow-hidden sm:-mx-6 lg:-mx-8"
+      className="relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]"
       style={{ background: "#120d0a" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -320,7 +327,7 @@ function ProjectsSpotlight() {
     "flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:scale-105";
 
   return (
-    <section className="relative min-h-[16rem] flex-1 overflow-hidden rounded-2xl shadow-card sm:min-h-[18rem]" style={{ background: "#14202e" }}>
+    <section className="relative flex min-h-[20rem] flex-1 flex-col overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:min-h-[24rem]" style={{ background: "#14202e" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={slide.id}
@@ -334,11 +341,11 @@ function ProjectsSpotlight() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(90deg, rgba(16,27,43,0.94) 0%, rgba(16,27,43,0.8) 45%, rgba(16,27,43,0.15) 100%)",
+            "linear-gradient(90deg, rgba(10,12,18,0.92) 0%, rgba(10,12,18,0.78) 55%, rgba(10,12,18,0.35) 100%)",
         }}
       />
 
-      <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-8">
+      <div className="relative flex flex-1 flex-col p-5 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
             <span className="h-4 w-1 rounded bg-brand-orange" />
@@ -362,11 +369,12 @@ function ProjectsSpotlight() {
           )}
         </div>
 
-        <div className="max-w-xl pe-24">
-          <h2 className="text-xl font-extrabold leading-snug text-white sm:text-2xl">{slide.title}</h2>
-          <div className="mt-2 space-y-0.5">
+        {/* The text fills the slide: big title, then the lines, centred in the free space. */}
+        <div className="flex flex-1 flex-col justify-center pb-10 pt-4 sm:pe-20 sm:pb-4">
+          <h2 className="text-xl font-extrabold leading-tight text-white sm:text-3xl xl:text-[40px] xl:leading-[1.12]">{slide.title}</h2>
+          <div className="mt-4 space-y-1.5 sm:mt-5">
             {slide.lines.map((line, k) => (
-              <p key={k} className="text-sm font-medium leading-snug text-white/90 sm:text-base">
+              <p key={k} className="text-sm font-medium leading-snug text-white/90 sm:text-lg xl:text-[22px]">
                 {line}
               </p>
             ))}
@@ -398,7 +406,7 @@ function GoodPractices() {
             href={g.image}
             target="_blank"
             rel="noreferrer"
-            className="group flex flex-col overflow-hidden rounded-xl border border-brand-border transition hover:shadow-cardHover"
+            className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] transition hover:-translate-y-0.5 hover:border-[#f36f24]/60"
           >
             <div className="h-48 overflow-hidden bg-brand-grayLight">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -439,10 +447,10 @@ function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={points} margin={{ top: 18, right: 16, bottom: 0, left: -12 }}>
-                <CartesianGrid stroke="#eceff3" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="month" tick={TICK} axisLine={{ stroke: "rgba(255,255,255,0.15)" }} tickLine={false} />
                 <YAxis
-                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  tick={TICK_MUTED}
                   axisLine={false}
                   tickLine={false}
                   width={44}
@@ -450,12 +458,13 @@ function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) 
                 />
                 <Tooltip
                   formatter={(v, name) => [Number(v).toFixed(3), name === "trir" ? "TRIR" : "LTIFR"]}
-                  contentStyle={{ borderRadius: 12, fontSize: 12 }}
+                  contentStyle={TOOLTIP_STYLE}
+                  labelStyle={{ color: "#fff" }}
                 />
                 <ReferenceLine y={TRIR_TARGET} stroke={ACCENT} strokeDasharray="5 4" strokeOpacity={0.6} />
                 <ReferenceLine y={LTIFR_TARGET} stroke={LTIFR_COLOR} strokeDasharray="5 4" strokeOpacity={0.6} />
                 <Line type="linear" dataKey="trir" stroke={ACCENT} strokeWidth={2.5} dot={{ r: 3.5, fill: ACCENT }} isAnimationActive={false}>
-                  <LabelList dataKey="trir" position="top" fontSize={10} fill="#475569" formatter={(v) => Number(v).toFixed(3)} />
+                  <LabelList dataKey="trir" position="top" fontSize={10} fill={LABEL_FILL} formatter={(v) => Number(v).toFixed(3)} />
                 </Line>
                 <Line type="linear" dataKey="ltifr" stroke={LTIFR_COLOR} strokeWidth={2.5} dot={{ r: 3.5, fill: LTIFR_COLOR }} isAnimationActive={false} />
               </LineChart>
@@ -628,7 +637,7 @@ function SiteWeather({ project }: { project: string }) {
               >
                 <span
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                  style={{ background: r.isDay ? "#fff4e6" : "#1e293b" }}
+                  style={{ background: r.isDay ? "rgba(245,158,11,0.16)" : "#1e293b" }}
                 >
                   <Icon
                     className="h-6 w-6"
@@ -775,31 +784,36 @@ function ByProjectBarChart({
   emptyText: string;
 }) {
   return (
-    <Panel title={title} href={href}>
-      <p className="-mt-2 mb-3 text-xs text-brand-gray">By Project</p>
+    <Panel title={title} href={href} className="h-full">
+      <p className="-mt-2 mb-3 text-xs text-white/55">By Project</p>
       {rows.length === 0 ? (
         <EmptyState text={emptyText} />
       ) : (
-        <div className="h-64 w-full">
+        // Grows with the card, so the chart fills it (no empty space under it).
+        <div className="min-h-[16rem] w-full flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ top: 18, right: 4, bottom: 0, left: -18 }} barCategoryGap="22%">
-              <CartesianGrid stroke="#eceff3" vertical={false} />
+              <CartesianGrid stroke={GRID} vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 11, fill: "#64748b" }}
-                axisLine={false}
+                tick={TICK}
+                axisLine={{ stroke: "rgba(255,255,255,0.15)" }}
                 tickLine={false}
                 interval={0}
-                tickFormatter={(v: string) => (v.length > 9 ? `${v.slice(0, 8)}…` : v)}
+                angle={-35}
+                textAnchor="end"
+                height={56}
+                tickFormatter={(v: string) => (v.length > 11 ? `${v.slice(0, 10)}…` : v)}
               />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis tick={TICK_MUTED} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip
-                cursor={{ fill: "rgba(148,163,184,0.12)" }}
+                cursor={{ fill: "rgba(255,255,255,0.06)" }}
                 formatter={(v) => [`${Number(v).toLocaleString("en-US")} ${unit}`, "Total"]}
-                contentStyle={{ borderRadius: 12, fontSize: 12 }}
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={{ color: "#fff" }}
               />
-              <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false}>
-                <LabelList dataKey="count" position="top" fontSize={10} fill="#475569" />
+              <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false} style={{ filter: `drop-shadow(0 0 6px ${color}66)` }}>
+                <LabelList dataKey="count" position="top" fontSize={11} fontWeight={600} fill={LABEL_FILL} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -819,11 +833,9 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
   if (data.isLoading) {
     return (
       <div className="space-y-6">
+        <PageTitle section="Dashboard" title="HSE Department Overview" className="!mb-0" />
         <Hero data={data.hero} />
-        <div className="flex justify-end">
-          <ProjectFilter />
-        </div>
-        <div className="flex items-center justify-center rounded-2xl border border-brand-border bg-brand-surface py-20">
+        <div className="flex items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
         </div>
       </div>
@@ -832,11 +844,8 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
 
   return (
     <div className="space-y-6">
+      <PageTitle section="Dashboard" title="HSE Department Overview" className="!mb-0" />
       <Hero data={data.hero} />
-
-      <div className="flex justify-end">
-        <ProjectFilter />
-      </div>
 
       {/* Left: HSE News + Good Practices, then the two by-project charts.
           Right: Site Weather + Latest Incidents, then Tips of the day level
@@ -851,7 +860,7 @@ export default function HomeDashboard({ data, project }: { data: HomeDashboardDa
           <LatestIncidents items={data.latestIncidents} />
         </div>
 
-        <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:col-span-8">
+        <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:col-span-8 [&>section]:h-full">
           <ByProjectBarChart
             title="Most HSE Observation"
             rows={data.observationsByProject}

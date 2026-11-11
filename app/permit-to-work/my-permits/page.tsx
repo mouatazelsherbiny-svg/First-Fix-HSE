@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { usePermits } from "@/context/PermitContext";
 import { getPermitProgress } from "@/lib/permitProgress";
+import PageTitle from "@/components/PageTitle";
 
 export default function MyPermitsPage() {
   return (
@@ -94,24 +95,12 @@ function MyPermitsList() {
         &larr; {t.ptw.back}
       </Link>
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">{t.ptw.myPermitsTitle}</h1>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.ptw.myPermitsSubtitle} ({project})
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <ExportExcelButton
-            filename={t.ptw.myPermitsTitle}
-            sheets={exportSheets}
-            disabled={filtered.length === 0}
-          />
-          <Link href="/permit-to-work/new" className="btn-primary">
-            {t.ptw.newBtn}
-          </Link>
-        </div>
-      </div>
+      <PageTitle section={t.ptw.myPermitsTitle} title={`Permits · ${project}`}>
+        <ExportExcelButton filename={t.ptw.myPermitsTitle} sheets={exportSheets} disabled={filtered.length === 0} />
+        <Link href="/permit-to-work/new" className="btn-primary">
+          {t.ptw.newBtn}
+        </Link>
+      </PageTitle>
 
       <div className="mb-4">
         <input

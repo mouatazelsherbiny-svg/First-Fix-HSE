@@ -9,6 +9,7 @@ import AuditForm from "@/components/hseAudit/AuditForm";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { HseAudit, formatDate, mapAudit, mapFinding } from "@/lib/hseAudit";
+import PageTitle from "@/components/PageTitle";
 
 export default function HseAuditDetailPage() {
   return (
@@ -63,13 +64,8 @@ function AuditDetail() {
       {!audit && !error && <p className="text-sm text-brand-gray">Loading…</p>}
       {audit && (
         <>
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-brand-black">
-                {audit.projectName} — HSE Audit
-              </h1>
-              <p className="text-sm text-brand-gray">{formatDate(audit.auditDate)}</p>
-            </div>
+          <PageTitle section="HSE Audit" title={audit.projectName}>
+            <span className="text-sm text-white/60">{formatDate(audit.auditDate)}</span>
             <div className="flex flex-wrap gap-2">
               <a href={`/hse-audit/${id}/print`} target="_blank" rel="noopener noreferrer" className="btn-primary gap-2">
                 <Printer className="h-4 w-4" /> Print Report
@@ -85,7 +81,7 @@ function AuditDetail() {
                 </button>
               )}
             </div>
-          </div>
+          </PageTitle>
           <AuditForm
             key={version}
             initial={audit}

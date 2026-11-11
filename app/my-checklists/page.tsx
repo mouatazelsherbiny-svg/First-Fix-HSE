@@ -10,6 +10,7 @@ import { exportChecklistToWord } from "@/lib/exportChecklistWord";
 import { CHECKLIST_TEMPLATES } from "@/lib/checklists";
 import { ChecklistSubmission } from "@/types/checklistSubmission";
 import { PointValue } from "@/types/checklist";
+import PageTitle from "@/components/PageTitle";
 
 export default function MyChecklistPage() {
   return (
@@ -87,14 +88,7 @@ function MyChecklistList() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">{t.myChecklist.title}</h1>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.myChecklist.subtitle} ({project})
-          </p>
-        </div>
-      </div>
+      <PageTitle section={t.myChecklist.title} title={`Monthly Checklists · ${project}`} />
 
       <div className="mb-4">
         <input

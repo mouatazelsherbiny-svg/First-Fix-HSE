@@ -16,6 +16,7 @@ import {
   POINT_VALUES,
   POSSIBLE_POINT_VALUES,
 } from "@/types/checklist";
+import PageTitle from "@/components/PageTitle";
 
 interface GeneralInfo {
   inspectionDate: string;
@@ -157,11 +158,7 @@ export default function ChecklistTemplate({
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {template.title}
-        </h1>
-      </div>
+      <PageTitle section="Checklists" title={template.title} />
 
       {/* General information */}
       <div className="card mb-6">

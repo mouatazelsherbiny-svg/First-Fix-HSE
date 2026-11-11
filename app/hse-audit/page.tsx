@@ -32,6 +32,7 @@ import {
   mapFinding,
   scoreOf,
 } from "@/lib/hseAudit";
+import PageTitle from "@/components/PageTitle";
 
 export default function HseAuditPage() {
   return (
@@ -173,15 +174,12 @@ function HseAuditDashboard() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.hseAudit}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <ExportExcelButton filename="HSE Audits" sheets={exportSheets} disabled={rows.length === 0} />
-          <Link href="/hse-audit/new" className="btn-primary gap-2">
-            <Plus className="h-4 w-4" /> New Audit
-          </Link>
-        </div>
-      </div>
+      <PageTitle section={t.nav.hseAudit} title="Audit Summary">
+        <ExportExcelButton filename="HSE Audits" sheets={exportSheets} disabled={rows.length === 0} />
+        <Link href="/hse-audit/new" className="btn-primary gap-2">
+          <Plus className="h-4 w-4" /> New Audit
+        </Link>
+      </PageTitle>
 
       <SummaryCards
         cards={[
@@ -199,10 +197,10 @@ function HseAuditDashboard() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chart} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="project" tick={{ fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
+                <XAxis dataKey="project" tick={{ fontSize: 12, fill: "#d4d4d8" }} axisLine={{ stroke: "rgba(255,255,255,0.15)" }} tickLine={false} />
+                <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12, fill: "#a1a1aa" }} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} contentStyle={{ background: "#18181b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, fontSize: 12, color: "#fff" }} labelStyle={{ color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.06)" }} />
                 <Legend />
                 <ReferenceLine y={target} stroke="#DC2626" strokeDasharray="6 4" label={{ value: `Target ${target}%`, fontSize: 11, fill: "#DC2626", position: "insideTopRight" }} />
                 <Bar dataKey="hs" name="Health & Safety" fill="#F36F24" radius={[4, 4, 0, 0]} />

@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
 import PerformanceGoals from "@/components/kpi/PerformanceGoals";
+import PageTitle from "@/components/PageTitle";
 
 export default function WeeklyKpiListPage() {
   return (
@@ -67,20 +68,12 @@ function WeeklyKpiList() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">
-            {t.weeklyKpi.listTitle}
-          </h1>
-          <p className="mt-1 text-sm text-brand-gray">{t.weeklyKpi.listSubtitle}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={filtered.length === 0} />
-          <Link href="/weekly-kpi/new" className="btn-primary">
-            {t.weeklyKpi.newBtn}
-          </Link>
-        </div>
-      </div>
+      <PageTitle section="KPI's" title="Weekly KPI Records">
+        <ExportExcelButton filename={t.weeklyKpi.listTitle} sheets={exportSheets} disabled={filtered.length === 0} />
+        <Link href="/weekly-kpi/new" className="btn-primary">
+          {t.weeklyKpi.newBtn}
+        </Link>
+      </PageTitle>
 
       <div className="mb-5 flex gap-1 border-b border-brand-border">
         {([

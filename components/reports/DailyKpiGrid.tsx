@@ -200,11 +200,11 @@ export default function DailyKpiGrid() {
         <div className="max-h-[70vh] overflow-auto rounded-2xl border border-brand-border bg-brand-surface shadow-card">
           <table className="border-collapse text-xs">
             <thead className="sticky top-0 z-20">
-              <tr style={{ background: "#fdeccf" }}>
-                <th className="sticky start-0 z-30 w-12 border border-slate-300 px-2 py-1.5" style={{ background: "#fdeccf" }} rowSpan={2} />
+              <tr style={{ background: "#3a2614" }}>
+                <th className="sticky start-0 z-30 w-12 border border-slate-300 px-2 py-1.5" style={{ background: "#3a2614" }} rowSpan={2} />
                 <th
                   className="sticky start-12 z-30 min-w-[250px] border border-slate-300 px-3 py-1.5 text-center text-sm font-bold text-brand-black"
-                  style={{ background: "#fdeccf" }}
+                  style={{ background: "#3a2614" }}
                   rowSpan={2}
                 >
                   {monthLabel}
@@ -218,7 +218,7 @@ export default function DailyKpiGrid() {
                   </th>
                 ))}
               </tr>
-              <tr style={{ background: "#fdeccf" }}>
+              <tr style={{ background: "#3a2614" }}>
                 {days.map((d) => (
                   <th key={d.date} className="border border-slate-300 px-1 py-1 font-bold text-brand-black">
                     {d.day}
@@ -331,7 +331,7 @@ function SectionRows({
               <td
                 key={d.date}
                 className="border border-slate-300 p-0"
-                style={{ background: flagged ? "#fecdd3" : isDirty ? "#fffbeb" : undefined }}
+                style={{ background: flagged ? "rgba(239,68,68,0.28)" : isDirty ? "rgba(245,158,11,0.16)" : undefined }}
               >
                 <div className="flex items-center">
                   <input

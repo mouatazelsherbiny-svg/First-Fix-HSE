@@ -8,6 +8,7 @@ import DailyKpiGrid from "@/components/reports/DailyKpiGrid";
 import ObservationForm from "@/components/observations/ObservationForm";
 import NavCards from "@/components/NavCards";
 import { useLanguage } from "@/context/LanguageContext";
+import PageTitle from "@/components/PageTitle";
 
 type ReportTab = "daily" | "monthly";
 
@@ -49,10 +50,7 @@ function ReportsContent() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.nav.reports}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.reports.subtitle}</p>
-      </div>
+      <PageTitle section={t.nav.reports} title="HSE Reporting" />
 
       <div className="mb-6 flex gap-1 border-b border-brand-border">
         {TABS.map((tabItem) => (

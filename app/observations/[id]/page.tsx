@@ -9,6 +9,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { PhotoSection, useLinkedObservationPhotos } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
+import PageTitle from "@/components/PageTitle";
 
 export default function ObservationDetailPage() {
   return (
@@ -68,15 +69,10 @@ function ObservationDetail() {
         &larr; {t.detail.back}
       </Link>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-black">
-            {t.detail.title} #{observation.reportNumber}
-          </h1>
-          <p className="mt-1 text-sm text-brand-gray">
-            {t.detail.reportedOn} {dateStr}
-          </p>
-        </div>
+      <PageTitle section="Observations" title={`${t.detail.title} #${observation.reportNumber}`}>
+        <span className="text-sm text-white/60">
+          {t.detail.reportedOn} {dateStr}
+        </span>
         <div className="flex items-center gap-2">
           <Badge value={observation.riskRating} />
           <Badge value={observation.status} />
@@ -89,7 +85,7 @@ function ObservationDetail() {
             </button>
           )}
         </div>
-      </div>
+      </PageTitle>
 
       <div className="card mb-5 space-y-4">
         <dl className="grid gap-4 sm:grid-cols-2">

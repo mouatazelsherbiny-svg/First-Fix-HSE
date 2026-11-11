@@ -61,9 +61,9 @@ const LEADING_ROWS: { label: string; hint?: string; field: WeeklyKpiNumericField
 ];
 
 const NAVY = "#1b2d42";
-const TITLE_BLUE = "#1565c0";
-const ROW_GREY = "#d5d9df";
-const ROW_LIGHT = "#eef0f3";
+const TITLE_BLUE = "#60a5fa";
+const ROW_GREY = "rgba(255,255,255,0.07)";
+const ROW_LIGHT = "rgba(255,255,255,0.03)";
 const GREEN = "#16a34a";
 const RED = "#dc2626";
 
@@ -201,13 +201,13 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-brand-border shadow-sm" style={{ background: "#ffffff" }}>
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]" style={{ background: "linear-gradient(160deg, #18181b 0%, #111113 100%)" }}>
       <div className="flex items-start justify-between px-4 pt-4">
         <div>
           <h2 className="text-xl font-bold sm:text-2xl" style={{ color: TITLE_BLUE }}>
             {title}
           </h2>
-          <div className="mt-2 h-0.5 w-72 max-w-full" style={{ background: "#b8bec7" }} />
+          <div className="mt-2 h-0.5 w-72 max-w-full" style={{ background: "rgba(255,255,255,0.2)" }} />
         </div>
         <BrandMark size={44} />
       </div>

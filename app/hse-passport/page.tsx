@@ -10,7 +10,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
@@ -163,22 +163,7 @@ function Landing() {
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ffcf7a] sm:text-sm">First Fix · HSE Department</p>
               <h2 className="mt-3 text-4xl font-extrabold leading-none sm:text-6xl">{open.title}</h2>
               <p className="mt-6 max-w-md text-base leading-relaxed text-white/90 sm:text-lg">{open.text}</p>
-              <div className="mt-6 flex max-w-md flex-wrap gap-2.5">
-                {open.topics.map((tp) => (
-                  <span key={tp} className="rounded-full border border-white/70 px-4 py-1.5 text-sm font-semibold">
-                    {tp}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setOpenKey(null)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ffe500] px-5 py-3 text-sm font-bold text-[#7a1f00] shadow-[0_0_18px_rgba(255,229,0,0.35)] transition hover:brightness-95"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to sections
-                </button>
+              <div className="mt-9 flex justify-center">
                 <Link
                   href={open.href}
                   className="inline-flex items-center gap-2 rounded-xl bg-[#f36f24] px-5 py-3 text-sm font-bold text-white shadow-[0_0_18px_rgba(243,111,36,0.5)] transition hover:bg-[#ff7d33]"

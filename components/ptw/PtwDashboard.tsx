@@ -64,10 +64,10 @@ export default function PtwDashboard({ permits }: { permits: PermitToWork[] }) {
     .filter((r): r is { p: PermitToWork; reason: string } => r.reason !== null);
 
   const cards = [
-    { label: "Active Permits", value: active.length, icon: ShieldCheck, color: "#16A34A", bg: "#DCFCE7" },
-    { label: "Awaiting Approval", value: awaiting.length, icon: Clock, color: "#D97706", bg: "#FEF3C7" },
-    { label: "Closed Permits", value: closed.length, icon: CheckCircle2, color: "#475569", bg: "#E2E8F0" },
-    { label: "Suspended Permits", value: suspended.length, icon: PauseCircle, color: "#DC2626", bg: "#FEE2E2" },
+    { label: "Active Permits", value: active.length, icon: ShieldCheck, color: "#4ade80", bg: "rgba(22,163,74,0.18)" },
+    { label: "Awaiting Approval", value: awaiting.length, icon: Clock, color: "#fbbf24", bg: "rgba(217,119,6,0.18)" },
+    { label: "Closed Permits", value: closed.length, icon: CheckCircle2, color: "#cbd5e1", bg: "rgba(148,163,184,0.18)" },
+    { label: "Suspended Permits", value: suspended.length, icon: PauseCircle, color: "#f87171", bg: "rgba(220,38,38,0.18)" },
   ];
 
   return (
@@ -102,7 +102,7 @@ export default function PtwDashboard({ permits }: { permits: PermitToWork[] }) {
                     <span className="font-medium text-brand-grayDark">{r.label}</span>
                     <span className="font-bold text-brand-black">{r.count}</span>
                   </div>
-                  <div className="h-2 rounded-full" style={{ background: "#EEF1F4" }}>
+                  <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
                     <div
                       className="h-2 rounded-full"
                       style={{ width: `${(r.count / maxType) * 100}%`, background: TYPE_COLORS[i % TYPE_COLORS.length] }}
@@ -143,8 +143,8 @@ export default function PtwDashboard({ permits }: { permits: PermitToWork[] }) {
                       className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold"
                       style={
                         reason === "Awaiting approval"
-                          ? { background: "#FEF3C7", color: "#B45309" }
-                          : { background: "#FEE2E2", color: "#B91C1C" }
+                          ? { background: "rgba(217,119,6,0.18)", color: "#fbbf24" }
+                          : { background: "rgba(220,38,38,0.18)", color: "#f87171" }
                       }
                     >
                       {reason}
@@ -161,11 +161,11 @@ export default function PtwDashboard({ permits }: { permits: PermitToWork[] }) {
           <div className="card !p-5">
             <h3 className="text-base font-bold text-brand-black">No. of Permits Issued by</h3>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-xl p-3 text-center" style={{ background: "#FFEDD5" }}>
+              <div className="rounded-xl p-3 text-center" style={{ background: "rgba(243,111,36,0.16)" }}>
                 <p className="text-2xl font-extrabold text-brand-black">{issuedFF}</p>
                 <p className="text-xs font-semibold text-brand-grayDark">First Fix (FF)</p>
               </div>
-              <div className="rounded-xl p-3 text-center" style={{ background: "#DBEAFE" }}>
+              <div className="rounded-xl p-3 text-center" style={{ background: "rgba(59,130,246,0.16)" }}>
                 <p className="text-2xl font-extrabold text-brand-black">{issuedClient}</p>
                 <p className="text-xs font-semibold text-brand-grayDark">Client</p>
               </div>

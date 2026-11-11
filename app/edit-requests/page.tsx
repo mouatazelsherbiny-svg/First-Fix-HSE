@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useEditRequests } from "@/context/EditRequestsContext";
 import { getStatusColorClasses } from "@/lib/statusColors";
 import { EditRequestStatus } from "@/types/editRequest";
+import PageTitle from "@/components/PageTitle";
 
 export default function EditRequestsPage() {
   return (
@@ -45,10 +46,7 @@ function EditRequestsList() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.editRequests.title}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.editRequests.subtitle}</p>
-      </div>
+      <PageTitle section={t.editRequests.title} title="Awaiting Admin Review" />
 
       {isLoading ? (
         <div className="card flex flex-col items-center justify-center py-16 text-center">

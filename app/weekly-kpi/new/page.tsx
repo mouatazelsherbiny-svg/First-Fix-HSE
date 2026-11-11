@@ -10,6 +10,7 @@ import {
   WEEKLY_KPI_NUMERIC_FIELDS,
   WeeklyKpiNumericField,
 } from "@/types/weeklyKpi";
+import PageTitle from "@/components/PageTitle";
 
 const EMPTY_NUMERIC_VALUES = Object.fromEntries(
   WEEKLY_KPI_NUMERIC_FIELDS.map((f) => [f.key, 0])
@@ -59,12 +60,7 @@ function NewWeeklyKpiForm() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">
-          {t.weeklyKpi.formTitle}
-        </h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.weeklyKpi.formSubtitle}</p>
-      </div>
+      <PageTitle section="KPI's" title={`New ${t.weeklyKpi.formTitle}`} />
 
       {success && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">

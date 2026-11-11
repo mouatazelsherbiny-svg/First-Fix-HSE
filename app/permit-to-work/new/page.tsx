@@ -17,6 +17,7 @@ import {
   PPE_FOR_PERMIT,
 } from "@/lib/mockData";
 import { UploadedPermitFile } from "@/types/permit";
+import PageTitle from "@/components/PageTitle";
 
 export default function NewPermitPage() {
   return (
@@ -146,10 +147,7 @@ function NewPermitForm() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.ptw.formTitle}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.ptw.formSubtitle}</p>
-      </div>
+      <PageTitle section={t.ptw.listTitle} title={t.ptw.formTitle} />
 
       {success && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">

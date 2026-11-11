@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
+import PageTitle from "@/components/PageTitle";
 
 interface ProfileRow {
   id: string;
@@ -126,10 +127,7 @@ function UserManagementView() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-brand-black">{t.userManagement.title}</h1>
-        <p className="mt-1 text-sm text-brand-gray">{t.userManagement.subtitle}</p>
-      </div>
+      <PageTitle section="Users" title={t.userManagement.title} />
 
       <div className="mb-8">
         <h2 className="mb-3 text-sm font-semibold tracking-wide text-brand-gray">
