@@ -472,7 +472,7 @@ function GoodPractices() {
 
 function PerformanceTrends({ points }: { points: HomeDashboardData["trends"] }) {
   return (
-    <Panel title="HSE Incident Frequency Rates" href="/weekly-kpi" linkLabel="View Details">
+    <Panel title="HSE Incident Frequency Rates" href="/reports?tab=kpi" linkLabel="View Details">
       {points.length === 0 ? (
         <EmptyState text="Trends appear once Weekly KPI data is recorded" />
       ) : (

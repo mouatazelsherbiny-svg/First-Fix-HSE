@@ -113,13 +113,17 @@ function PmvPageContent() {
           "radial-gradient(1200px 500px at 15% -10%, rgba(243,111,36,0.10), transparent 60%), radial-gradient(900px 500px at 110% 110%, rgba(243,111,36,0.08), transparent 60%), #0a0a0c",
       }}
     >
-      {/* ---- Header: title on the left; project filter with the tabs under it on the right ---- */}
-      <header className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-white/10 pb-4">
-        <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
-          {t.pmv.title}
-        </span>
-        <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
-        <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">Plant, Machinery, and Vehicles</h1>
+      {/* ---- Header: title on the left; project filter with the tabs under it on the right.
+           The title sits on the top line (level with the filter), at the same height as on
+           every other page, rather than centred against the taller right-hand column. ---- */}
+      <header className="mb-5 flex flex-wrap items-start gap-x-5 gap-y-3 border-b border-white/10 pb-4">
+        <div className="flex min-h-10 flex-wrap items-center gap-x-5 gap-y-3">
+          <span className="text-2xl font-bold uppercase tracking-tight text-[#ff7a2f] sm:text-[30px]" style={{ textShadow: "0 0 16px rgba(243,111,36,0.5)" }}>
+            {t.pmv.title}
+          </span>
+          <span className="hidden h-10 w-px bg-gradient-to-b from-transparent via-[#f36f24] to-transparent sm:block" />
+          <h1 className="text-xl font-extrabold uppercase tracking-wide sm:text-[30px]">Plant, Machinery, and Vehicles</h1>
+        </div>
         <div className="ms-auto flex flex-col items-end gap-2.5">
           <ProjectFilter className="!text-white/75" />
           <div className="flex flex-wrap items-center justify-end gap-3">

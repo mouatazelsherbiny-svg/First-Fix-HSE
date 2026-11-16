@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChartColumn, Eye, Flame, HeartPulse, Leaf, Sparkles, Zap } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -9,8 +9,12 @@ import ObservationForm from "@/components/observations/ObservationForm";
 import PhotoCards from "@/components/PhotoCards";
 import { useLanguage } from "@/context/LanguageContext";
 import PageTitle from "@/components/PageTitle";
+import KpiData from "@/components/kpi/KpiData";
+import PerformanceGoals from "@/components/kpi/PerformanceGoals";
+import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 
-type ReportTab = "daily" | "monthly";
+type ReportTab = "daily" | "monthly" | "kpi" | "goals";
+const REPORT_TABS: ReportTab[] = ["daily", "monthly", "kpi", "goals"];
 
 export default function ReportsPage() {
   return (
@@ -23,6 +27,12 @@ export default function ReportsPage() {
 function ReportsContent() {
   const { t } = useLanguage();
   const [tab, setTab] = useState<ReportTab>("daily");
+  const { records: kpiRecords, isLoading: kpiLoading } = useWeeklyKpi();
+  // Links can open a tab directly: /reports?tab=kpi (the old KPI page sends you here).
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("tab") as ReportTab | null;
+    if (want && REPORT_TABS.includes(want)) setTab(want);
+  }, []);
   const [dailyView, setDailyView] = useState<"observation" | "kpi" | "good">("kpi");
   // Bumped after a save / cancel so the form comes back empty.
   const [formKey, setFormKey] = useState(0);
@@ -46,6 +56,8 @@ function ReportsContent() {
   const TABS: { key: ReportTab; label: string }[] = [
     { key: "daily", label: t.reports.tabDaily },
     { key: "monthly", label: t.reports.tabMonthly },
+    { key: "kpi", label: "KPI Data" },
+    { key: "goals", label: "Performance Goals" },
   ];
 
   return (
@@ -69,7 +81,15 @@ function ReportsContent() {
         ))}
       </div>
 
-      {tab === "monthly" ? (
+      {tab === "kpi" ? (
+        <KpiData />
+      ) : tab === "goals" ? (
+        kpiLoading ? (
+          <div className="card py-16 text-center text-sm font-medium text-brand-gray">{t.common.loading}</div>
+        ) : (
+          <PerformanceGoals records={kpiRecords} />
+        )
+      ) : tab === "monthly" ? (
         <div className="space-y-5">
           <div>
             <h2 className="mb-3 text-center text-sm font-semibold tracking-wide text-brand-gray">
