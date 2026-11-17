@@ -165,8 +165,8 @@ function EmptyState({ text }: { text: string }) {
 // Hero
 // ---------------------------------------------------------------------------
 
-/** Counts up from where it is to `target` over ~2.5 s (eased), whenever target changes. */
-function useCountUp(target: number | null, duration = 2500) {
+/** Counts up from where it is to `target` over ~1.8 s (eased), whenever target changes. */
+function useCountUp(target: number | null, duration = 1800) {
   const [shown, setShown] = useState(0);
   const from = useRef(0);
   useEffect(() => {
