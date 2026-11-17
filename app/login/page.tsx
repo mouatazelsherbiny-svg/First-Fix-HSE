@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import LanguageToggle from "@/components/LanguageToggle";
 import LandingHero from "@/components/LandingHero";
+import { inMobileApp, MOBILE_HOME } from "@/lib/mobileApp";
 
 // The card sits on the dark home banner (public/home-hero.jpg), so it uses
 // translucent dark "glass" styling (white text, faint white borders/fills)
@@ -38,7 +39,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.replace("/dashboard");
+      router.replace(inMobileApp("") ? MOBILE_HOME : "/dashboard");
     }
   }, [isLoading, user, router]);
 
@@ -52,7 +53,7 @@ export default function LoginPage() {
       setError(result.pending ? t.login.errorPending : t.login.error);
       return;
     }
-    router.push("/dashboard");
+    router.push(inMobileApp("") ? MOBILE_HOME : "/dashboard");
   };
 
   // Sends a Supabase password-recovery email; the link in that email lands

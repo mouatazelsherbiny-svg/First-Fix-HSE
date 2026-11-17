@@ -27,7 +27,7 @@ export default function PhotoCards({ items, className = "mb-6" }: { items: Photo
   return (
     <div className={`flex flex-wrap justify-center gap-3 ${className}`}>
       {items.map((it) => {
-        const cls = `group relative flex aspect-[3/4] w-[calc(50%-0.375rem)] flex-col items-center justify-between overflow-hidden rounded-2xl px-3 pb-4 pt-6 text-center outline-none transition duration-300 hover:-translate-y-1.5 focus-visible:ring-4 focus-visible:ring-[#f36f24] sm:w-[170px] ${
+        const cls = `group relative flex aspect-[3/4] w-[calc(33.333%-0.5rem)] flex-col items-center justify-between overflow-hidden rounded-2xl px-2 pb-3 pt-4 sm:px-3 sm:pb-4 sm:pt-6 text-center outline-none transition duration-300 hover:-translate-y-1.5 focus-visible:ring-4 focus-visible:ring-[#f36f24] sm:w-[170px] ${
           it.active
             ? "shadow-[0_0_0_2px_#f36f24,0_18px_40px_-12px_rgba(243,111,36,0.6)]"
             : "shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_14px_30px_-14px_rgba(0,0,0,0.9)] hover:shadow-[0_0_0_2px_rgba(255,138,61,0.9),0_22px_48px_-12px_rgba(243,111,36,0.55)]"
@@ -53,15 +53,15 @@ export default function PhotoCards({ items, className = "mb-6" }: { items: Photo
               }}
             />
             {/* Big glowing icon in a ring. */}
-            <span className="relative mt-2 flex flex-1 items-center justify-center">
+            <span className="relative mt-1 flex flex-1 sm:mt-2 items-center justify-center">
               <span
-                className="flex h-20 w-20 items-center justify-center rounded-full border transition duration-300 group-hover:scale-110"
+                className="flex h-14 w-14 items-center justify-center rounded-full border sm:h-20 sm:w-20 transition duration-300 group-hover:scale-110"
                 style={{ borderColor: `${it.color}88`, background: `${it.color}1f`, boxShadow: `0 0 28px ${it.color}66, inset 0 0 18px ${it.color}33` }}
               >
-                <it.icon className="h-10 w-10" strokeWidth={1.6} style={{ color: it.color, filter: `drop-shadow(0 0 8px ${it.color})` }} />
+                <it.icon className="h-7 w-7 sm:h-10 sm:w-10" strokeWidth={1.6} style={{ color: it.color, filter: `drop-shadow(0 0 8px ${it.color})` }} />
               </span>
             </span>
-            <span className={`relative text-sm font-bold leading-tight ${it.active ? "text-[#ff8a3d]" : "text-white"}`}>{it.label}</span>
+            <span className={`relative text-xs font-bold leading-tight sm:text-sm ${it.active ? "text-[#ff8a3d]" : "text-white"}`}>{it.label}</span>
           </>
         );
         return it.href ? (

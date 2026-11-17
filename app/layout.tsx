@@ -35,6 +35,9 @@ import PwaRegister from "@/components/PwaRegister";
 export const metadata: Metadata = {
   title: "First Fix HSE",
   description: "First Fix HSE — Health, Safety & Environment management",
+  // Install manifest of the full system (public/manifest.webmanifest). The phone
+  // app (/m) uses its own (public/mobile.webmanifest), set in app/m/layout.tsx.
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/logo-icon.png",
     apple: "/apple-touch-icon.png",

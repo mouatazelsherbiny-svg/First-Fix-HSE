@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Montserrat } from "next/font/google";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useThemeSettings } from "@/context/ThemeSettingsContext";
 import Sidebar from "./Sidebar";
@@ -10,6 +10,8 @@ import Topbar from "./Topbar";
 import ScrollReveal from "./ScrollReveal";
 import ProjectFilter from "./ProjectFilter";
 import { HeaderFilterContext } from "./PageTitle";
+import MobileShell from "./MobileShell";
+import { inMobileApp, isAllowedInMobile, MOBILE_HOME } from "@/lib/mobileApp";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap" });
 
@@ -27,6 +29,15 @@ export default function ProtectedRoute({
   const { user, isLoading } = useAuth();
   const { morphism } = useThemeSettings();
   const router = useRouter();
+  const pathname = usePathname() ?? "";
+  // The phone app (/m): own layout, and only its two parts can be opened.
+  const [mobile, setMobile] = useState(() => typeof window !== "undefined" && inMobileApp(pathname));
+  useEffect(() => {
+    setMobile(inMobileApp(pathname));
+  }, [pathname]);
+  useEffect(() => {
+    if (mobile && !isAllowedInMobile(pathname)) router.replace(MOBILE_HOME);
+  }, [mobile, pathname, router]);
   const [menuOpen, setMenuOpen] = useState(false);
   const openMenu = useCallback(() => setMenuOpen(true), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -41,7 +52,8 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/login");
+      // The phone app signs in on its own page, so it keeps its install manifest.
+      router.replace(inMobileApp(window.location.pathname) ? "/m/login" : "/login");
     }
   }, [isLoading, user, router]);
 
@@ -75,6 +87,15 @@ export default function ProtectedRoute({
   }
 
   if (bare) return <>{children}</>;
+
+  if (mobile) {
+    if (!isAllowedInMobile(pathname)) return null; // on its way to the phone app's home
+    return (
+      <MobileShell className={montserrat.className}>
+        <HeaderFilterContext.Provider value={headerFilter}>{children}</HeaderFilterContext.Provider>
+      </MobileShell>
+    );
+  }
 
   return (
     <div className="min-h-screen">
