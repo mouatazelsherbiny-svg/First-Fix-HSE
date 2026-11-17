@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The phone app's link: https://<site>/m
+ * The phone app ("HSE-Reporting") link: https://<site>/m
  * - Opened in a browser: a small page to install the app (Android: Install
  *   button; iPhone: "Share → Add to Home Screen"), or open it right away.
  * - Opened from the installed app: goes straight to Daily Report.
@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Montserrat } from "next/font/google";
 import { ArrowRight, ClipboardList, Download, Share, ShieldCheck, SquarePlus } from "lucide-react";
-import { BrandMark } from "@/components/Sidebar";
 import { markMobileApp, MOBILE_HOME } from "@/lib/mobileApp";
 import { isStandalone, useInstall } from "@/lib/useInstall";
 
@@ -33,17 +32,27 @@ export default function MobileHome() {
 
   return (
     <div
-      className={`${montserrat.className} flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center text-white`}
+      className={`${montserrat.className} flex min-h-screen flex-col items-center justify-center px-6 pb-10 text-center text-white`}
       style={{
         background:
           "radial-gradient(700px 420px at 50% -10%, rgba(243,111,36,0.22), transparent 65%), radial-gradient(600px 400px at 110% 110%, rgba(243,111,36,0.10), transparent 60%), #0a0a0c",
       }}
     >
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_40px_rgba(243,111,36,0.35)]">
-        <BrandMark size={72} />
+      {/* The app's picture. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/hse-reporting-poster.webp"
+        alt="First Fix HSE Department"
+        className="mt-[max(1.5rem,env(safe-area-inset-top))] w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_0_40px_rgba(243,111,36,0.3)]"
+      />
+      <div className="mt-6 flex items-center gap-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icons/hse-reporting-192.png" alt="" className="h-12 w-12 rounded-xl border border-white/10" />
+        <div className="text-start">
+          <h1 className="text-2xl font-extrabold leading-tight">HSE-Reporting</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a3d]">First Fix HSE</p>
+        </div>
       </div>
-      <h1 className="mt-6 text-3xl font-extrabold">First Fix HSE</h1>
-      <p className="mt-1 text-sm font-bold uppercase tracking-[0.22em] text-[#ff8a3d]">Field App</p>
       <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
         Daily reports and permits to work, from your phone. Sign in with your First Fix HSE account.
       </p>
@@ -80,7 +89,7 @@ export default function MobileHome() {
               <li>
                 2. Choose <SquarePlus className="inline h-4 w-4 align-text-bottom" /> <b>Add to Home Screen</b>
               </li>
-              <li>3. Open “FF Field” from your home screen</li>
+              <li>3. Open “HSE-Reporting” from your home screen</li>
             </ol>
           </div>
         )}

@@ -29,13 +29,19 @@ export default function MobileShell({ children, className = "" }: { children: Re
     <div className="min-h-screen bg-[#0a0a0c] text-white">
       {/* Top bar */}
       <header
-        className="fixed inset-x-0 top-0 z-40 flex items-center gap-2.5 border-b border-white/10 bg-[#0e0e0f]/95 px-4 backdrop-blur"
-        style={{ height: 56, paddingTop: "env(safe-area-inset-top)", boxSizing: "content-box" }}
+        className="fixed inset-x-0 top-0 z-40 flex items-center gap-2.5 border-b border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
+        style={{
+          height: 56,
+          paddingTop: "env(safe-area-inset-top)",
+          paddingLeft: "max(1rem, env(safe-area-inset-left))",
+          paddingRight: "max(1rem, env(safe-area-inset-right))",
+          boxSizing: "content-box",
+        }}
       >
         <BrandMark size={30} />
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-[15px] font-extrabold">First Fix HSE</p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff8a3d]">Field App</p>
+          <p className="truncate text-[15px] font-extrabold">HSE-Reporting</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff8a3d]">First Fix HSE</p>
         </div>
         <div className="ms-auto flex items-center gap-1.5">
           {install.canShow && (
@@ -64,24 +70,31 @@ export default function MobileShell({ children, className = "" }: { children: Re
       </header>
 
       <main
-        className={`px-3.5 pb-28 sm:px-6 ${className}`}
-        style={{ paddingTop: "calc(56px + env(safe-area-inset-top) + 1.25rem)" }}
+        className={`pb-28 ${className}`}
+        style={{
+          paddingTop: "calc(56px + env(safe-area-inset-top) + 1.25rem)",
+          // Landscape phones: keep clear of the notch on either side.
+          paddingLeft: "max(0.875rem, env(safe-area-inset-left))",
+          paddingRight: "max(0.875rem, env(safe-area-inset-right))",
+        }}
       >
-        {children}
+        {/* Full width on phones; on tablets / wide screens the content stays a comfortable width. */}
+        <div className="mx-auto w-full max-w-6xl">{children}</div>
       </main>
 
       {/* Bottom tabs */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
+        <div className="mx-auto grid max-w-md grid-cols-2">
         {TABS.map((tab) => {
           const active = pathname === tab.match || pathname.startsWith(`${tab.match}/`);
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-xs font-semibold transition ${
+              className={`flex flex-col items-center gap-1 py-2.5 text-xs font-semibold transition [@media(max-height:500px)]:flex-row [@media(max-height:500px)]:justify-center [@media(max-height:500px)]:gap-2 [@media(max-height:500px)]:py-1 ${
                 active ? "text-[#ff8a3d]" : "text-white/60 hover:text-white"
               }`}
             >
@@ -96,6 +109,7 @@ export default function MobileShell({ children, className = "" }: { children: Re
             </Link>
           );
         })}
+        </div>
       </nav>
     </div>
   );

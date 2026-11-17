@@ -1,18 +1,18 @@
 {
   "id": "/m",
-  "name": "First Fix HSE Field",
-  "short_name": "FF Field",
+  "name": "HSE-Reporting",
+  "short_name": "HSE-Reporting",
   "description": "First Fix HSE on site: daily reports and permits to work",
   "start_url": "/m",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icons/hse-reporting-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/hse-reporting-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/hse-reporting-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/hse-reporting-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
