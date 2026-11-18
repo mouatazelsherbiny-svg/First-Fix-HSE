@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * KPI's page → KPI Data tab: the KPI charts on top (KpiDashboard), then the weekly
- * KPI records table with search, Excel export and "New".
+ * KPI's → KPI's Details: the weekly KPI records table (search, column
+ * filters, Excel export, "New"), using the full height of the page.
  */
 
 import { useMemo, useState } from "react";
@@ -11,7 +11,6 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { WEEKLY_KPI_NUMERIC_FIELDS } from "@/types/weeklyKpi";
-import KpiDashboard from "@/components/kpi/KpiDashboard";
 import { Search } from "lucide-react";
 import { DarkPanel, SEARCH_INPUT, TABLE_TITLE, TD, TH, TH_ROW, TR } from "@/components/charts/InjuryStyle";
 import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
@@ -76,9 +75,6 @@ export default function KpiData() {
 
   return (
     <div>
-      {/* The charts (as in the monthly KPI report), then the records themselves. */}
-      {isLoading ? null : <KpiDashboard records={filtered} />}
-
       {/* KPI records, in the same table style as Injury / Observations. */}
       <DarkPanel>
         <div className="mb-3 flex flex-wrap items-center gap-3">
@@ -103,7 +99,7 @@ export default function KpiData() {
             </Link>
           </div>
         ) : (
-          <div className="max-h-[520px] overflow-auto rounded-lg">
+          <div className="max-h-[calc(100vh-15rem)] min-h-[420px] overflow-auto rounded-lg">
             <table className="w-full text-start text-sm" style={{ minWidth: 200 * 2 + 120 * WEEKLY_KPI_NUMERIC_FIELDS.length }}>
               <thead className="sticky top-0 z-20">
                 <tr className={TH_ROW}>

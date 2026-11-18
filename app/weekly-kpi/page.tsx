@@ -1,18 +1,22 @@
 "use client";
 
 /**
- * KPI's — Key Project Indicator. Two tabs:
- *  - KPI Data: the KPI charts, then the weekly KPI records table.
- *  - Performance Goals.
+ * KPI's — Key Project Indicator. Two pages (tabs):
+ *  - KPI's Dashboard: headline cards, the KPI charts, Performance Goals and
+ *    the HSE audit score per project.
+ *  - KPI's Details: the weekly KPI records table.
  */
 
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PageTitle from "@/components/PageTitle";
 import KpiData from "@/components/kpi/KpiData";
+import KpiDashboard from "@/components/kpi/KpiDashboard";
 import PerformanceGoals from "@/components/kpi/PerformanceGoals";
+import AuditScoreChart from "@/components/kpi/AuditScoreChart";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
+import { useHomeDashboard } from "@/lib/useHomeDashboard";
 
 export default function WeeklyKpiPage() {
   return (
@@ -22,20 +26,21 @@ export default function WeeklyKpiPage() {
   );
 }
 
+const TABS = [
+  ["dashboard", "KPI's Dashboard"],
+  ["details", "KPI's Details"],
+] as const;
+
 function WeeklyKpi() {
   const { t } = useLanguage();
-  const { records, isLoading } = useWeeklyKpi();
-  const [tab, setTab] = useState<"data" | "goals">("data");
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>("dashboard");
 
   return (
     <div>
       <PageTitle section="KPI's" title="Key Project Indicator" />
 
       <div className="mb-5 flex gap-1 border-b border-brand-border">
-        {([
-          ["data", "KPI Data"],
-          ["goals", "Performance Goals"],
-        ] as const).map(([key, label]) => (
+        {TABS.map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -51,15 +56,23 @@ function WeeklyKpi() {
         ))}
       </div>
 
-      {tab === "goals" ? (
-        isLoading ? (
-          <div className="card py-16 text-center text-sm font-medium text-brand-gray">{t.common.loading}</div>
-        ) : (
-          <PerformanceGoals records={records} />
-        )
-      ) : (
-        <KpiData />
-      )}
+      {tab === "details" ? <KpiData /> : <Dashboard loadingText={t.common.loading} />}
+    </div>
+  );
+}
+
+function Dashboard({ loadingText }: { loadingText: string }) {
+  const { records, isLoading } = useWeeklyKpi();
+  const { hero } = useHomeDashboard();
+
+  if (isLoading) {
+    return <div className="card py-16 text-center text-sm font-medium text-brand-gray">{loadingText}</div>;
+  }
+  return (
+    <div className="space-y-5">
+      <KpiDashboard records={records} headline={hero} />
+      <PerformanceGoals records={records} />
+      <AuditScoreChart />
     </div>
   );
 }

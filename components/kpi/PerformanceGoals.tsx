@@ -12,7 +12,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { BrandMark } from "@/components/Sidebar";
+import { CHART_TITLE, DarkPanel, TH_ROW, TR } from "@/components/charts/InjuryStyle";
 import type { WeeklyKpiNumericField, WeeklyKpiRecord } from "@/types/weeklyKpi";
 
 const RATE_BASE = 1_000_000;
@@ -60,12 +60,8 @@ const LEADING_ROWS: { label: string; hint?: string; field: WeeklyKpiNumericField
   { label: "Life Saving Rule", hint: "(LSR Violations)", field: "lifeSavingRules" },
 ];
 
-const NAVY = "#1b2d42";
-const TITLE_BLUE = "#60a5fa";
-const ROW_GREY = "rgba(255,255,255,0.07)";
-const ROW_LIGHT = "rgba(255,255,255,0.03)";
-const GREEN = "#16a34a";
-const RED = "#dc2626";
+const GREEN = "#4ade80";
+const RED = "#f87171";
 
 function sum(rows: WeeklyKpiRecord[], fields: WeeklyKpiNumericField[]) {
   return rows.reduce((s, r) => s + fields.reduce((a, f) => a + (Number(r[f]) || 0), 0), 0);
@@ -115,8 +111,8 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-2">
-        <label className="text-sm text-brand-grayDark">Year</label>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <label className="text-sm text-white/70">Performance Goals · Year</label>
         <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input-field !w-auto !py-1.5">
           {years.map((y) => (
             <option key={y} value={y}>
@@ -134,7 +130,7 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
         <Panel title="Performance Goals (Lagging Indicators)">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ background: NAVY }} className="text-white">
+              <tr className={TH_ROW}>
                 <Th className="text-start">Performance Subject</Th>
                 <Th>{prev}</Th>
                 <Th>{year} Actual</Th>
@@ -143,9 +139,9 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
               </tr>
             </thead>
             <tbody>
-              {lagging.map((r, i) => (
-                <tr key={r.label} style={{ background: i % 2 ? ROW_LIGHT : ROW_GREY }}>
-                  <td className="px-3 py-3 font-semibold text-brand-black">{r.label}</td>
+              {lagging.map((r) => (
+                <tr key={r.label} className={TR}>
+                  <td className="px-3 py-3 font-semibold text-white">{r.label}</td>
                   <Td>{r.rate ? fmt3(r.base) : fmt0(r.base)}</Td>
                   <Td>{r.rate ? fmt3(r.actual) : fmt0(r.actual)}</Td>
                   <Td>
@@ -153,7 +149,7 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
                       {r.rate ? fmt3(r.diff) : fmt0(r.diff)}
                     </span>
                   </Td>
-                  <Td>{LAGGING_TARGETS[r.label] ?? <span className="text-brand-gray">—</span>}</Td>
+                  <Td>{LAGGING_TARGETS[r.label] ?? <span className="text-white/40">—</span>}</Td>
                 </tr>
               ))}
             </tbody>
@@ -164,7 +160,7 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
         <Panel title="Performance Goals (Leading Indicators)">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ background: NAVY }} className="text-white">
+              <tr className={TH_ROW}>
                 <Th className="text-start">Performance Subject</Th>
                 <Th>Q4 {prev}</Th>
                 <Th>{year} Actual</Th>
@@ -172,11 +168,11 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
               </tr>
             </thead>
             <tbody>
-              {leading.map((r, i) => (
-                <tr key={r.label} style={{ background: i % 2 ? ROW_LIGHT : ROW_GREY }}>
-                  <td className="px-3 py-2.5 text-brand-black">
+              {leading.map((r) => (
+                <tr key={r.label} className={TR}>
+                  <td className="px-3 py-2.5 text-white">
                     <span className="font-semibold">{r.label}</span>
-                    {r.hint && <span className="text-brand-grayDark"> {r.hint}</span>}
+                    {r.hint && <span className="text-white/55"> {r.hint}</span>}
                   </td>
                   <Td>{fmt0(r.base)}</Td>
                   <Td>{fmt0(r.actual)}</Td>
@@ -201,25 +197,17 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]" style={{ background: "linear-gradient(160deg, #18181b 0%, #111113 100%)" }}>
-      <div className="flex items-start justify-between px-4 pt-4">
-        <div>
-          <h2 className="text-xl font-bold sm:text-2xl" style={{ color: TITLE_BLUE }}>
-            {title}
-          </h2>
-          <div className="mt-2 h-0.5 w-72 max-w-full" style={{ background: "rgba(255,255,255,0.2)" }} />
-        </div>
-        <BrandMark size={44} />
-      </div>
-      <div className="overflow-x-auto p-3">{children}</div>
-    </div>
+    <DarkPanel>
+      <h2 className={`${CHART_TITLE} mb-3`}>{title}</h2>
+      <div className="overflow-x-auto rounded-lg">{children}</div>
+    </DarkPanel>
   );
 }
 
 function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <th className={`whitespace-nowrap border-e border-white/30 px-3 py-3 text-center text-xs font-semibold ${className}`}>{children}</th>;
+  return <th className={`whitespace-nowrap px-3 py-3 text-center text-xs font-semibold first:rounded-s-lg last:rounded-e-lg ${className}`}>{children}</th>;
 }
 
 function Td({ children }: { children: React.ReactNode }) {
-  return <td className="whitespace-nowrap border-e border-white px-3 py-2.5 text-center text-brand-black">{children}</td>;
+  return <td className="whitespace-nowrap px-3 py-2.5 text-center tabular-nums text-white/85">{children}</td>;
 }
