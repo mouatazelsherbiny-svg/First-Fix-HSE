@@ -434,3 +434,13 @@ html.app-dark .text-blue-700 { color: #60a5fa; }
 html.app-dark .text-gray-900,
 html.app-dark .text-slate-800 { color: #f5f5f7; }
 html.app-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.18); }
+
+/* KPI Dashboard number tables: grid lines between every row and column. */
+.kpi-grid { border-collapse: collapse; }
+.kpi-grid th,
+.kpi-grid td { border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 0 !important; }
+.kpi-grid thead th { border-color: rgba(255, 255, 255, 0.18); }
+.kpi-grid tr > :first-child { border-inline-start: 0; }
+.kpi-grid tr > :last-child { border-inline-end: 0; }
+.kpi-grid thead tr:first-child > * { border-top: 0; }
+.kpi-grid tbody tr:last-child > * { border-bottom: 0; }

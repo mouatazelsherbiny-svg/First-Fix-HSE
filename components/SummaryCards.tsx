@@ -46,7 +46,13 @@ function DarkSummaryCards({ cards }: { cards: SummaryCard[] }) {
   return (
     <div
       className={`mb-5 grid grid-cols-2 gap-3 sm:gap-4 ${
-        cards.length >= 5 ? "lg:grid-cols-5" : cards.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"
+        cards.length >= 6
+          ? "md:grid-cols-3 xl:grid-cols-6"
+          : cards.length === 5
+            ? "lg:grid-cols-5"
+            : cards.length === 4
+              ? "lg:grid-cols-4"
+              : "lg:grid-cols-3"
       }`}
     >
       {cards.map((c) => {

@@ -128,7 +128,8 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
       <div className="grid gap-5 xl:grid-cols-2">
         {/* Lagging */}
         <Panel title="Performance Goals (Lagging Indicators)">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-lg border border-white/15">
+          <table className="kpi-grid w-full text-sm">
             <thead>
               <tr className={TH_ROW}>
                 <Th className="text-start">Performance Subject</Th>
@@ -154,11 +155,13 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
               ))}
             </tbody>
           </table>
+          </div>
         </Panel>
 
         {/* Leading */}
         <Panel title="Performance Goals (Leading Indicators)">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-lg border border-white/15">
+          <table className="kpi-grid w-full text-sm">
             <thead>
               <tr className={TH_ROW}>
                 <Th className="text-start">Performance Subject</Th>
@@ -189,6 +192,7 @@ export default function PerformanceGoals({ records }: { records: WeeklyKpiRecord
               ))}
             </tbody>
           </table>
+          </div>
         </Panel>
       </div>
     </div>

@@ -1,23 +1,39 @@
 "use client";
 
 /**
- * HSE Audit dashboard: every audit with its Health & Safety and
- * Environmental score, the latest score per project against target,
- * and the open findings waiting to be closed out.
+ * HSE Audit — Audit Summary: headline cards, audit score per project (H&S and
+ * Environmental), the overall score ring, a written summary, every audit with
+ * its scores / findings / status and report links, then the open findings.
  */
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlarmClock, ClipboardList, Leaf, ListChecks, Plus, ShieldCheck } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  CalendarDays,
+  ChartColumnIncreasing,
+  CircleCheck,
+  ClipboardList,
+  Download,
+  FileText,
+  Layers,
+  Leaf,
+  Plus,
+  Search,
+  ShieldCheck,
+  Target,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
+import { Bar, BarChart, CartesianGrid, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SummaryCards from "@/components/SummaryCards";
 import ExportExcelButton from "@/components/ExportExcelButton";
-import { ScorePill } from "@/components/hseAudit/ScorePanel";
+import { BrandMark } from "@/components/Sidebar";
+import { CHART_TITLE, DarkPanel, SEARCH_INPUT, TABLE_TITLE, TD, TH, TH_ROW, TR } from "@/components/charts/InjuryStyle";
 import { useLanguage } from "@/context/LanguageContext";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
-import { fetchAllRows } from "@/lib/supabaseClient";
+import { fetchAllRows, supabase } from "@/lib/supabaseClient";
 import {
   AUDIT_LIST_COLUMNS,
   AuditFinding,
@@ -26,8 +42,10 @@ import {
   HseAudit,
   PRIORITIES,
   PRIORITY_STYLE,
+  TONE_STYLE,
   formatDate,
   isOverdue,
+  levelOf,
   mapAudit,
   mapFinding,
   scoreOf,
@@ -119,12 +137,7 @@ function HseAuditDashboard() {
       .sort((x, y) => y.overdue - x.overdue || (x.next || "9999").localeCompare(y.next || "9999"));
   }, [openFindings, auditById, findings]);
 
-  const avg = (vals: (number | null)[]) => {
-    const v = vals.filter((x): x is number => x != null);
-    return v.length ? `${(v.reduce((s, x) => s + x, 0) / v.length).toFixed(1)}%` : "—";
-  };
-
-  // Latest audit per project for the chart.
+  // Latest audit per project for the chart, best overall first.
   const chart = useMemo(() => {
     const latest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) {
@@ -132,8 +145,36 @@ function HseAuditDashboard() {
       if (!cur || r.audit.auditDate > cur.audit.auditDate) latest.set(r.audit.projectName, r);
     }
     return Array.from(latest.values())
-      .map((r) => ({ project: r.audit.projectName, hs: r.hs.pct ?? 0, env: r.env.pct ?? 0 }))
-      .sort((a, b) => a.project.localeCompare(b.project));
+      .map((r) => ({ project: r.audit.projectName, hs: r.hs.pct ?? 0, env: r.env.pct ?? 0, overall: overallOf(r.hs.pct, r.env.pct) ?? 0 }))
+      .sort((a, b) => b.overall - a.overall);
+  }, [rows]);
+
+  // Headline numbers (cards, overall ring, summary).
+  const stats = useMemo(() => {
+    const mean = (v: (number | null)[]) => {
+      const x = v.filter((n): n is number => n != null);
+      return x.length ? x.reduce((s, n) => s + n, 0) / x.length : null;
+    };
+    const hsAvg = mean(rows.map((r) => r.hs.pct));
+    const envAvg = mean(rows.map((r) => r.env.pct));
+    const allFindings = rows.flatMap((r) => r.findings);
+    const open = allFindings.filter((f) => f.status === "Open").length;
+    const closed = allFindings.length - open;
+    const cats = new Map<string, number>();
+    for (const f of allFindings) if (f.status === "Open" && f.category) cats.set(f.category, (cats.get(f.category) ?? 0) + 1);
+    const focus = Array.from(cats).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
+    return {
+      projects: new Set(rows.map((r) => r.audit.projectName)).size,
+      hsAvg,
+      envAvg,
+      overall: overallOf(hsAvg, envAvg),
+      findings: allFindings.length,
+      open,
+      closed,
+      closure: allFindings.length ? (closed / allFindings.length) * 100 : null,
+      focus,
+      asOf: rows.reduce((d, r) => (r.audit.auditDate > d ? r.audit.auditDate : d), ""),
+    };
   }, [rows]);
   const target = rows[0]?.audit.targetPct ?? 70;
 
@@ -174,7 +215,21 @@ function HseAuditDashboard() {
 
   return (
     <div>
-      <PageTitle section={t.nav.hseAudit} title="Audit Summary">
+      <PageTitle
+        section={
+          <span className="flex items-center gap-3">
+            <BrandMark size={40} />
+            {t.nav.hseAudit}
+          </span>
+        }
+        title="Audit Summary"
+      >
+        {stats.asOf && (
+          <span className="inline-flex items-center gap-2 rounded-xl border border-[#f36f24]/50 px-3.5 py-2 text-sm font-semibold text-white/90">
+            <CalendarDays className="h-4 w-4 text-[#ff8a3d]" />
+            As of {formatDate(stats.asOf)}
+          </span>
+        )}
         <ExportExcelButton filename="HSE Audits" sheets={exportSheets} disabled={rows.length === 0} />
         <Link href="/hse-audit/new" className="btn-primary gap-2">
           <Plus className="h-4 w-4" /> New Audit
@@ -182,124 +237,216 @@ function HseAuditDashboard() {
       </PageTitle>
 
       <SummaryCards
+        dark
         cards={[
-          { label: "Audits", value: rows.length, icon: ClipboardList, color: "#2563EB" },
-          { label: "Avg Health & Safety", value: avg(rows.map((r) => r.hs.pct)), icon: ShieldCheck, color: "#F36F24" },
-          { label: "Avg Environmental", value: avg(rows.map((r) => r.env.pct)), icon: Leaf, color: "#16A34A" },
-          { label: "Open Findings", value: openFindings.length, icon: ListChecks, color: "#D97706" },
-          { label: "Overdue Findings", value: openFindings.filter((f) => isOverdue(f)).length, icon: AlarmClock, color: "#DC2626" },
+          { label: "Projects Audited", value: stats.projects, icon: ClipboardList, color: "#F36F24" },
+          { label: "Avg. Health & Safety", value: pct(stats.hsAvg), icon: ShieldCheck, color: "#F36F24" },
+          { label: "Avg. Environmental", value: pct(stats.envAvg), icon: Leaf, color: "#16A34A" },
+          { label: "Total Findings", value: stats.findings, icon: FileText, color: "#F36F24" },
+          { label: "Open", value: stats.open, icon: TriangleAlert, color: "#D97706" },
+          { label: "Closed", value: stats.closed, icon: CircleCheck, color: "#16A34A" },
         ]}
       />
 
-      {chart.length > 0 && (
-        <div className="card mb-6">
-          <h2 className="mb-4 text-lg font-bold text-brand-black">Latest Score by Project</h2>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chart} margin={{ top: 8, right: 8, bottom: 8, left: -12 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
-                <XAxis dataKey="project" tick={{ fontSize: 12, fill: "#d4d4d8" }} axisLine={{ stroke: "rgba(255,255,255,0.15)" }} tickLine={false} />
-                <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12, fill: "#a1a1aa" }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} contentStyle={{ background: "#18181b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, fontSize: 12, color: "#fff" }} labelStyle={{ color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.06)" }} />
-                <Legend />
-                <ReferenceLine y={target} stroke="#DC2626" strokeDasharray="6 4" label={{ value: `Target ${target}%`, fontSize: 11, fill: "#DC2626", position: "insideTopRight" }} />
-                <Bar dataKey="hs" name="Health & Safety" fill="#F36F24" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="env" name="Environmental" fill="#16A34A" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+      <div className="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+        {/* ---- Audit score by project ---- */}
+        <DarkPanel>
+          <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <h2 className={`${CHART_TITLE} flex items-center gap-2`}>
+              <ChartColumnIncreasing className="h-5 w-5 text-[#ff8a3d]" /> Audit Score by Project
+            </h2>
+            <div className="ms-auto flex flex-wrap gap-4 text-xs text-white/80">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-sm" style={{ background: HS_COLOR }} /> Health &amp; Safety (HSE)
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-sm" style={{ background: ENV_COLOR }} /> Environmental (ENV)
+              </span>
+            </div>
           </div>
+          {loading ? (
+            <p className="py-16 text-center text-sm text-white/50">Loading…</p>
+          ) : !chart.length ? (
+            <p className="py-16 text-center text-sm text-white/50">No audits yet.</p>
+          ) : (
+            <div className="overflow-y-auto pe-1" style={{ maxHeight: 10 * 44 + 40 }}>
+              <div style={{ height: chart.length * 44 + 40 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chart} layout="vertical" margin={{ top: 4, right: 56, bottom: 4, left: 0 }} barGap={2} barCategoryGap={8}>
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12, fill: "#a1a1aa" }} axisLine={{ stroke: "rgba(255,255,255,0.15)" }} tickLine={false} />
+                    <YAxis type="category" dataKey="project" width={120} interval={0} tick={{ fontSize: 12.5, fill: "#f4f4f5", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <Tooltip formatter={(v, name) => [`${Number(v).toFixed(1)}%`, name === "hs" ? "Health & Safety" : "Environmental"]} contentStyle={{ background: "#18181b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, fontSize: 12, color: "#fff" }} labelStyle={{ color: "#fff", fontWeight: 600 }} cursor={{ fill: "rgba(255,255,255,0.06)" }} />
+                    <ReferenceLine x={target} stroke="#84cc16" strokeDasharray="6 4" strokeOpacity={0.7} />
+                    <Bar dataKey="hs" fill={HS_COLOR} radius={[0, 3, 3, 0]} barSize={12} isAnimationActive={false} style={{ filter: "drop-shadow(0 0 6px rgba(243,111,36,0.45))" }}>
+                      <LabelList dataKey="hs" position="right" fontSize={10.5} fill="#e4e4e7" formatter={(v: unknown) => `${Number(v).toFixed(1)}%`} />
+                    </Bar>
+                    <Bar dataKey="env" fill={ENV_COLOR} radius={[0, 3, 3, 0]} barSize={12} isAnimationActive={false} style={{ filter: "drop-shadow(0 0 6px rgba(74,222,128,0.4))" }}>
+                      <LabelList dataKey="env" position="right" fontSize={10.5} fontWeight={700} fill="#f4f4f5" formatter={(v: unknown) => `${Number(v).toFixed(1)}%`} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </DarkPanel>
+
+        <div className="flex min-w-0 flex-col gap-5">
+          {/* ---- Overall score ---- */}
+          <DarkPanel>
+            <h2 className={`${CHART_TITLE} mb-4 flex items-center gap-2`}>
+              <Target className="h-5 w-5 text-[#ff8a3d]" /> Overall Audit Score
+            </h2>
+            <div className="flex flex-wrap items-center justify-around gap-5">
+              <ScoreRing value={stats.overall} />
+              <div className="hidden h-28 w-px bg-white/15 sm:block" />
+              <div className="flex min-w-[190px] flex-col gap-3">
+                <MiniScore icon={ShieldCheck} value={stats.hsAvg} label="Health & Safety" color={HS_COLOR} />
+                <MiniScore icon={Leaf} value={stats.envAvg} label="Environmental" color={ENV_COLOR} />
+              </div>
+            </div>
+          </DarkPanel>
+
+          {/* ---- Summary ---- */}
+          <DarkPanel className="flex-1">
+            <h2 className={`${CHART_TITLE} mb-3 flex items-center gap-2`}>
+              <FileText className="h-5 w-5 text-[#ff8a3d]" /> Summary
+            </h2>
+            <ul className="space-y-2 text-sm leading-relaxed text-white/85">
+              <Bullet>
+                <b>{stats.projects}</b> projects audited with an overall score of <b>{pct(stats.overall)}</b>.
+              </Bullet>
+              <Bullet>
+                Average H&amp;S score: <b>{pct(stats.hsAvg)}</b> &nbsp;|&nbsp; Average Environmental score: <b>{pct(stats.envAvg)}</b>.
+              </Bullet>
+              <Bullet>
+                <b>{stats.findings}</b> findings identified ({stats.open} open, {stats.closed} closed – {pct(stats.closure)} closure rate).
+              </Bullet>
+              {stats.focus.length > 0 && <Bullet>Key focus areas: {stats.focus.join(", ")}.</Bullet>}
+            </ul>
+          </DarkPanel>
         </div>
-      )}
-
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by project, auditor, manager…"
-          className="input-field max-w-sm"
-        />
       </div>
 
-      <div className="card mb-6 overflow-x-auto !p-0">
-        <table className="w-full min-w-[860px] text-start text-sm">
-          <thead>
-            <tr className="border-b border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
-              <th className="px-4 py-3 text-start">Date</th>
-              <th className="px-4 py-3 text-start">Project</th>
-              <th className="px-4 py-3 text-start">Auditor</th>
-              <th className="px-4 py-3 text-start">Health &amp; Safety</th>
-              <th className="px-4 py-3 text-start">Environmental</th>
-              <th className="px-4 py-3 text-start">Findings</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-gray">
-                  Loading…
-                </td>
+      {/* ---- Audit details & reports ---- */}
+      <DarkPanel className="mb-5">
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          <h2 className={`${TABLE_TITLE} flex items-center gap-2`}>
+            <Layers className="h-5 w-5 text-[#ff8a3d]" /> Audit Details &amp; Reports
+          </h2>
+          <label className="relative w-full sm:ms-auto sm:max-w-xs">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by project, auditor, manager…" className={SEARCH_INPUT} />
+          </label>
+        </div>
+        <div className="overflow-x-auto rounded-lg">
+          <table className="w-full min-w-[980px] text-start text-sm">
+            <thead>
+              <tr className={TH_ROW}>
+                <th className={`${TH} rounded-s-lg`}>Project</th>
+                <th className={TH}>Audit Date</th>
+                <th className={TH}>Auditor</th>
+                <th className={`${TH} !text-center`}>H&amp;S Score</th>
+                <th className={`${TH} !text-center`}>ENV Score</th>
+                <th className={`${TH} !text-center`}>Overall</th>
+                <th className={`${TH} !text-center`}>Findings (O/C)</th>
+                <th className={TH}>Status</th>
+                <th className={`${TH} rounded-e-lg !text-center`}>Audit Report</th>
               </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-gray">
-                  No audits yet — click New Audit to add the first one.
-                </td>
-              </tr>
-            ) : (
-              rows.map(({ audit, hs, env, findings: fs }) => {
-                const open = fs.filter((f) => f.status === "Open");
-                const overdue = open.filter((f) => isOverdue(f)).length;
-                return (
-                  <tr
-                    key={audit.id}
-                    onClick={() => router.push(`/hse-audit/${audit.id}`)}
-                    className="cursor-pointer border-b border-brand-border last:border-0 hover:bg-brand-grayLight/40"
-                  >
-                    <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark">{formatDate(audit.auditDate)}</td>
-                    <td className="px-4 py-3 font-semibold text-brand-black">{audit.projectName}</td>
-                    <td className="px-4 py-3 text-brand-grayDark">{audit.auditor || "—"}</td>
-                    <td className="px-4 py-3">
-                      <ScorePill result={hs} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <ScorePill result={env} />
-                    </td>
-                    <td className="px-4 py-3 text-xs">
-                      <span className="font-semibold text-brand-black">{fs.length}</span> total ·{" "}
-                      <span className="font-semibold" style={{ color: open.length ? "#D97706" : "#16A34A" }}>
-                        {open.length} open
-                      </span>
-                      {overdue > 0 && <span className="ms-1 font-semibold text-red-600">· {overdue} overdue</span>}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
+                    Loading…
+                  </td>
+                </tr>
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
+                    No audits yet — click New Audit to add the first one.
+                  </td>
+                </tr>
+              ) : (
+                rows.map(({ audit, hs, env, findings: fs }) => {
+                  const open = fs.filter((f) => f.status === "Open").length;
+                  const overall = overallOf(hs.pct, env.pct);
+                  const level = overall == null ? null : levelOf(overall);
+                  return (
+                    <tr key={audit.id} onClick={() => router.push(`/hse-audit/${audit.id}`)} className={`${TR} cursor-pointer`}>
+                      <td className={`${TD} font-bold text-white`}>{audit.projectName}</td>
+                      <td className={`${TD} whitespace-nowrap text-white/80`}>{formatDate(audit.auditDate)}</td>
+                      <td className={`${TD} text-white/80`}>{audit.auditor || "—"}</td>
+                      <td className={`${TD} text-center`}>
+                        <ScoreChip value={hs.pct} tint="rgba(243,111,36,0.22)" />
+                      </td>
+                      <td className={`${TD} text-center`}>
+                        <ScoreChip value={env.pct} tint="rgba(34,197,94,0.2)" />
+                      </td>
+                      <td className={`${TD} text-center`}>
+                        <ScoreChip value={overall} tint="rgba(255,255,255,0.08)" />
+                      </td>
+                      <td className={`${TD} whitespace-nowrap text-center text-white/90`}>
+                        {fs.length} ({open}/{fs.length - open})
+                      </td>
+                      <td className={TD}>
+                        {level ? (
+                          <span
+                            className="inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold"
+                            style={{ background: TONE_STYLE[level.tone].bg, color: TONE_STYLE[level.tone].fg }}
+                          >
+                            {level.label}
+                          </span>
+                        ) : (
+                          <span className="text-white/40">—</span>
+                        )}
+                      </td>
+                      <td className={`${TD} text-center`} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center gap-2">
+                          <a
+                            href={`/hse-audit/${audit.id}/print`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open the audit report (print / save as PDF)"
+                            aria-label="Open the audit report"
+                            className="flex h-9 w-8 flex-col items-center justify-center rounded-md bg-white text-[8px] font-extrabold leading-none text-[#dc2626] shadow transition hover:scale-105"
+                          >
+                            <FileText className="mb-0.5 h-4 w-4 text-[#dc2626]" />
+                            PDF
+                          </a>
+                          <ReportDownload id={audit.id!} name={audit.reportFileName} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </DarkPanel>
 
-      <div className="card overflow-x-auto !p-0">
-        <h2 className="px-5 pt-5 text-lg font-bold text-brand-black">Open Findings</h2>
-        <p className="px-5 text-xs text-brand-gray">One row per audit — click a row to open the full audit and close out its findings.</p>
-        <table className="mt-3 w-full min-w-[960px] text-start text-sm">
+      <DarkPanel>
+        <h2 className={TABLE_TITLE}>Open Findings</h2>
+        <p className="mb-3 text-xs text-white/55">One row per audit — click a row to open the full audit and close out its findings.</p>
+        <div className="overflow-x-auto rounded-lg">
+        <table className="w-full min-w-[960px] text-start text-sm">
           <thead>
-            <tr className="border-y border-brand-border bg-brand-grayLight/50 text-xs font-semibold tracking-wide text-brand-gray">
-              <th className="px-4 py-3 text-start">Project</th>
+            <tr className={TH_ROW}>
+              <th className="rounded-s-lg px-4 py-3 text-start">Project</th>
               <th className="px-4 py-3 text-start">Audit Date</th>
               <th className="px-4 py-3 text-start">Auditor</th>
               <th className="px-4 py-3 text-start">Open</th>
               <th className="px-4 py-3 text-start">Priority</th>
               <th className="px-4 py-3 text-start">Overdue</th>
               <th className="px-4 py-3 text-start">Next Close Out</th>
-              <th className="px-4 py-3 text-start">Categories</th>
+              <th className="rounded-e-lg px-4 py-3 text-start">Categories</th>
             </tr>
           </thead>
           <tbody>
             {openByAudit.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-brand-gray">
+                <td colSpan={8} className="px-4 py-8 text-center text-white/50">
                   No open findings.
                 </td>
               </tr>
@@ -308,15 +455,15 @@ function HseAuditDashboard() {
                 <tr
                   key={audit.id}
                   onClick={() => router.push(`/hse-audit/${audit.id}`)}
-                  className="cursor-pointer border-b border-brand-border last:border-0 hover:bg-brand-grayLight/40"
+                  className={`${TR} cursor-pointer`}
                   style={overdue ? { background: "rgba(220,38,38,0.07)" } : undefined}
                 >
-                  <td className="px-4 py-3 font-semibold text-brand-black">{audit.projectName}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-brand-grayDark">{formatDate(audit.auditDate)}</td>
-                  <td className="px-4 py-3 text-brand-grayDark">{audit.auditor || "—"}</td>
+                  <td className="px-4 py-3 font-semibold text-white">{audit.projectName}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-white/75">{formatDate(audit.auditDate)}</td>
+                  <td className="px-4 py-3 text-white/75">{audit.auditor || "—"}</td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    <span className="font-bold text-brand-black">{open}</span>
-                    <span className="text-xs text-brand-gray"> of {total}</span>
+                    <span className="font-bold text-white">{open}</span>
+                    <span className="text-xs text-white/50"> of {total}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -331,16 +478,16 @@ function HseAuditDashboard() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold" style={{ color: overdue ? "#B91C1C" : "#16A34A" }}>
+                  <td className="px-4 py-3 font-bold" style={{ color: overdue ? "#f87171" : "#4ade80" }}>
                     {overdue || "—"}
                   </td>
                   <td
                     className="whitespace-nowrap px-4 py-3 text-xs font-semibold"
-                    style={next && isOverdue({ status: "Open", closeOutDate: next }) ? { color: "#B91C1C" } : undefined}
+                    style={next && isOverdue({ status: "Open", closeOutDate: next }) ? { color: "#f87171" } : undefined}
                   >
                     {formatDate(next)}
                   </td>
-                  <td className="max-w-xs truncate px-4 py-3 text-xs text-brand-grayDark" title={categories.join(", ")}>
+                  <td className="max-w-xs truncate px-4 py-3 text-xs text-white/75" title={categories.join(", ")}>
                     {categories.join(", ") || "—"}
                   </td>
                 </tr>
@@ -348,7 +495,121 @@ function HseAuditDashboard() {
             )}
           </tbody>
         </table>
+        </div>
+      </DarkPanel>
+    </div>
+  );
+}
+
+const HS_COLOR = "#f36f24";
+const ENV_COLOR = "#4ade80";
+
+/** Overall audit score = average of the H&S and Environmental scores that exist. */
+function overallOf(hs: number | null | undefined, env: number | null | undefined) {
+  const v = [hs, env].filter((n): n is number => n != null);
+  return v.length ? v.reduce((s, n) => s + n, 0) / v.length : null;
+}
+const pct = (v: number | null) => (v == null ? "—" : `${v.toFixed(1)}%`);
+
+function Bullet({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex gap-2.5">
+      <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-[#f36f24] shadow-[0_0_8px_rgba(243,111,36,0.8)]" />
+      <span>{children}</span>
+    </li>
+  );
+}
+
+function ScoreChip({ value, tint }: { value: number | null; tint: string }) {
+  return (
+    <span className="inline-flex min-w-[76px] justify-center rounded-lg px-3 py-1.5 text-sm font-bold tabular-nums text-white" style={{ background: tint }}>
+      {pct(value)}
+    </span>
+  );
+}
+
+/** Ring for the overall score: green → orange arc on a dark track. */
+function ScoreRing({ value }: { value: number | null }) {
+  const r = 62;
+  const c = 2 * Math.PI * r;
+  const p = Math.max(0, Math.min(100, value ?? 0)) / 100;
+  return (
+    <div className="relative h-40 w-40 shrink-0">
+      <svg viewBox="0 0 160 160" className="h-full w-full -rotate-90">
+        <defs>
+          <linearGradient id="auditRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4ade80" />
+            <stop offset="55%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#f36f24" />
+          </linearGradient>
+        </defs>
+        <circle cx="80" cy="80" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="14" />
+        <circle
+          cx="80"
+          cy="80"
+          r={r}
+          fill="none"
+          stroke="url(#auditRing)"
+          strokeWidth="14"
+          strokeLinecap="round"
+          strokeDasharray={`${c * p} ${c}`}
+          style={{ filter: "drop-shadow(0 0 8px rgba(243,111,36,0.55))" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-extrabold tabular-nums">{pct(value)}</span>
+        <span className="text-sm font-semibold text-white/70">Overall</span>
       </div>
     </div>
+  );
+}
+
+function MiniScore({ icon: Icon, value, label, color }: { icon: LucideIcon; value: number | null; label: string; color: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{ borderColor: `${color}55`, background: `${color}10` }}>
+      <Icon className="h-8 w-8 shrink-0" style={{ color }} strokeWidth={1.6} />
+      <div>
+        <p className="text-2xl font-extrabold leading-none tabular-nums">{pct(value)}</p>
+        <p className="mt-1 text-xs font-medium text-white/70">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Download the report file attached to an audit (fetched only when clicked). */
+function ReportDownload({ id, name }: { id: string; name: string }) {
+  const [busy, setBusy] = useState(false);
+  if (!name) {
+    return (
+      <span title="No report file attached" className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/25">
+        <Download className="h-4 w-4" />
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      title={`Download ${name}`}
+      aria-label={`Download ${name}`}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const { data } = await supabase.from("hse_audits").select("report_file").eq("id", id).single();
+          const href = (data as { report_file?: string } | null)?.report_file;
+          if (href) {
+            const a = document.createElement("a");
+            a.href = href;
+            a.download = name;
+            a.click();
+          }
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/25 text-white transition hover:border-[#f36f24] hover:text-[#ff8a3d] disabled:opacity-50"
+    >
+      <Download className="h-4 w-4" />
+    </button>
   );
 }

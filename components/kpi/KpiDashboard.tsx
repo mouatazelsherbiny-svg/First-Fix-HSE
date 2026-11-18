@@ -254,8 +254,8 @@ function KpiTable({
   rows: { key: string; swatch: string; label: string; cells: number[] }[];
 }) {
   return (
-    <div className="mt-3 overflow-x-auto rounded-lg">
-      <table className="w-full text-[12.5px]">
+    <div className="mt-3 overflow-x-auto rounded-lg border border-white/15">
+      <table className="kpi-grid w-full text-[12.5px]">
         <thead>
           <tr className={TH_ROW}>
             {head.map((h, i) => (
