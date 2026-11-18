@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * Reports → KPI Data: the KPI charts on top (KpiDashboard), then the weekly
- * KPI records table with search, Excel export and "New". (This was the
- * separate Weekly KPI page.)
+ * KPI's page → KPI Data tab: the KPI charts on top (KpiDashboard), then the weekly
+ * KPI records table with search, Excel export and "New".
  */
 
 import { useMemo, useState } from "react";

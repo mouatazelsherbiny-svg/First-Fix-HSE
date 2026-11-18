@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Binoculars,
+  ChartColumn,
   ChartLine,
   ChevronDown,
   ClipboardCheck,
@@ -24,6 +25,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
+import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 import { usePermits } from "@/context/PermitContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 
@@ -180,6 +182,7 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const { observations } = useObservations();
+  const { records: kpiRecords } = useWeeklyKpi();
   const { permits } = usePermits();
   const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
 
@@ -195,6 +198,7 @@ export default function Sidebar({
     { kind: "link", href: "/incidents", label: t.nav.incidents, icon: TriangleAlert },
     { kind: "link", href: "/injury", label: t.nav.injury, icon: SquarePlus },
     { kind: "link", href: "/reports", label: t.nav.reports, icon: FileText },
+    { kind: "link", href: "/weekly-kpi", label: t.nav.weeklyKpi, icon: ChartColumn, count: kpiRecords.length },
     { kind: "link", href: "/pmv", label: t.nav.pmv, icon: Truck },
     { kind: "link", href: "/permit-to-work", label: t.nav.permitToWork, icon: ShieldCheck, count: permits.length },
     {

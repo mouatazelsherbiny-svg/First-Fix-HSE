@@ -27,7 +27,7 @@ function WeeklyKpiDetail() {
     return (
       <div className="card text-center">
         <p className="text-sm text-brand-gray">Record not found.</p>
-        <Link href="/reports?tab=kpi" className="btn-primary mt-4 inline-flex">
+        <Link href="/weekly-kpi" className="btn-primary mt-4 inline-flex">
           {t.weeklyKpi.back}
         </Link>
       </div>
@@ -42,7 +42,7 @@ function WeeklyKpiDetail() {
   return (
     <div>
       <Link
-        href="/reports?tab=kpi"
+        href="/weekly-kpi"
         className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-brand-gray hover:text-brand-orange"
       >
         &larr; {t.weeklyKpi.back}

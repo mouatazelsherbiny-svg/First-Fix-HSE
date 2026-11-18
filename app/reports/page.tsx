@@ -9,12 +9,9 @@ import ObservationForm from "@/components/observations/ObservationForm";
 import PhotoCards from "@/components/PhotoCards";
 import { useLanguage } from "@/context/LanguageContext";
 import PageTitle from "@/components/PageTitle";
-import KpiData from "@/components/kpi/KpiData";
-import PerformanceGoals from "@/components/kpi/PerformanceGoals";
-import { useWeeklyKpi } from "@/context/WeeklyKpiContext";
 
-type ReportTab = "daily" | "monthly" | "kpi" | "goals";
-const REPORT_TABS: ReportTab[] = ["daily", "monthly", "kpi", "goals"];
+type ReportTab = "daily" | "monthly";
+const REPORT_TABS: ReportTab[] = ["daily", "monthly"];
 
 export default function ReportsPage() {
   return (
@@ -27,8 +24,7 @@ export default function ReportsPage() {
 function ReportsContent() {
   const { t } = useLanguage();
   const [tab, setTab] = useState<ReportTab>("daily");
-  const { records: kpiRecords, isLoading: kpiLoading } = useWeeklyKpi();
-  // Links can open a tab directly: /reports?tab=kpi (the old KPI page sends you here).
+  // Links can open a tab directly: /reports?tab=monthly.
   useEffect(() => {
     const want = new URLSearchParams(window.location.search).get("tab") as ReportTab | null;
     if (want && REPORT_TABS.includes(want)) setTab(want);
@@ -56,8 +52,6 @@ function ReportsContent() {
   const TABS: { key: ReportTab; label: string }[] = [
     { key: "daily", label: t.reports.tabDaily },
     { key: "monthly", label: t.reports.tabMonthly },
-    { key: "kpi", label: "KPI Data" },
-    { key: "goals", label: "Performance Goals" },
   ];
 
   return (
@@ -81,15 +75,7 @@ function ReportsContent() {
         ))}
       </div>
 
-      {tab === "kpi" ? (
-        <KpiData />
-      ) : tab === "goals" ? (
-        kpiLoading ? (
-          <div className="card py-16 text-center text-sm font-medium text-brand-gray">{t.common.loading}</div>
-        ) : (
-          <PerformanceGoals records={kpiRecords} />
-        )
-      ) : tab === "monthly" ? (
+      {tab === "monthly" ? (
         <div className="space-y-5">
           <div>
             <h2 className="mb-3 text-center text-sm font-semibold tracking-wide text-brand-gray">
