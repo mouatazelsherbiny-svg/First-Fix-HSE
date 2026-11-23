@@ -33,7 +33,13 @@ export default function PhotoCards({
   /** "lg": two big cards side by side (the phone app's home). */
   size?: "md" | "lg";
 }) {
-  const width = size === "lg" ? "w-[calc(50%-0.375rem)] max-w-[230px]" : "w-[calc(33.333%-0.5rem)] sm:w-[170px]";
+  // "lg": two per row (three in one row when there are exactly three).
+  const width =
+    size === "lg"
+      ? items.length === 3
+        ? "w-[calc(33.333%-0.5rem)] max-w-[230px]"
+        : "w-[calc(50%-0.375rem)] max-w-[230px]"
+      : "w-[calc(33.333%-0.5rem)] sm:w-[170px]";
   return (
     <div className={`flex flex-wrap justify-center gap-3 ${className}`}>
       {items.map((it) => {

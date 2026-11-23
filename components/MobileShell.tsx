@@ -2,12 +2,12 @@
 
 /**
  * Layout of the phone app (see lib/mobileApp.ts): a slim top bar (logo, app
- * name, Install, Sign out) and a bottom tab bar — Home, Daily and Monthly. No sidebar.
+ * name, Install, Sign out) and a bottom tab bar — Home, Daily, Monthly and FICC. No sidebar.
  */
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarDays, ClipboardList, Download, House, LogOut } from "lucide-react";
+import { CalendarDays, ClipboardList, Download, House, LogOut, Siren } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { BrandMark } from "@/components/Sidebar";
 import { MOBILE_HOME } from "@/lib/mobileApp";
@@ -17,6 +17,7 @@ const TABS = [
   { href: MOBILE_HOME, match: [MOBILE_HOME], exact: true, label: "Home", icon: House },
   { href: "/m/reports/daily", match: ["/m/reports/daily"], exact: false, label: "Daily", icon: ClipboardList },
   { href: "/m/reports/monthly", match: ["/m/reports/monthly", "/checklists", "/my-checklists"], exact: false, label: "Monthly", icon: CalendarDays },
+  { href: "/m/reports/ficc", match: ["/m/reports/ficc"], exact: false, label: "FICC", icon: Siren },
 ];
 
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -87,7 +88,7 @@ export default function MobileShell({ children, className = "" }: { children: Re
         className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto grid max-w-md grid-cols-3">
+        <div className="mx-auto grid max-w-lg grid-cols-4">
         {TABS.map((tab) => {
           const active = tab.match.some((m) => pathname === m || (!tab.exact && pathname.startsWith(`${m}/`)));
           return (

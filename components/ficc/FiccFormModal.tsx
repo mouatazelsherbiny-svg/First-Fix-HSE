@@ -40,9 +40,11 @@ const INCIDENT_TYPE_OPTIONS = [
 interface FiccFormModalProps {
   onClose: () => void;
   onSubmit: (values: FiccInput) => Promise<void>;
+  /** Show the form in the page itself (phone app → FICC Report) instead of a pop-up. */
+  embedded?: boolean;
 }
 
-export default function FiccFormModal({ onClose, onSubmit }: FiccFormModalProps) {
+export default function FiccFormModal({ onClose, onSubmit, embedded = false }: FiccFormModalProps) {
   const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -82,15 +84,12 @@ export default function FiccFormModal({ onClose, onSubmit }: FiccFormModalProps)
 
   if (!mounted) return null;
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
+  const card = (
       <div
-        className="card !bg-brand-surface max-h-[90vh] w-full max-w-2xl overflow-y-auto"
+        className={`card !bg-brand-surface w-full ${embedded ? "" : "max-h-[90vh] max-w-2xl overflow-y-auto"}`}
         onClick={(e) => e.stopPropagation()}
       >
+        {!embedded && (
         <div className="mb-5 flex items-start justify-between gap-4">
           <h2 className="text-lg font-bold text-brand-black">{t.ficc.addFiccTitle}</h2>
           <button
@@ -102,6 +101,7 @@ export default function FiccFormModal({ onClose, onSubmit }: FiccFormModalProps)
             <X className="h-5 w-5" />
           </button>
         </div>
+        )}
 
         {error && (
           <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
@@ -239,6 +239,16 @@ export default function FiccFormModal({ onClose, onSubmit }: FiccFormModalProps)
           </div>
         </form>
       </div>
+  );
+
+  if (embedded) return card;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      {card}
     </div>,
     document.body
   );
