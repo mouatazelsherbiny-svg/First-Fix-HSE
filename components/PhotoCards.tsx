@@ -23,11 +23,21 @@ export interface PhotoCardItem {
   onClick?: () => void;
 }
 
-export default function PhotoCards({ items, className = "mb-6" }: { items: PhotoCardItem[]; className?: string }) {
+export default function PhotoCards({
+  items,
+  className = "mb-6",
+  size = "md",
+}: {
+  items: PhotoCardItem[];
+  className?: string;
+  /** "lg": two big cards side by side (the phone app's home). */
+  size?: "md" | "lg";
+}) {
+  const width = size === "lg" ? "w-[calc(50%-0.375rem)] max-w-[230px]" : "w-[calc(33.333%-0.5rem)] sm:w-[170px]";
   return (
     <div className={`flex flex-wrap justify-center gap-3 ${className}`}>
       {items.map((it) => {
-        const cls = `group relative flex aspect-[3/4] w-[calc(33.333%-0.5rem)] flex-col items-center justify-between overflow-hidden rounded-2xl px-2 pb-3 pt-4 sm:px-3 sm:pb-4 sm:pt-6 text-center outline-none transition duration-300 hover:-translate-y-1.5 focus-visible:ring-4 focus-visible:ring-[#f36f24] sm:w-[170px] ${
+        const cls = `group relative flex aspect-[3/4] ${width} flex-col items-center justify-between overflow-hidden rounded-2xl px-2 pb-3 pt-4 sm:px-3 sm:pb-4 sm:pt-6 text-center outline-none transition duration-300 hover:-translate-y-1.5 focus-visible:ring-4 focus-visible:ring-[#f36f24] ${
           it.active
             ? "shadow-[0_0_0_2px_#f36f24,0_18px_40px_-12px_rgba(243,111,36,0.6)]"
             : "shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_14px_30px_-14px_rgba(0,0,0,0.9)] hover:shadow-[0_0_0_2px_rgba(255,138,61,0.9),0_22px_48px_-12px_rgba(243,111,36,0.55)]"

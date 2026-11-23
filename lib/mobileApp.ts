@@ -1,6 +1,7 @@
 /**
  * The phone app ("First Fix HSE Field"): an installable app that shows only
- * two parts of the system — Reports → Daily and Permit to Work.
+ * part of the system — Daily (Observation, Good Practice, KPI), Monthly (the
+ * four monthly checklists) and Permit to Work.
  *
  * It is the same website opened from /m. While in it (in that tab / that
  * installed app window) the pages use a phone layout with a bottom tab bar
@@ -12,7 +13,7 @@
 const KEY = "ff.mobileApp";
 
 /** Pages the phone app may open (and everything under them). */
-export const MOBILE_ALLOWED = ["/m", "/permit-to-work"];
+export const MOBILE_ALLOWED = ["/m", "/permit-to-work", "/checklists", "/my-checklists"];
 
 export const MOBILE_HOME = "/m/reports";
 

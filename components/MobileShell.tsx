@@ -2,21 +2,23 @@
 
 /**
  * Layout of the phone app (see lib/mobileApp.ts): a slim top bar (logo, app
- * name, Install, Sign out) and a bottom tab bar with its two parts —
- * Daily Report and Permit to Work. No sidebar.
+ * name, Install, Sign out) and a bottom tab bar — Home, Daily, Monthly and
+ * Permit to Work. No sidebar.
  */
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Download, LogOut, ShieldCheck } from "lucide-react";
+import { CalendarDays, ClipboardList, Download, House, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { BrandMark } from "@/components/Sidebar";
 import { MOBILE_HOME } from "@/lib/mobileApp";
 import { useInstall } from "@/lib/useInstall";
 
 const TABS = [
-  { href: MOBILE_HOME, match: "/m", label: "Daily Report", icon: ClipboardList },
-  { href: "/permit-to-work", match: "/permit-to-work", label: "Permit to Work", icon: ShieldCheck },
+  { href: MOBILE_HOME, match: [MOBILE_HOME], exact: true, label: "Home", icon: House },
+  { href: "/m/reports/daily", match: ["/m/reports/daily"], exact: false, label: "Daily", icon: ClipboardList },
+  { href: "/m/reports/monthly", match: ["/m/reports/monthly", "/checklists", "/my-checklists"], exact: false, label: "Monthly", icon: CalendarDays },
+  { href: "/permit-to-work", match: ["/permit-to-work"], exact: false, label: "Permit to Work", icon: ShieldCheck },
 ];
 
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -58,7 +60,7 @@ export default function MobileShell({ children, className = "" }: { children: Re
             type="button"
             onClick={() => {
               logout();
-              router.push("/login");
+              router.push("/m/login");
             }}
             aria-label="Sign out"
             title="Sign out"
@@ -87,19 +89,19 @@ export default function MobileShell({ children, className = "" }: { children: Re
         className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto grid max-w-md grid-cols-2">
+        <div className="mx-auto grid max-w-lg grid-cols-4">
         {TABS.map((tab) => {
-          const active = pathname === tab.match || pathname.startsWith(`${tab.match}/`);
+          const active = tab.match.some((m) => pathname === m || (!tab.exact && pathname.startsWith(`${m}/`)));
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-xs font-semibold transition [@media(max-height:500px)]:flex-row [@media(max-height:500px)]:justify-center [@media(max-height:500px)]:gap-2 [@media(max-height:500px)]:py-1 ${
+              className={`flex flex-col items-center gap-1 py-2.5 text-center text-[11px] font-semibold leading-tight transition [@media(max-height:500px)]:flex-row [@media(max-height:500px)]:justify-center [@media(max-height:500px)]:gap-2 [@media(max-height:500px)]:py-1 ${
                 active ? "text-[#ff8a3d]" : "text-white/60 hover:text-white"
               }`}
             >
               <span
-                className={`flex h-8 w-14 items-center justify-center rounded-full transition ${
+                className={`flex h-8 w-12 items-center justify-center rounded-full transition ${
                   active ? "bg-[#f36f24]/20 shadow-[0_0_14px_rgba(243,111,36,0.35)]" : ""
                 }`}
               >
