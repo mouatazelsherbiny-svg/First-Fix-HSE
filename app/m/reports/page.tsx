@@ -1,8 +1,8 @@
 "use client";
 
-/** Phone app home (after signing in): big cards — Daily, Monthly and FICC Report. */
+/** Phone app home (after signing in): big cards — Daily, Monthly and IIR. */
 
-import { CalendarDays, ClipboardList, Siren } from "lucide-react";
+import { CalendarDays, ClipboardList, FileSearch } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PhotoCards from "@/components/PhotoCards";
 import PageTitle from "@/components/PageTitle";
@@ -28,7 +28,7 @@ function MobileHome() {
           items={[
             { key: "daily", label: t.reports.tabDaily, icon: ClipboardList, color: "#f36f24", href: "/m/reports/daily" },
             { key: "monthly", label: t.reports.tabMonthly, icon: CalendarDays, color: "#4f8fd6", href: "/m/reports/monthly" },
-            { key: "ficc", label: "FICC Report", icon: Siren, color: "#ef4444", href: "/m/reports/ficc" },
+            { key: "iir", label: "IIR", icon: FileSearch, color: "#ef4444", href: "/m/reports/iir" },
           ]}
         />
       </div>

@@ -2,12 +2,12 @@
 
 /**
  * Layout of the phone app (see lib/mobileApp.ts): a slim top bar (logo, app
- * name, Install, Sign out) and a bottom tab bar — Home, Daily, Monthly and FICC. No sidebar.
+ * name, Install, Sign out) and a bottom tab bar — Home, Daily, Monthly and IIR. No sidebar.
  */
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarDays, ClipboardList, Download, House, LogOut, Siren } from "lucide-react";
+import { CalendarDays, ClipboardList, Download, FileSearch, House, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { BrandMark } from "@/components/Sidebar";
 import { MOBILE_HOME } from "@/lib/mobileApp";
@@ -17,7 +17,7 @@ const TABS = [
   { href: MOBILE_HOME, match: [MOBILE_HOME], exact: true, label: "Home", icon: House },
   { href: "/m/reports/daily", match: ["/m/reports/daily"], exact: false, label: "Daily", icon: ClipboardList },
   { href: "/m/reports/monthly", match: ["/m/reports/monthly", "/checklists", "/my-checklists"], exact: false, label: "Monthly", icon: CalendarDays },
-  { href: "/m/reports/ficc", match: ["/m/reports/ficc"], exact: false, label: "FICC", icon: Siren },
+  { href: "/m/reports/iir", match: ["/m/reports/iir", "/iir"], exact: false, label: "IIR", icon: FileSearch },
 ];
 
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {

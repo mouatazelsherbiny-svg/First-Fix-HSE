@@ -13,7 +13,7 @@
 const KEY = "ff.mobileApp";
 
 /** Pages the phone app may open (and everything under them). */
-export const MOBILE_ALLOWED = ["/m", "/checklists", "/my-checklists"];
+export const MOBILE_ALLOWED = ["/m", "/checklists", "/my-checklists", "/iir"];
 
 export const MOBILE_HOME = "/m/reports";
 

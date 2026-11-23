@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ClipboardCheck,
   ClipboardList,
+  FileSearch,
   FileText,
   House,
   IdCard,
@@ -18,9 +19,9 @@ import {
   SquarePlus,
   TriangleAlert,
   Truck,
+  type LucideIcon,
   UserCog,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -218,6 +219,7 @@ export default function Sidebar({
   const adminLinks: NavLinkItem[] =
     user?.role === "admin"
       ? [
+          { href: "/iir", label: "IIR", icon: FileSearch },
           { href: "/edit-requests", label: t.nav.editRequests, icon: ClipboardCheck },
           { href: "/user-management", label: t.nav.userManagement, icon: UserCog },
         ]
