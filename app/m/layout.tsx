@@ -7,7 +7,7 @@ import MobileAppMark from "@/components/MobileAppMark";
 export const metadata: Metadata = {
   title: "HSE-Reporting",
   manifest: "/mobile.webmanifest",
-  icons: { icon: "/icons/hse-reporting-192.png", apple: "/icons/hse-reporting-180.png" },
+  icons: { icon: "/icons/hse-reporting-192.png?v=2", apple: "/icons/hse-reporting-180.png?v=2" },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "HSE-Reporting" },
 };
 
