@@ -2,7 +2,7 @@
   "id": "/m",
   "name": "HSE-Reporting",
   "short_name": "HSE-Reporting",
-  "description": "First Fix HSE on site: daily reports and permits to work",
+  "description": "First Fix HSE on site: daily and monthly HSE reports",
   "start_url": "/m",
   "scope": "/",
   "display": "standalone",

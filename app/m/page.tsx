@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Montserrat } from "next/font/google";
-import { ArrowRight, ClipboardList, Download, Share, ShieldCheck, SquarePlus } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, Download, Share, SquarePlus } from "lucide-react";
 import { markMobileApp, MOBILE_HOME } from "@/lib/mobileApp";
 import { isStandalone, useInstall } from "@/lib/useInstall";
 
@@ -54,17 +54,17 @@ export default function MobileHome() {
         </div>
       </div>
       <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
-        Daily reports and permits to work, from your phone. Sign in with your First Fix HSE account.
+        Daily and Monthly HSE reports, from your phone. Sign in with your First Fix HSE account.
       </p>
 
       <div className="mt-6 grid w-full max-w-xs grid-cols-2 gap-3 text-sm font-semibold">
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4">
           <ClipboardList className="h-6 w-6 text-[#ff8a3d]" />
-          Daily Report
+          Daily
         </div>
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4">
-          <ShieldCheck className="h-6 w-6 text-[#ff8a3d]" />
-          Permit to Work
+          <CalendarDays className="h-6 w-6 text-[#ff8a3d]" />
+          Monthly
         </div>
       </div>
 
