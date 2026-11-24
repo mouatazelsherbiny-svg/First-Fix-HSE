@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download } from "lucide-react";
+import Link from "next/link";
+import { FileDown, FileText, Loader2, Pencil } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useChecklistSubmissions } from "@/context/ChecklistSubmissionContext";
-import { exportChecklistToWord } from "@/lib/exportChecklistWord";
+import { exportChecklistWord } from "@/lib/checklistWord";
 import { CHECKLIST_TEMPLATES } from "@/lib/checklists";
 import { ChecklistSubmission } from "@/types/checklistSubmission";
-import { PointValue } from "@/types/checklist";
 import PageTitle from "@/components/PageTitle";
 
 export default function MyChecklistPage() {
@@ -47,44 +47,18 @@ function MyChecklistList() {
   const typeLabel = (templateKey: string) =>
     t.checklistNames[templateKey as keyof typeof t.checklistNames] ?? templateKey;
 
+  // Word in the company's form layout (Cover, Inspection + Summary, Corrective Actions, Photos).
   const handleExportWord = async (submission: ChecklistSubmission) => {
     const template = CHECKLIST_TEMPLATES[submission.templateKey];
     if (!template) return;
-
     setExportingId(submission.id);
     try {
-      const sectionStats = template.sections.map((section) => {
-        const stat = submission.sectionStats.find((s) => s.id === section.id);
-        return {
-          section,
-          possible: stat?.possible ?? 0,
-          scored: stat?.scored ?? 0,
-          pct: stat?.pct ?? 0,
-        };
-      });
-
-      await exportChecklistToWord({
-        templateTitle: typeLabel(submission.templateKey),
-        inspectedBy: submission.inspectedBy,
-        general: {
-          inspectionDate: submission.inspectionDate,
-          projectDirector: submission.projectDirector,
-          totalManpower: String(submission.totalManpower),
-          activity: submission.activity,
-          projectName: submission.projectName,
-        },
-        sectionStats,
-        possibleMap: submission.possibleMap as Record<string, PointValue>,
-        scoredMap: submission.scoredMap as Record<string, PointValue>,
-        grandPossible: submission.grandPossible,
-        grandScored: submission.grandScored,
-        grandPct: submission.grandPct,
-        labels: { ...t.checklist, projectName: t.form.projectName },
-      });
+      await exportChecklistWord(template, submission);
     } finally {
       setExportingId(null);
     }
   };
+  const canEdit = (s: ChecklistSubmission) => user?.role === "admin" || !s.createdBy || s.createdBy === user?.id;
 
   return (
     <div>
@@ -140,16 +114,36 @@ function MyChecklistList() {
                   <td className="px-4 py-3 text-brand-grayDark">{s.activity || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">{s.projectName}</td>
                   <td className="px-4 py-3 font-semibold text-brand-black">{s.grandPct}%</td>
-                  <td className="px-4 py-3 text-end">
-                    <button
-                      type="button"
-                      onClick={() => handleExportWord(s)}
-                      disabled={exportingId === s.id}
-                      className="btn-secondary !px-3 !py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <Download className="me-1.5 h-3.5 w-3.5" />
-                      {exportingId === s.id ? t.common.exporting : t.common.exportWord}
-                    </button>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      {canEdit(s) && (
+                        <Link
+                          href={`/my-checklists/${s.id}/edit`}
+                          title="Edit"
+                          className="flex h-9 items-center gap-1 rounded-md border border-white/20 bg-white/[0.06] px-2.5 text-xs font-bold text-white hover:border-[#f36f24]"
+                        >
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleExportWord(s)}
+                        disabled={exportingId === s.id}
+                        title="Download Word"
+                        className="flex h-9 items-center gap-1 rounded-md border border-[#2b579a]/70 bg-[#2b579a]/25 px-2.5 text-xs font-bold text-white hover:bg-[#2b579a]/50 disabled:opacity-60"
+                      >
+                        {exportingId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />} Word
+                      </button>
+                      <a
+                        href={`/my-checklists/${s.id}/print`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Print / save as PDF"
+                        className="flex h-9 items-center gap-1 rounded-md border border-red-500/60 bg-red-500/15 px-2.5 text-xs font-bold text-white hover:bg-red-500/30"
+                      >
+                        <FileText className="h-4 w-4" /> PDF
+                      </a>
+                    </div>
                   </td>
                 </tr>
               ))}
