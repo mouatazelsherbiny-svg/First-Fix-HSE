@@ -53,7 +53,10 @@ export default function SignaturePad({ label, value, onChange }: SignaturePadPro
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    // On screen the pad can be scaled (the phone app scales its pages to the screen): map back to the canvas.
+    const sx = rect.width ? canvas.clientWidth / rect.width : 1;
+    const sy = rect.height ? canvas.clientHeight / rect.height : 1;
+    return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {

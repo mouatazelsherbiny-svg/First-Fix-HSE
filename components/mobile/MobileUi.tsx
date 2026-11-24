@@ -98,7 +98,7 @@ export function MobileNav() {
   const pathname = usePathname() ?? "";
   return (
     <nav className="fixed inset-x-0 z-40 flex justify-center px-3" style={{ bottom: "calc(env(safe-area-inset-bottom) + 10px)" }}>
-      <div className="flex w-full max-w-md items-stretch rounded-[26px] border border-white/15 bg-[#151515]/95 px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.7)] backdrop-blur">
+      <div className="flex w-full max-w-xl items-stretch rounded-[26px] border border-white/15 bg-[#151515]/95 px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.7)] backdrop-blur">
         {NAV.map((n, i) => {
           const active = n.href === MOBILE_HOME ? pathname === MOBILE_HOME : n.match.some((m) => pathname === m || pathname.startsWith(`${m}/`));
           return (
@@ -189,8 +189,8 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="max-h-[80dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-white/10 bg-[#141414] px-4 pt-3 text-white"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+        className="w-full max-w-xl overflow-y-auto rounded-t-3xl border border-white/10 bg-[#141414] px-4 pt-3 text-white"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)", maxHeight: "calc(var(--mvh, 1dvh) * 80)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/20" />
@@ -332,7 +332,7 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
   const compact = cards.length >= 4;
 
   return (
-    <div className="relative mx-auto min-h-[100dvh] w-full max-w-md overflow-hidden bg-black text-white">
+    <div className="relative mx-auto w-full max-w-xl overflow-hidden bg-black text-white" style={{ minHeight: "calc(var(--mvh, 1dvh) * 100)" }}>
       {/* Worker photo on the left, fading into black. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -346,14 +346,17 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
         style={{ background: "radial-gradient(circle, rgba(120,120,120,0.35), transparent 70%)" }}
       />
 
-      <div className="relative flex min-h-[100dvh] flex-col px-5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 14px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 18px)" }}>
+      <div
+        className="relative flex flex-col px-5"
+        style={{ minHeight: "calc(var(--mvh, 1dvh) * 100)", paddingTop: "calc(env(safe-area-inset-top) + 14px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 18px)" }}
+      >
         {/* Header */}
         <div className="relative flex justify-center">
           <BackButton className="absolute left-0 top-1" />
           <MobileBrand size={56} stacked />
         </div>
         <div className="mt-3">
-          <HseReportingTitle center size="min(36px, 9.6vw)" barUnder="all" />
+          <HseReportingTitle center size={36} barUnder="all" />
         </div>
 
         {/* REPORTS + cards */}
@@ -361,7 +364,7 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
           <div className="flex w-[50%] shrink-0 flex-col items-end pe-3">
             <span
               className="select-none font-black leading-[0.8] text-[#ececec]"
-              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: compact ? "clamp(48px, 8.6dvh, 80px)" : "clamp(48px, 8dvh, 76px)", letterSpacing: "0.01em" }}
+              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: compact ? "clamp(48px, calc(var(--mvh, 1dvh) * 8.6), 80px)" : "clamp(48px, calc(var(--mvh, 1dvh) * 8), 76px)", letterSpacing: "0.01em" }}
             >
               REPORTS
             </span>

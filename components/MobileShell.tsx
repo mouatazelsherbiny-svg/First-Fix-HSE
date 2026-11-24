@@ -7,18 +7,58 @@
  *    with their own back button and search bar; no bottom bar.
  *  - every other page (the forms, checklists, IIR, search): a slim header
  *    (back + First Fix) and the floating bottom bar.
+ *
+ * Fits any screen: in portrait the whole app is drawn at a 390px phone width
+ * and scaled (CSS zoom) to the real width, so it always fills the screen the
+ * same way — on a large phone, a tablet, or a browser in "desktop site" mode.
+ * Inside, heights use var(--mvh) (1% of the screen height in the app's own
+ * scaled units) instead of dvh, which zoom would enlarge.
  */
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { BackButton, MobileBrand, MobileNav, NotificationsButton } from "@/components/mobile/MobileUi";
 import { MOBILE_HOME } from "@/lib/mobileApp";
 
 const MENU_PAGES = ["/m/reports/daily", "/m/reports/monthly", "/m/reports/incident"];
+/** The width the phone app is designed at. */
+const DESIGN_W = 390;
+const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** Scale for the current screen (1 in landscape) and the matching --mvh.
+ *  On a wide portrait screen (≥ 640px — tablet, "desktop site" mode) html
+ *  also gets `m-zoom`, which keeps the pages' tablet / desktop layouts
+ *  (two columns etc.) in their phone form — see globals.css. */
+function useFit() {
+  const [k, setK] = useState(1);
+  useIso(() => {
+    const fit = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const next = h > w ? Math.max(0.8, Math.min(3, w / DESIGN_W)) : 1;
+      document.documentElement.classList.toggle("m-zoom", h > w && w >= 640);
+      setK(next);
+      document.documentElement.style.setProperty("--mvh", next === 1 ? "1dvh" : `${h / next / 100}px`);
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+      document.documentElement.style.removeProperty("--mvh");
+      document.documentElement.classList.remove("m-zoom");
+    };
+  }, []);
+  return k;
+}
+
+export const FULL_H = "calc(var(--mvh, 1dvh) * 100)";
 
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const pathname = usePathname() ?? "";
   const kind = pathname === MOBILE_HOME ? "home" : MENU_PAGES.includes(pathname) ? "menu" : "page";
+  const k = useFit();
   // Larger text, fields and buttons in the phone app (see globals.css → html.m-app).
   useEffect(() => {
     document.documentElement.classList.add("m-app");
@@ -26,11 +66,15 @@ export default function MobileShell({ children, className = "" }: { children: Re
   }, []);
 
   if (kind === "menu") {
-    return <div className={`min-h-[100dvh] bg-black text-white ${className}`}>{children}</div>;
+    return (
+      <div className={`bg-black text-white ${className}`} style={{ zoom: k, minHeight: FULL_H }}>
+        {children}
+      </div>
+    );
   }
 
   return (
-    <div className={`min-h-[100dvh] bg-[#050505] text-white ${className}`}>
+    <div className={`bg-[#050505] text-white ${className}`} style={{ zoom: k, minHeight: FULL_H }}>
       {kind === "page" && (
         <header
           className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#0b0b0b]/95 backdrop-blur"
@@ -53,7 +97,7 @@ export default function MobileShell({ children, className = "" }: { children: Re
           paddingRight: "max(10px, env(safe-area-inset-right))",
         }}
       >
-        <div className={`mx-auto w-full ${kind === "home" ? "max-w-md" : "max-w-6xl"}`}>{children}</div>
+        <div className={`mx-auto w-full ${kind === "home" ? "max-w-xl" : "max-w-6xl"}`}>{children}</div>
       </main>
       <MobileNav />
     </div>

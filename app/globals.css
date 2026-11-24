@@ -486,3 +486,52 @@ html.m-app .iir.edit {
 html.m-app .iir.edit .iir-cb .g {
   font-size: 19px;
 }
+
+/* Phone app scaled up on a wide portrait screen (html.m-zoom, see
+   MobileShell): the page is drawn at phone width, so undo the tablet /
+   desktop layouts the screen width would switch on. */
+@media (min-width: 640px) {
+  html.m-zoom [class*="sm:grid-cols-"],
+  html.m-zoom [class*="md:grid-cols-"],
+  html.m-zoom [class*="lg:grid-cols-"],
+  html.m-zoom [class*="xl:grid-cols-"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html.m-zoom [class*="sm:col-span-"],
+  html.m-zoom [class*="md:col-span-"],
+  html.m-zoom [class*="lg:col-span-"] {
+    grid-column: auto !important;
+  }
+  html.m-zoom [class*="sm:flex-row"] {
+    flex-direction: column !important;
+  }
+  html.m-zoom [class*="sm:flex-nowrap"] {
+    flex-wrap: wrap !important;
+  }
+  html.m-zoom [class*="sm:contents"] {
+    display: flex !important;
+  }
+  html.m-zoom .hidden[class*="sm:flex"],
+  html.m-zoom .hidden[class*="sm:block"],
+  html.m-zoom .hidden[class*="sm:grid"],
+  html.m-zoom .hidden[class*="sm:inline"],
+  html.m-zoom .hidden[class*="md:flex"],
+  html.m-zoom .hidden[class*="lg:flex"] {
+    display: none !important;
+  }
+  html.m-zoom [class~="sm:hidden"] {
+    display: block !important;
+  }
+  html.m-zoom .iir .iir-cell {
+    flex: 1 1 100% !important;
+  }
+  html.m-zoom .iir.edit .iir-hdr {
+    display: none !important;
+  }
+  html.m-zoom .iir.edit .iir-ml {
+    display: block !important;
+    font-weight: 700;
+    font-size: 11px;
+    color: #555;
+  }
+}

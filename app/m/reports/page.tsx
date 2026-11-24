@@ -72,7 +72,7 @@ function MobileHome() {
       {/* Welcome */}
       <p className="mt-7 text-[19px] font-medium uppercase tracking-wide text-white/95">Welcome to First Fix</p>
       <div className="mt-1">
-        <HseReportingTitle size="min(46px, 11.4vw)" />
+        <HseReportingTitle size={44} />
       </div>
       <div className="mt-7 flex justify-end">
         <button
@@ -106,8 +106,8 @@ function MobileHome() {
 
         <div className="relative px-4 pb-4 pt-20">
           <div className="origin-left" style={{ transform: "scaleX(0.84)" }}>
-            <p className="text-[min(44px,11vw)] font-black leading-[0.95] tracking-tight">HSE</p>
-            <p className="text-[min(44px,11vw)] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
+            <p className="text-[42px] font-black leading-[0.95] tracking-tight">HSE</p>
+            <p className="text-[42px] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
               REPORTING
             </p>
           </div>
