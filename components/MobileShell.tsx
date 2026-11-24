@@ -2,11 +2,11 @@
 
 /**
  * Layout of the phone app (see lib/mobileApp.ts), three kinds of page:
- *  - home (/m/reports): the page draws its own header; floating bottom bar.
+ *  - home (/m/reports): the page draws its own header (with 🔍); no bottom bar.
  *  - menu pages (Daily / Monthly / Incident): full-screen "REPORTS" pages
  *    with their own back button and search bar; no bottom bar.
  *  - every other page (the forms, checklists, IIR, search): a slim header
- *    (back + First Fix) and the floating bottom bar.
+ *    (back + First Fix + 🔍 + notifications) and the floating bottom bar.
  *
  * Fits any screen: in portrait the whole app is drawn at a 390px phone width
  * and scaled (CSS zoom) to the real width, so it always fills the screen the
@@ -17,7 +17,7 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { BackButton, MobileBrand, MobileNav, NotificationsButton } from "@/components/mobile/MobileUi";
+import { BackButton, MobileBrand, MobileNav, NotificationsButton, SearchButton } from "@/components/mobile/MobileUi";
 import { MOBILE_HOME } from "@/lib/mobileApp";
 
 const MENU_PAGES = ["/m/reports/daily", "/m/reports/monthly", "/m/reports/incident"];
@@ -83,14 +83,17 @@ export default function MobileShell({ children, className = "" }: { children: Re
           <div className="mx-auto flex h-[64px] max-w-6xl items-center gap-3">
             <BackButton className="!h-11 !w-11" />
             <MobileBrand size={34} />
-            <div className="ms-auto scale-[0.78]">
-              <NotificationsButton />
+            <div className="ms-auto flex items-center gap-2">
+              {pathname !== "/m/search" && <SearchButton size={42} className="!rounded-xl" />}
+              <div className="-m-1.5 scale-[0.8]">
+                <NotificationsButton />
+              </div>
             </div>
           </div>
         </header>
       )}
       <main
-        className="pb-32"
+        className={kind === "home" ? "pb-8" : "pb-32"}
         style={{
           paddingTop: kind === "page" ? "calc(64px + env(safe-area-inset-top) + 1.1rem)" : "calc(env(safe-area-inset-top) + 0.75rem)",
           paddingLeft: "max(10px, env(safe-area-inset-left))",
@@ -99,7 +102,7 @@ export default function MobileShell({ children, className = "" }: { children: Re
       >
         <div className={`mx-auto w-full ${kind === "home" ? "max-w-xl" : "max-w-6xl"}`}>{children}</div>
       </main>
-      <MobileNav />
+      {kind === "page" && <MobileNav />}
     </div>
   );
 }

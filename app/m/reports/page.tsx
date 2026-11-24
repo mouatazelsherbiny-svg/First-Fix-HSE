@@ -11,7 +11,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CalendarDays, Check, ChevronRight, ClipboardCheck, Download, LogOut, Menu, TriangleAlert, User, type LucideIcon } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { HseReportingTitle, MobileBrand, MobileDrawer, NotificationsButton, ORANGE, Sheet, useSignOut } from "@/components/mobile/MobileUi";
+import { HseReportingTitle, MobileBrand, MobileDrawer, NotificationsButton, ORANGE, SearchButton, Sheet, useSignOut } from "@/components/mobile/MobileUi";
 import { useAuth } from "@/context/AuthContext";
 import { useProjectFilter } from "@/context/ProjectFilterContext";
 import { useInstall } from "@/lib/useInstall";
@@ -55,14 +55,17 @@ function MobileHome() {
         <button type="button" onClick={() => setDrawer(true)} aria-label="Menu" className="-ms-1 flex h-12 w-10 items-center justify-center text-white">
           <Menu className="h-8 w-8" strokeWidth={2.2} />
         </button>
-        <MobileBrand size={40} />
-        <div className="ms-auto flex items-center gap-2.5">
-          <NotificationsButton />
+        <MobileBrand size={36} />
+        <div className="ms-auto flex items-center gap-2">
+          <SearchButton size={48} />
+          <div className="-m-0.5 scale-[0.93]">
+            <NotificationsButton />
+          </div>
           <button
             type="button"
             onClick={() => setSheet("profile")}
             aria-label="Profile"
-            className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            className="flex h-[48px] w-[48px] items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           >
             <User className="h-7 w-7" strokeWidth={1.6} />
           </button>

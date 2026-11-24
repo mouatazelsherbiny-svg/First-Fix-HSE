@@ -91,8 +91,24 @@ export const NAV = [
   { href: "/m/reports/daily", match: ["/m/reports/daily"], label: "Daily", icon: ClipboardList },
   { href: "/m/reports/monthly", match: ["/m/reports/monthly", "/checklists", "/my-checklists"], label: "Monthly", icon: CalendarDays },
   { href: "/m/reports/incident", match: ["/m/reports/incident", "/m/reports/iir", "/iir"], label: "Incident", icon: TriangleAlert },
-  { href: "/m/search", match: ["/m/search"], label: "Search", icon: Search },
 ];
+/** The side menu also lists Search (reached from the 🔍 at the top of the pages). */
+const DRAWER = [...NAV, { href: "/m/search", match: ["/m/search"], label: "Search", icon: Search }];
+
+/** 🔍 at the top of the pages → the Search page. */
+export function SearchButton({ size = 52, className = "" }: { size?: number; className?: string }) {
+  return (
+    <Link
+      href="/m/search"
+      aria-label="Search"
+      title="Search"
+      className={`flex items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:bg-[#2e2e2e] ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <Search style={{ width: size * 0.52, height: size * 0.52 }} strokeWidth={1.8} />
+    </Link>
+  );
+}
 
 export function MobileNav() {
   const pathname = usePathname() ?? "";
@@ -242,7 +258,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
           </div>
         )}
         <nav className="flex flex-col gap-1">
-          {NAV.map((n) => {
+          {DRAWER.map((n) => {
             const active = n.href === MOBILE_HOME ? pathname === MOBILE_HOME : n.match.some((m) => pathname === m || pathname.startsWith(`${m}/`));
             return (
               <Link
@@ -326,9 +342,7 @@ export interface MenuCard {
 }
 
 export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
-  const router = useRouter();
-  const [q, setQ] = useState("");
-  const shown = q.trim() ? cards.filter((c) => c.label.toLowerCase().includes(q.trim().toLowerCase())) : cards;
+  const shown = cards;
   const compact = cards.length >= 4;
 
   return (
@@ -354,6 +368,7 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
         <div className="relative flex justify-center">
           <BackButton className="absolute left-0 top-1" />
           <MobileBrand size={56} stacked />
+          <SearchButton size={48} className="absolute right-0 top-1 !rounded-xl !bg-white/15" />
         </div>
         <div className="mt-3">
           <HseReportingTitle center size={36} barUnder="all" />
@@ -385,7 +400,6 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
                 <span className="h-[5px] w-11 rounded-full" style={{ background: ORANGE }} />
               </Link>
             ))}
-            {shown.length === 0 && <p className="py-8 text-center text-sm text-white/60">No match.</p>}
           </div>
         </div>
 
@@ -395,9 +409,6 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
           <p className="text-[28px] font-extrabold leading-tight" style={{ color: ORANGE }}>
             HSE Reports
           </p>
-        </div>
-        <div className="mt-5">
-          <SearchBar value={q} onChange={setQ} onSubmit={() => router.push(`/m/search?q=${encodeURIComponent(q)}`)} />
         </div>
       </div>
     </div>
