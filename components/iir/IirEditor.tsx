@@ -110,7 +110,7 @@ export default function IirEditor({
 
   return (
     <div>
-      <div className="sticky top-0 z-20 -mx-1 mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#0e0e10]/90 px-1 py-2 backdrop-blur" style={variant === "mobile" ? { top: "calc(56px + env(safe-area-inset-top))" } : undefined}>
+      <div className="sticky top-0 z-20 -mx-1 mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#0e0e10]/90 px-1 py-2 backdrop-blur" style={variant === "mobile" ? { top: "calc(64px + env(safe-area-inset-top))" } : undefined}>
         <button type="button" onClick={save} disabled={!!busy} className={`${btn} bg-[#f36f24] text-white shadow-[0_0_14px_rgba(243,111,36,0.45)] hover:bg-[#ff7d33]`}>
           {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {savedId ? "Save" : "Submit IIR"}

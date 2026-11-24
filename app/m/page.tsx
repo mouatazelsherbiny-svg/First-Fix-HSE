@@ -47,7 +47,7 @@ export default function MobileHome() {
       />
       <div className="mt-6 flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icons/hse-reporting-192.png?v=2" alt="" className="h-12 w-12 rounded-xl border border-white/10" />
+        <img src="/icons/hse-reporting-192.png?v=3" alt="" className="h-12 w-12 rounded-xl border border-white/10" />
         <div className="text-start">
           <h1 className="text-2xl font-extrabold leading-tight">HSE-Reporting</h1>
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a3d]">First Fix HSE</p>

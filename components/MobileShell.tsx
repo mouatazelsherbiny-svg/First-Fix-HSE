@@ -1,117 +1,55 @@
 "use client";
 
 /**
- * Layout of the phone app (see lib/mobileApp.ts): a slim top bar (logo, app
- * name, Install, Sign out) and a bottom tab bar — Home, Daily, Monthly and IIR. No sidebar.
+ * Layout of the phone app (see lib/mobileApp.ts), three kinds of page:
+ *  - home (/m/reports): the page draws its own header; floating bottom bar.
+ *  - menu pages (Daily / Monthly / Incident): full-screen "REPORTS" pages
+ *    with their own back button and search bar; no bottom bar.
+ *  - every other page (the forms, checklists, IIR, search): a slim header
+ *    (back + First Fix) and the floating bottom bar.
  */
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { CalendarDays, ClipboardList, Download, FileSearch, House, LogOut } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { BrandMark } from "@/components/Sidebar";
+import { usePathname } from "next/navigation";
+import { BackButton, MobileBrand, MobileNav, NotificationsButton } from "@/components/mobile/MobileUi";
 import { MOBILE_HOME } from "@/lib/mobileApp";
-import { useInstall } from "@/lib/useInstall";
 
-const TABS = [
-  { href: MOBILE_HOME, match: [MOBILE_HOME], exact: true, label: "Home", icon: House },
-  { href: "/m/reports/daily", match: ["/m/reports/daily"], exact: false, label: "Daily", icon: ClipboardList },
-  { href: "/m/reports/monthly", match: ["/m/reports/monthly", "/checklists", "/my-checklists"], exact: false, label: "Monthly", icon: CalendarDays },
-  { href: "/m/reports/iir", match: ["/m/reports/iir", "/iir"], exact: false, label: "IIR", icon: FileSearch },
-];
+const MENU_PAGES = ["/m/reports/daily", "/m/reports/monthly", "/m/reports/incident"];
 
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
-  const { logout } = useAuth();
-  const install = useInstall();
+  const kind = pathname === MOBILE_HOME ? "home" : MENU_PAGES.includes(pathname) ? "menu" : "page";
+
+  if (kind === "menu") {
+    return <div className={`min-h-[100dvh] bg-black text-white ${className}`}>{children}</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white">
-      {/* Top bar */}
-      <header
-        className="fixed inset-x-0 top-0 z-40 flex items-center gap-2.5 border-b border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
-        style={{
-          height: 56,
-          paddingTop: "env(safe-area-inset-top)",
-          paddingLeft: "max(1rem, env(safe-area-inset-left))",
-          paddingRight: "max(1rem, env(safe-area-inset-right))",
-          boxSizing: "content-box",
-        }}
-      >
-        <BrandMark size={30} />
-        <div className="min-w-0 leading-tight">
-          <p className="truncate text-[15px] font-extrabold">HSE-Reporting</p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff8a3d]">First Fix HSE</p>
-        </div>
-        <div className="ms-auto flex items-center gap-1.5">
-          {install.canShow && (
-            <button
-              type="button"
-              onClick={install.run}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#f36f24] px-3 py-1.5 text-xs font-bold text-white shadow-[0_0_12px_rgba(243,111,36,0.5)]"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Install
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              router.push("/m/login");
-            }}
-            aria-label="Sign out"
-            title="Sign out"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-          >
-            <LogOut className="h-[18px] w-[18px]" />
-          </button>
-        </div>
-      </header>
-
+    <div className={`min-h-[100dvh] bg-[#050505] text-white ${className}`}>
+      {kind === "page" && (
+        <header
+          className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#0b0b0b]/95 backdrop-blur"
+          style={{ paddingTop: "env(safe-area-inset-top)", paddingLeft: "max(0.875rem, env(safe-area-inset-left))", paddingRight: "max(0.875rem, env(safe-area-inset-right))" }}
+        >
+          <div className="mx-auto flex h-[64px] max-w-6xl items-center gap-3">
+            <BackButton className="!h-10 !w-10" />
+            <MobileBrand size={30} />
+            <div className="ms-auto scale-[0.78]">
+              <NotificationsButton />
+            </div>
+          </div>
+        </header>
+      )}
       <main
-        className={`pb-28 ${className}`}
+        className="pb-32"
         style={{
-          paddingTop: "calc(56px + env(safe-area-inset-top) + 1.25rem)",
-          // Landscape phones: keep clear of the notch on either side.
+          paddingTop: kind === "page" ? "calc(64px + env(safe-area-inset-top) + 1.1rem)" : "calc(env(safe-area-inset-top) + 0.75rem)",
           paddingLeft: "max(0.875rem, env(safe-area-inset-left))",
           paddingRight: "max(0.875rem, env(safe-area-inset-right))",
         }}
       >
-        {/* Full width on phones; on tablets / wide screens the content stays a comfortable width. */}
-        <div className="mx-auto w-full max-w-6xl">{children}</div>
+        <div className={`mx-auto w-full ${kind === "home" ? "max-w-md" : "max-w-6xl"}`}>{children}</div>
       </main>
-
-      {/* Bottom tabs */}
-      <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0e0e0f]/95 backdrop-blur"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="mx-auto grid max-w-lg grid-cols-4">
-        {TABS.map((tab) => {
-          const active = tab.match.some((m) => pathname === m || (!tab.exact && pathname.startsWith(`${m}/`)));
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-center text-[11px] font-semibold leading-tight transition [@media(max-height:500px)]:flex-row [@media(max-height:500px)]:justify-center [@media(max-height:500px)]:gap-2 [@media(max-height:500px)]:py-1 ${
-                active ? "text-[#ff8a3d]" : "text-white/60 hover:text-white"
-              }`}
-            >
-              <span
-                className={`flex h-8 w-12 items-center justify-center rounded-full transition ${
-                  active ? "bg-[#f36f24]/20 shadow-[0_0_14px_rgba(243,111,36,0.35)]" : ""
-                }`}
-              >
-                <tab.icon className="h-5 w-5" />
-              </span>
-              {tab.label}
-            </Link>
-          );
-        })}
-        </div>
-      </nav>
+      <MobileNav />
     </div>
   );
 }

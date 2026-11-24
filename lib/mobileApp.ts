@@ -1,7 +1,7 @@
 /**
  * The phone app ("First Fix HSE Field"): an installable app that shows only
  * part of the system — Daily (Observation, Good Practice, KPI), Monthly (the
- * four monthly checklists).
+ * four monthly checklists) and Incident (IIR), plus Search.
  *
  * It is the same website opened from /m. While in it (in that tab / that
  * installed app window) the pages use a phone layout with a bottom tab bar
