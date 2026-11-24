@@ -29,9 +29,8 @@ function ReportsContent() {
     const want = new URLSearchParams(window.location.search).get("tab") as ReportTab | null;
     if (want && REPORT_TABS.includes(want)) setTab(want);
   }, []);
-  const [dailyView, setDailyView] = useState<"observation" | "kpi" | "good">("kpi");
-  // Bumped after a save / cancel so the form comes back empty.
-  const [formKey, setFormKey] = useState(0);
+  // Observation / Good Practice open as a pop-up (like PMV → Asset Register); KPI stays on the page.
+  const [adding, setAdding] = useState<"" | "observation" | "good">("");
 
   const DAILY_VIEWS = [
     { key: "observation" as const, label: t.list.newBtn.replace(/^\+\s*/, ""), icon: Eye, color: "#f36f24" },
@@ -101,22 +100,12 @@ function ReportsContent() {
               label: v.label,
               icon: v.icon,
               color: v.color,
-              active: dailyView === v.key,
-              onClick: () => setDailyView(v.key),
+              active: v.key === "kpi" ? !adding : adding === v.key,
+              onClick: () => setAdding(v.key === "kpi" ? "" : v.key),
             }))}
           />
-          {dailyView === "kpi" ? (
-            <DailyKpiGrid />
-          ) : (
-            <div>
-              <ObservationForm
-                key={`${dailyView}-${formKey}`}
-                embedded
-                presetType={dailyView === "good" ? "Good Practice" : ""}
-                onDone={() => setFormKey((k) => k + 1)}
-              />
-            </div>
-          )}
+          <DailyKpiGrid />
+          {adding && <ObservationForm key={adding} modal presetType={adding === "good" ? "Good Practice" : ""} onDone={() => setAdding("")} />}
         </div>
       )}
     </div>

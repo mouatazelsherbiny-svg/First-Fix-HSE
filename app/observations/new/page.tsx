@@ -17,5 +17,5 @@ export default function NewObservationPage() {
 
 function NewObservation() {
   const searchParams = useSearchParams();
-  return <ObservationForm presetType={searchParams.get("type") || ""} />;
+  return <ObservationForm modal presetType={searchParams.get("type") || ""} />;
 }

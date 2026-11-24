@@ -17,6 +17,7 @@ import {
   POSSIBLE_POINT_VALUES,
 } from "@/types/checklist";
 import PageTitle from "@/components/PageTitle";
+import { inMobileApp } from "@/lib/mobileApp";
 
 interface GeneralInfo {
   inspectionDate: string;
@@ -128,7 +129,7 @@ export default function ChecklistTemplate({
         photos,
       });
       setSubmitSuccess(true);
-      setTimeout(() => router.push("/dashboard"), 1200);
+      setTimeout(() => router.push(inMobileApp(window.location.pathname) ? "/m/reports/monthly" : "/reports?tab=monthly"), 1200);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t.common.genericError);
     } finally {
@@ -158,7 +159,7 @@ export default function ChecklistTemplate({
 
   return (
     <div>
-      <PageTitle section="Checklists" title={template.title} />
+      <PageTitle section="Checklists" title={template.title} back={{ href: "/reports?tab=monthly", label: "Monthly Reports" }} />
 
       {/* General information */}
       <div className="card mb-6">

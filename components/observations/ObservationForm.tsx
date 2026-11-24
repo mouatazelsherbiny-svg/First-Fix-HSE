@@ -1,11 +1,14 @@
 "use client";
 
 /**
- * The New Observation / Good Practice form. Used on its own page
- * (/observations/new) and embedded in Reports → Daily.
+ * The New Observation / Good Practice form. In the main app it opens as a
+ * pop-up drawn like PMV → Asset Register's "Add Record" (modal): Reports →
+ * Daily and /observations/new. The phone app shows it in the page (embedded).
  */
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ImageUpload from "@/components/ImageUpload";
 import { useAuth } from "@/context/AuthContext";
@@ -24,8 +27,11 @@ import PageTitle from "@/components/PageTitle";
 export default function ObservationForm({
   presetType = "",
   embedded = false,
+  modal = false,
   onDone,
 }: {
+  /** Pop-up like PMV / Asset Register "Add Record" (closes with onDone). */
+  modal?: boolean;
   /** "Good Practice" pre-fills type, classification and risk rating. */
   presetType?: string;
   /** Inside another page (Reports): smaller heading, stays on the page after saving. */
@@ -61,6 +67,8 @@ export default function ObservationForm({
   const [closeOutDetails, setCloseOutDetails] = useState("");
   const [status, setStatus] = useState<ObservationStatus | "">("");
   const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [error, setError] = useState("");
 
   const isOther = observationType === "Others";
@@ -84,24 +92,25 @@ export default function ObservationForm({
         inspectedBy,
       });
       setSuccess(true);
-      setTimeout(() => (embedded && onDone ? onDone() : router.push("/dashboard")), 900);
+      setTimeout(() => ((embedded || modal) && onDone ? onDone() : router.push(modal ? "/observations" : "/dashboard")), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.genericError);
     }
   };
 
-  return (
+  const formTitle = isGoodPracticeShortcut ? t.list.goodPracticeBtn.replace(/^\+\s*/, "") : t.form.title;
+  const content = (
     <div>
+      {!modal && (
       <div className="mb-6">
         {embedded ? (
-          <h2 className="text-lg font-bold text-brand-black">
-            {isGoodPracticeShortcut ? t.list.goodPracticeBtn.replace(/^\+\s*/, "") : t.form.title}
-          </h2>
+          <h2 className="text-lg font-bold text-brand-black">{formTitle}</h2>
         ) : (
           <PageTitle section="Observations" title={t.form.title} className="!mb-0" />
         )}
         {embedded && <p className="mt-1 text-sm text-brand-gray">{t.form.subtitle}</p>}
       </div>
+      )}
 
       {success && (
         <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm font-medium text-green-400">
@@ -114,8 +123,8 @@ export default function ObservationForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="card space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className={modal ? "space-y-5" : "card space-y-5"}>
+        <div className={`grid gap-5 sm:grid-cols-2 ${modal ? "lg:grid-cols-3" : ""}`}>
           <div>
             <label className="label-field">{t.form.reportNumber}</label>
             <input
@@ -177,7 +186,7 @@ export default function ObservationForm({
           </div>
 
           {isOther && (
-            <div className="sm:col-span-2">
+            <div className={modal ? "sm:col-span-2 lg:col-span-1" : "sm:col-span-2"}>
               <label className="label-field">{t.form.observationTypeOther} *</label>
               <input
                 type="text"
@@ -292,10 +301,31 @@ export default function ObservationForm({
             {t.form.cancel}
           </button>
           <button type="submit" className="btn-primary">
-            {t.form.submit}
+            {modal ? t.common.save : t.form.submit}
           </button>
         </div>
       </form>
     </div>
+  );
+
+  if (!modal) return content;
+  if (!mounted) return null;
+  const close = () => (onDone ? onDone() : router.push("/observations"));
+  // Same pop-up as PMV → Asset Register "Add Record" (portal: see PmvLogFormModal).
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={close}>
+      <div className="card !bg-brand-surface max-h-[90vh] w-full max-w-3xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <h2 className="text-lg font-bold text-brand-black">
+            {t.common.addRecord} — {formTitle}
+          </h2>
+          <button type="button" onClick={close} aria-label={t.common.close} className="shrink-0 text-brand-gray transition hover:text-brand-black">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {content}
+      </div>
+    </div>,
+    document.body
   );
 }

@@ -49,7 +49,11 @@ function PrintView() {
   return (
     <div className="iir-print-root" style={{ background: "#e5e7eb", minHeight: "100vh", padding: "16px 0", color: "#000" }}>
       <style>{`
-        @page { size: A4; margin: 10mm 10mm 8mm; }
+        @page {
+          size: A4;
+          margin: 10mm 10mm 12mm;
+          @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 600 8.5pt Calibri, Carlito, Arial, sans-serif; color: #333; }
+        }
         @media print {
           .iir-print-root { background: #fff !important; padding: 0 !important; }
           .iir-noprint { display: none !important; }

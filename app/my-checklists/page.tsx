@@ -88,7 +88,7 @@ function MyChecklistList() {
 
   return (
     <div>
-      <PageTitle section={t.myChecklist.title} title={`Monthly Checklists · ${project}`} />
+      <PageTitle section={t.myChecklist.title} title={`Monthly Checklists · ${project}`} back={{ href: "/reports?tab=monthly", label: "Monthly Reports" }} />
 
       <div className="mb-4">
         <input
