@@ -5,9 +5,20 @@ import { Camera, FileText, Paperclip, Plus, Trash2, X } from "lucide-react";
 import { PROJECTS } from "@/lib/mockData";
 import { compressImage } from "@/lib/compressImage";
 import { supabase, getCurrentUserId } from "@/lib/supabaseClient";
+import SignaturePad from "@/components/SignaturePad";
 import {
   AuditFinding,
+  CAP_STATUSES,
+  CapStatus,
   CHECKLIST_SECTIONS,
+  FINDING_CATEGORIES,
+  RATINGS,
+  RATING_STYLE,
+  Rating,
+  SIGN_ROLES,
+  categoryPriority,
+  itemsFor,
+  ratingOf,
   ENV_ITEMS,
   HS_ITEMS,
   HseAudit,
@@ -38,8 +49,15 @@ function newFinding(no: number): AuditFinding {
     status: "Open",
     closedOn: "",
     closureNote: "",
+    correctiveAction: "",
+    responsibleDept: "",
+    capStatus: "Open",
+    completionPct: 0,
   };
 }
+
+/** Section bars in our colours. */
+const BAR = "#f36f24";
 
 const YN_STYLE: Record<YesNo, { bg: string; fg: string; label: string }> = {
   Y: { bg: "#84CC16", fg: "#1F2937", label: "Y" },
@@ -146,7 +164,7 @@ export default function AuditForm({
             <input type="date" className="input-field" value={a.auditDate} onChange={(e) => set({ auditDate: e.target.value })} />
           </div>
           <Field label="HSE Manager" value={a.hseManager} onChange={(v) => set({ hseManager: v })} />
-          <Field label="Project Manager" value={a.projectManager} onChange={(v) => set({ projectManager: v })} />
+          <Field label="Project Director / Manager" value={a.projectManager} onChange={(v) => set({ projectManager: v })} />
           <Field label="Auditor / Position" value={a.auditor} onChange={(v) => set({ auditor: v })} />
         </div>
       </div>
@@ -154,13 +172,21 @@ export default function AuditForm({
       {/* Y / N / N/A checklist */}
       <div className="card">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-brand-black">Compliance Checklist</h2>
+          <h2 className="text-lg font-bold text-brand-black">HSE Documentation &amp; Compliance Status</h2>
           <p className="text-xs text-brand-gray">Y = Full compliance · N = Non compliant · N/A = Not applicable</p>
         </div>
-        <div className="grid gap-5 lg:grid-cols-3">
-          {CHECKLIST_SECTIONS.map((sec) => (
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+          {[
+            ...CHECKLIST_SECTIONS,
+            // Items of an audit saved on the earlier form.
+            ...(() => {
+              const known = CHECKLIST_SECTIONS.flatMap((x) => x.items);
+              const old = Object.keys(a.checklist).filter((k) => !known.includes(k));
+              return old.length ? [{ title: "Earlier form items", items: old }] : [];
+            })(),
+          ].map((sec) => (
             <div key={sec.title} className="overflow-hidden rounded-xl border border-brand-border">
-              <p className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-white" style={{ background: "#0F5F5C" }}>
+              <p className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-white" style={{ background: BAR }}>
                 {sec.title}
               </p>
               {sec.items.map((item) => (
@@ -202,15 +228,17 @@ export default function AuditForm({
       {/* Scores */}
       <div className="card">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-brand-black">Scoring (1 – 10)</h2>
-          <p className="text-xs text-brand-gray">Leave as N/A if not applicable to the project at this time.</p>
+          <h2 className="text-lg font-bold text-brand-black">HSE Project Assessment</h2>
+          <p className="text-xs text-brand-gray">All scores are rated on a scale of 0 to 10 (0 lowest, 10 highest). Mark N/A where not applicable to the project at this time.</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
-          <ScoreList title="Health and Safety" items={HS_ITEMS} scores={a.hsScores} onChange={(s) => set({ hsScores: s })} />
-          <ScoreList title="Environmental" items={ENV_ITEMS} scores={a.envScores} onChange={(s) => set({ envScores: s })} />
+          <ScoreList title="Health and Safety" items={itemsFor(HS_ITEMS, a.hsScores)} scores={a.hsScores} onChange={(s) => set({ hsScores: s })} />
+          <ScoreList title="Environmental" items={itemsFor(ENV_ITEMS, a.envScores)} scores={a.envScores} onChange={(s) => set({ envScores: s })} />
           <div className="space-y-4">
             <ScorePanel title="Health & Safety Score" result={hs} target={a.targetPct} />
+            <RatingPicker value={a.hsRating} auto={ratingOf("", hs.pct, a.targetPct)} onChange={(v) => set({ hsRating: v })} />
             <ScorePanel title="Environmental Score" result={env} target={a.targetPct} />
+            <RatingPicker value={a.envRating} auto={ratingOf("", env.pct, a.targetPct)} onChange={(v) => set({ envRating: v })} />
             <div>
               <label className="label-field">Target %</label>
               <input
@@ -229,7 +257,7 @@ export default function AuditForm({
       {/* Findings */}
       <div className="card">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-brand-black">Findings &amp; Close Out</h2>
+          <h2 className="text-lg font-bold text-brand-black">Audit Findings / Observations &amp; Corrective Action Plan</h2>
           <button
             type="button"
             className="btn-secondary gap-2"
@@ -240,8 +268,10 @@ export default function AuditForm({
         </div>
         {a.findings.length === 0 && <p className="text-sm text-brand-gray">No findings added.</p>}
         <datalist id="audit-categories">
-          {[...HS_ITEMS, ...ENV_ITEMS].map((c) => (
-            <option key={c} value={c} />
+          {FINDING_CATEGORIES.map((c) => (
+            <option key={c.category} value={c.category}>
+              {c.priority} priority
+            </option>
           ))}
         </datalist>
         <div className="space-y-4">
@@ -256,6 +286,30 @@ export default function AuditForm({
                 set({ findings: a.findings.filter((_, idx) => idx !== i) });
               }}
             />
+          ))}
+        </div>
+      </div>
+
+      {/* Signatures */}
+      <div className="card">
+        <h2 className="mb-4 text-lg font-bold text-brand-black">Signatures</h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          {SIGN_ROLES.map((role) => (
+            <div key={role.key} className="rounded-xl border border-brand-border p-4">
+              <p className="mb-2 text-sm font-bold text-brand-black">{role.label}</p>
+              <Field
+                label="Name"
+                value={a.signatures[role.key].name}
+                onChange={(v) => set({ signatures: { ...a.signatures, [role.key]: { ...a.signatures[role.key], name: v } } })}
+              />
+              <div className="mt-3">
+                <SignaturePad
+                  label="Signature"
+                  value={a.signatures[role.key].signature}
+                  onChange={(v) => set({ signatures: { ...a.signatures, [role.key]: { ...a.signatures[role.key], signature: v } } })}
+                />
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -330,7 +384,7 @@ function ScoreList({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-brand-border">
-      <p className="flex justify-between px-3 py-2 text-xs font-bold uppercase tracking-wide text-white" style={{ background: "#0F5F5C" }}>
+      <p className="flex justify-between px-3 py-2 text-xs font-bold uppercase tracking-wide text-white" style={{ background: BAR }}>
         <span>{title}</span>
         <span>Score</span>
       </p>
@@ -352,7 +406,7 @@ function ScoreList({
               style={tone ? { background: tone.bg, color: tone.fg } : undefined}
             >
               <option value="">N/A</option>
-              {Array.from({ length: 10 }, (_, n) => n + 1).map((n) => (
+              {Array.from({ length: 11 }, (_, n) => n).map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>
@@ -397,10 +451,18 @@ function FindingEditor({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className="label-field">Category</label>
-            <input className="input-field" list="audit-categories" value={f.category} onChange={(e) => onChange({ category: e.target.value })} />
+            <input
+              className="input-field"
+              list="audit-categories"
+              value={f.category}
+              onChange={(e) => {
+                const p = categoryPriority(e.target.value);
+                onChange(p ? { category: e.target.value, priority: p } : { category: e.target.value });
+              }}
+            />
           </div>
           <div className="sm:col-span-2">
-            <label className="label-field">Observation *</label>
+            <label className="label-field">Description *</label>
             <textarea className="input-field min-h-[80px]" value={f.observation} onChange={(e) => onChange({ observation: e.target.value })} />
           </div>
           <div>
@@ -424,11 +486,11 @@ function FindingEditor({
             </div>
           </div>
           <div>
-            <label className="label-field">Close Out Date</label>
+            <label className="label-field">Target Date</label>
             <input type="date" className="input-field" value={f.closeOutDate} onChange={(e) => onChange({ closeOutDate: e.target.value })} />
           </div>
           <div>
-            <label className="label-field">Status</label>
+            <label className="label-field">Closed Out</label>
             <select
               className="input-field"
               value={f.status}
@@ -436,6 +498,7 @@ function FindingEditor({
                 onChange({
                   status: e.target.value as AuditFinding["status"],
                   closedOn: e.target.value === "Closed" ? f.closedOn || new Date().toISOString().slice(0, 10) : "",
+                  ...(e.target.value === "Closed" ? { capStatus: "Closed" as CapStatus, completionPct: 100 } : f.capStatus === "Closed" ? { capStatus: "Open" as CapStatus } : {}),
                 })
               }
             >
@@ -455,6 +518,54 @@ function FindingEditor({
               <input className="input-field" value={f.closureNote} onChange={(e) => onChange({ closureNote: e.target.value })} />
             </div>
           )}
+
+          {/* Corrective Action Plan */}
+          <div className="sm:col-span-2 mt-1 rounded-xl border border-[#f36f24]/40 bg-[#f36f24]/[0.06] p-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#ff8a3d]">Corrective Action Plan</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="label-field">Proposed Corrective Action</label>
+                <textarea className="input-field min-h-[64px]" value={f.correctiveAction} onChange={(e) => onChange({ correctiveAction: e.target.value })} />
+              </div>
+              <div>
+                <label className="label-field">Responsible Department</label>
+                <input className="input-field" value={f.responsibleDept} onChange={(e) => onChange({ responsibleDept: e.target.value })} />
+              </div>
+              <div>
+                <label className="label-field">Status</label>
+                <select
+                  className="input-field"
+                  value={f.capStatus}
+                  onChange={(e) => {
+                    const v = e.target.value as CapStatus;
+                    onChange(
+                      v === "Closed"
+                        ? { capStatus: v, completionPct: 100, status: "Closed", closedOn: f.closedOn || new Date().toISOString().slice(0, 10) }
+                        : { capStatus: v, ...(f.status === "Closed" ? { status: "Open" as const, closedOn: "" } : {}) }
+                    );
+                  }}
+                >
+                  {CAP_STATUSES.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label-field">Action Completion: {f.completionPct}%</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={f.completionPct}
+                  onChange={(e) => onChange({ completionPct: Number(e.target.value) })}
+                  className="w-full accent-[#f36f24]"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div>
           <label className="label-field">Evidence</label>
@@ -496,6 +607,31 @@ function FindingEditor({
             }}
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** H&S / Environmental rating from the form (Compliant / Non-Compliant / Needs Improvement). */
+function RatingPicker({ value, auto, onChange }: { value: Rating; auto: Rating; onChange: (v: Rating) => void }) {
+  return (
+    <div>
+      <label className="label-field">Rating {!value && auto ? <span className="text-xs font-normal text-brand-gray">(auto: {auto})</span> : null}</label>
+      <div className="flex flex-wrap gap-1.5">
+        {RATINGS.map((r) => {
+          const on = (value || auto) === r;
+          return (
+            <button
+              key={r}
+              type="button"
+              onClick={() => onChange(value === r ? "" : r)}
+              className="rounded-lg border px-2.5 py-1.5 text-xs font-bold"
+              style={on ? { background: RATING_STYLE[r].bg, color: RATING_STYLE[r].fg, borderColor: RATING_STYLE[r].bg, opacity: value ? 1 : 0.75 } : { color: "#9CA3AF", borderColor: "rgba(255,255,255,0.18)" }}
+            >
+              {r}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -45,6 +45,7 @@ import {
   TONE_STYLE,
   formatDate,
   isOverdue,
+  ratingOf,
   levelOf,
   mapAudit,
   mapFinding,
@@ -77,7 +78,7 @@ function HseAuditDashboard() {
       fetchAllRows<any>("hse_audits", (q) => q.select(AUDIT_LIST_COLUMNS).order("audit_date", { ascending: false }).order("id")),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fetchAllRows<any>("hse_audit_findings", (q) =>
-        q.select("id,audit_id,item_no,category,observation,priority,close_out_date,status,closed_on,closure_note").order("id")
+        q.select("id,audit_id,item_no,category,observation,priority,close_out_date,status,closed_on,closure_note,corrective_action,responsible_dept,cap_status,completion_pct").order("id")
       ),
     ])
       .then(([a, f]) => {
@@ -193,6 +194,8 @@ function HseAuditDashboard() {
         { header: "Env Score", key: "env" },
         { header: "Env %", key: "envPct" },
         { header: "Env Status", key: "envStatus" },
+        { header: "H&S Rating", key: "hsRating" },
+        { header: "Env Rating", key: "envRating" },
         { header: "Findings", key: "findings" },
         { header: "Open Findings", key: "open" },
       ],
@@ -207,9 +210,42 @@ function HseAuditDashboard() {
         env: env.max ? `${env.total}/${env.max}` : "N/A",
         envPct: env.pct ?? "",
         envStatus: env.level?.label ?? "",
+        hsRating: ratingOf(audit.hsRating, hs.pct, audit.targetPct),
+        envRating: ratingOf(audit.envRating, env.pct, audit.targetPct),
         findings: fs.length,
         open: fs.filter((f) => f.status === "Open").length,
       })),
+    },
+    {
+      name: "Corrective Action Plan",
+      columns: [
+        { header: "Project", key: "project" },
+        { header: "Audit Date", key: "date" },
+        { header: "No", key: "no" },
+        { header: "Category", key: "category" },
+        { header: "Audit Findings / Observations", key: "observation" },
+        { header: "Proposed Corrective Action", key: "action" },
+        { header: "Priority", key: "priority" },
+        { header: "Responsible Department", key: "dept" },
+        { header: "Target Date", key: "target" },
+        { header: "Status", key: "status" },
+        { header: "Action Completion (%)", key: "pct" },
+      ],
+      rows: rows.flatMap(({ audit, findings: fs }) =>
+        fs.map((f, i) => ({
+          project: audit.projectName,
+          date: formatDate(audit.auditDate),
+          no: i + 1,
+          category: f.category,
+          observation: f.observation,
+          action: f.correctiveAction,
+          priority: f.priority,
+          dept: f.responsibleDept,
+          target: f.closeOutDate ? formatDate(f.closeOutDate) : "",
+          status: f.capStatus,
+          pct: f.completionPct,
+        }))
+      ),
     },
   ];
 

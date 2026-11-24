@@ -8,7 +8,7 @@ export default function ScorePanel({ title, result, target }: { title: string; r
   const met = result.pct != null && result.pct >= target;
   return (
     <div className="overflow-hidden rounded-xl border border-brand-border">
-      <p className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-white" style={{ background: "#0F5F5C" }}>
+      <p className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-white" style={{ background: "#f36f24" }}>
         {title}
       </p>
       <div className="px-4 py-3 text-center">
