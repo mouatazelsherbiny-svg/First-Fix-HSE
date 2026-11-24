@@ -3,7 +3,7 @@
 /**
  * Phone app home (after signing in), drawn to the approved mock-up: header
  * (menu, First Fix, notifications, profile), "Welcome to First Fix — HSE
- * REPORTING", the site card with Projects and the three big buttons (Daily,
+ * REPORTING", the Projects button, the site card with the three big buttons (Daily,
  * Monthly, Incident Report), and the "Latest HSE update" banner.
  */
 
@@ -74,10 +74,21 @@ function MobileHome() {
       <div className="mt-1">
         <HseReportingTitle size={46} />
       </div>
+      <div className="mt-7 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setSheet("projects")}
+          className="inline-flex max-w-[70%] items-center gap-1 rounded-full px-5 py-2.5 text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(255,106,19,0.5)]"
+          style={{ background: ORANGE }}
+        >
+          <span className="truncate">{project || "Projects"}</span>
+          <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={3} />
+        </button>
+      </div>
 
       {/* Site card */}
       <section
-        className="relative mt-9 overflow-hidden rounded-[28px] border-2 bg-[#0c0c0c]"
+        className="relative mt-4 overflow-hidden rounded-[28px] border-2 bg-[#0c0c0c]"
         style={{ borderColor: "rgba(255,106,19,0.7)", boxShadow: "0 0 24px rgba(255,106,19,0.25)" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -92,17 +103,8 @@ function MobileHome() {
             WebkitMaskComposite: "source-in",
           }}
         />
-        <button
-          type="button"
-          onClick={() => setSheet("projects")}
-          className="absolute right-3 top-3 z-10 inline-flex max-w-[55%] items-center gap-1 rounded-full px-4 py-2 text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(255,106,19,0.5)]"
-          style={{ background: ORANGE }}
-        >
-          <span className="truncate">{project || "Projects"}</span>
-          <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={3} />
-        </button>
 
-        <div className="relative px-4 pb-4 pt-24">
+        <div className="relative px-4 pb-4 pt-20">
           <div className="origin-left" style={{ transform: "scaleX(0.84)" }}>
             <p className="text-[44px] font-black leading-[0.95] tracking-tight">HSE</p>
             <p className="text-[44px] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
