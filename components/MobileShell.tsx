@@ -9,6 +9,7 @@
  *    (back + First Fix) and the floating bottom bar.
  */
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { BackButton, MobileBrand, MobileNav, NotificationsButton } from "@/components/mobile/MobileUi";
 import { MOBILE_HOME } from "@/lib/mobileApp";
@@ -18,6 +19,11 @@ const MENU_PAGES = ["/m/reports/daily", "/m/reports/monthly", "/m/reports/incide
 export default function MobileShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const pathname = usePathname() ?? "";
   const kind = pathname === MOBILE_HOME ? "home" : MENU_PAGES.includes(pathname) ? "menu" : "page";
+  // Larger text, fields and buttons in the phone app (see globals.css → html.m-app).
+  useEffect(() => {
+    document.documentElement.classList.add("m-app");
+    return () => document.documentElement.classList.remove("m-app");
+  }, []);
 
   if (kind === "menu") {
     return <div className={`min-h-[100dvh] bg-black text-white ${className}`}>{children}</div>;
@@ -31,8 +37,8 @@ export default function MobileShell({ children, className = "" }: { children: Re
           style={{ paddingTop: "env(safe-area-inset-top)", paddingLeft: "max(0.875rem, env(safe-area-inset-left))", paddingRight: "max(0.875rem, env(safe-area-inset-right))" }}
         >
           <div className="mx-auto flex h-[64px] max-w-6xl items-center gap-3">
-            <BackButton className="!h-10 !w-10" />
-            <MobileBrand size={30} />
+            <BackButton className="!h-11 !w-11" />
+            <MobileBrand size={34} />
             <div className="ms-auto scale-[0.78]">
               <NotificationsButton />
             </div>
@@ -43,8 +49,8 @@ export default function MobileShell({ children, className = "" }: { children: Re
         className="pb-32"
         style={{
           paddingTop: kind === "page" ? "calc(64px + env(safe-area-inset-top) + 1.1rem)" : "calc(env(safe-area-inset-top) + 0.75rem)",
-          paddingLeft: "max(0.875rem, env(safe-area-inset-left))",
-          paddingRight: "max(0.875rem, env(safe-area-inset-right))",
+          paddingLeft: "max(10px, env(safe-area-inset-left))",
+          paddingRight: "max(10px, env(safe-area-inset-right))",
         }}
       >
         <div className={`mx-auto w-full ${kind === "home" ? "max-w-md" : "max-w-6xl"}`}>{children}</div>

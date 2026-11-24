@@ -444,3 +444,45 @@ html.app-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.18); }
 .kpi-grid tr > :last-child { border-inline-end: 0; }
 .kpi-grid thead tr:first-child > * { border-top: 0; }
 .kpi-grid tbody tr:last-child > * { border-bottom: 0; }
+
+/* ---- Phone app (HSE-Reporting): bigger, clearer text and buttons on the
+   whole screen. MobileShell puts `m-app` on <html> while the phone app is
+   open; everything sized in rem grows with the root size. ---- */
+html.m-app {
+  font-size: 17.5px;
+  -webkit-text-size-adjust: 100%;
+}
+/* 16px+ in fields so iPhone never zooms the page when a field is tapped. */
+html.m-app input,
+html.m-app select,
+html.m-app textarea {
+  font-size: max(16px, 1rem) !important;
+}
+html.m-app .input-field {
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.875rem;
+}
+html.m-app .label-field {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+}
+html.m-app .btn-primary,
+html.m-app .btn-secondary {
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 0.875rem;
+}
+html.m-app .card {
+  padding: 1rem;
+  border-radius: 1.1rem;
+}
+html.m-app .iir.edit {
+  font-size: 15px;
+}
+html.m-app .iir.edit .iir-cb .g {
+  font-size: 19px;
+}

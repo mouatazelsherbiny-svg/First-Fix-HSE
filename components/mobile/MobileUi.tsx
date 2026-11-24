@@ -43,7 +43,7 @@ export function MobileBrand({ size = 44, stacked = false }: { size?: number; sta
   return (
     <span className={`inline-flex items-center ${stacked ? "flex-col gap-1" : "gap-2"}`}>
       <BrandMark size={size} />
-      <span className="font-extrabold leading-none tracking-tight text-white" style={{ fontSize: size * (stacked ? 0.62 : 0.72) }}>
+      <span className="whitespace-nowrap font-extrabold leading-none tracking-tight text-white" style={{ fontSize: size * (stacked ? 0.62 : 0.72) }}>
         First Fix
       </span>
     </span>
@@ -51,10 +51,10 @@ export function MobileBrand({ size = 44, stacked = false }: { size?: number; sta
 }
 
 /** "HSE REPORTING" with the orange bar under it. */
-export function HseReportingTitle({ center = false, size = 40, barUnder = "hse" }: { center?: boolean; size?: number; barUnder?: "hse" | "all" }) {
+export function HseReportingTitle({ center = false, size = 40, barUnder = "hse" }: { center?: boolean; size?: number | string; barUnder?: "hse" | "all" }) {
   return (
     <div className={center ? "flex flex-col items-center" : ""}>
-      <h1 className="font-black uppercase leading-none tracking-tight" style={{ fontSize: size }}>
+      <h1 className="whitespace-nowrap font-black uppercase leading-none tracking-tight" style={{ fontSize: size }}>
         <span className={barUnder === "hse" ? "relative inline-block" : ""}>
           HSE
           {barUnder === "hse" && <span className="absolute -bottom-3 left-0 h-[5px] w-full rounded-full" style={{ background: ORANGE }} />}
@@ -106,12 +106,12 @@ export function MobileNav() {
               {i > 0 && <span className="my-3 w-px bg-white/15" />}
               <Link
                 href={n.href}
-                className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[20px] py-2 text-[11.5px] font-semibold transition ${
+                className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[20px] py-2.5 text-[13px] font-bold transition ${
                   active ? "text-[#ff7a2a]" : "text-white/85 active:text-white"
                 }`}
                 style={active ? { background: "radial-gradient(70% 80% at 50% 45%, rgba(255,106,19,0.38), rgba(255,106,19,0.08) 70%, transparent)" } : undefined}
               >
-                <n.icon className="h-6 w-6" strokeWidth={1.7} />
+                <n.icon className="h-[27px] w-[27px]" strokeWidth={1.8} />
                 {n.label}
               </Link>
             </div>
@@ -156,9 +156,9 @@ export function NotificationsButton() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t.topbar.notifications}
-        className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+        className="relative flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
       >
-        <Bell className="h-7 w-7" strokeWidth={1.6} />
+        <Bell className="h-7 w-7" strokeWidth={1.7} />
         {items.length > 0 && (
           <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-[13px] font-bold text-white" style={{ background: ORANGE }}>
             {items.length}
@@ -353,7 +353,7 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
           <MobileBrand size={56} stacked />
         </div>
         <div className="mt-3">
-          <HseReportingTitle center size={36} barUnder="all" />
+          <HseReportingTitle center size="min(36px, 9.6vw)" barUnder="all" />
         </div>
 
         {/* REPORTS + cards */}
@@ -377,8 +377,8 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
                 }`}
                 style={{ borderColor: "rgba(255,106,19,0.75)", boxShadow: "0 0 18px rgba(255,106,19,0.35), inset 0 0 24px rgba(255,106,19,0.12)" }}
               >
-                <CardIcon icon={c.icon} accent={c.accent} accentColor={c.accentColor} size={compact ? 40 : cards.length === 1 ? 62 : 52} />
-                <span className={`font-bold leading-tight ${compact ? "text-[13px]" : cards.length === 1 ? "text-xl" : "text-base"}`}>{c.label}</span>
+                <CardIcon icon={c.icon} accent={c.accent} accentColor={c.accentColor} size={compact ? 44 : cards.length === 1 ? 66 : 56} />
+                <span className={`font-bold leading-tight ${compact ? "text-[15px]" : cards.length === 1 ? "text-[22px]" : "text-[18px]"}`}>{c.label}</span>
                 <span className="h-[5px] w-11 rounded-full" style={{ background: ORANGE }} />
               </Link>
             ))}

@@ -55,14 +55,14 @@ function MobileHome() {
         <button type="button" onClick={() => setDrawer(true)} aria-label="Menu" className="-ms-1 flex h-12 w-10 items-center justify-center text-white">
           <Menu className="h-8 w-8" strokeWidth={2.2} />
         </button>
-        <MobileBrand size={46} />
-        <div className="ms-auto flex items-center gap-3">
+        <MobileBrand size={40} />
+        <div className="ms-auto flex items-center gap-2.5">
           <NotificationsButton />
           <button
             type="button"
             onClick={() => setSheet("profile")}
             aria-label="Profile"
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#232323] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           >
             <User className="h-7 w-7" strokeWidth={1.6} />
           </button>
@@ -72,7 +72,7 @@ function MobileHome() {
       {/* Welcome */}
       <p className="mt-7 text-[19px] font-medium uppercase tracking-wide text-white/95">Welcome to First Fix</p>
       <div className="mt-1">
-        <HseReportingTitle size={46} />
+        <HseReportingTitle size="min(46px, 11.4vw)" />
       </div>
       <div className="mt-7 flex justify-end">
         <button
@@ -106,8 +106,8 @@ function MobileHome() {
 
         <div className="relative px-4 pb-4 pt-20">
           <div className="origin-left" style={{ transform: "scaleX(0.84)" }}>
-            <p className="text-[44px] font-black leading-[0.95] tracking-tight">HSE</p>
-            <p className="text-[44px] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
+            <p className="text-[min(44px,11vw)] font-black leading-[0.95] tracking-tight">HSE</p>
+            <p className="text-[min(44px,11vw)] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
               REPORTING
             </p>
           </div>
