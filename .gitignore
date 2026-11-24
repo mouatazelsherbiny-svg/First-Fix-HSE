@@ -18,3 +18,7 @@ demo/work/
 demo/*.mp4
 demo/intro.png
 demo/outro.png
+
+# AI office live state (written by office/set-status.js)
+office/status.json
+office/status.json.tmp
