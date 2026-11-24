@@ -362,7 +362,7 @@ export default function AuditForm({
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+export function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="label-field">{label}</label>
@@ -371,7 +371,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   );
 }
 
-function ScoreList({
+export function ScoreList({
   title,
   items,
   scores,
@@ -613,7 +613,7 @@ function FindingEditor({
 }
 
 /** H&S / Environmental rating from the form (Compliant / Non-Compliant / Needs Improvement). */
-function RatingPicker({ value, auto, onChange }: { value: Rating; auto: Rating; onChange: (v: Rating) => void }) {
+export function RatingPicker({ value, auto, onChange }: { value: Rating; auto: Rating; onChange: (v: Rating) => void }) {
   return (
     <div>
       <label className="label-field">Rating {!value && auto ? <span className="text-xs font-normal text-brand-gray">(auto: {auto})</span> : null}</label>

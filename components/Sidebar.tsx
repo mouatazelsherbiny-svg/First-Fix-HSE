@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileSearch,
+  Gauge,
   FileText,
   House,
   IdCard,
@@ -220,6 +221,7 @@ export default function Sidebar({
     user?.role === "admin"
       ? [
           { href: "/iir", label: "IIR", icon: FileSearch },
+          { href: "/hse-performance", label: "HSE Performance", icon: Gauge },
           { href: "/edit-requests", label: t.nav.editRequests, icon: ClipboardCheck },
           { href: "/user-management", label: t.nav.userManagement, icon: UserCog },
         ]
@@ -274,7 +276,7 @@ export default function Sidebar({
 
           {adminLinks.length > 0 && <div className="my-2 h-px bg-white/10" />}
           {adminLinks.map((link) => (
-            <NavLink key={link.href} {...link} active={pathname === link.href} />
+            <NavLink key={link.href} {...link} active={pathname === link.href || pathname.startsWith(link.href + "/")} />
           ))}
         </nav>
 
