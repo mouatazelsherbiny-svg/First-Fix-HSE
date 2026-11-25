@@ -35,7 +35,7 @@ export const PROJECT_LOCATIONS: ProjectLocation[] = [
   { project: "Al-Qiddya Hotels", lat: 24.6167, lng: 46.1667 }, // Qiddiya, Riyadh region
   { project: "Airfield", lat: 25.1, lng: 46.8 }, // Riyadh region
   { project: "Resort Core Evn Hotels", lat: 24.55, lng: 46.35 }, // Riyadh region
-  { project: "Dariyah Square", lat: 24.7477, lng: 46.5754 }, // Diriyah, Riyadh
+  { project: "Diriyah Square", lat: 24.7477, lng: 46.5754 }, // Diriyah, Riyadh
   { project: "Exhibition Centre", lat: 24.8, lng: 46.75 }, // Riyadh
   { project: "Six Sense", lat: 24.5, lng: 46.3 }, // Riyadh region
 ];

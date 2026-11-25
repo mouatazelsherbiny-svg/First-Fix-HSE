@@ -22,7 +22,7 @@ export const PROJECTS = [
   "Al-Qiddya Hotels",
   "Airfield",
   "Resort Core Evn Hotels",
-  "Dariyah Square",
+  "Diriyah Square",
   "Exhibition Centre",
   "Six Sense",
   "Head Office",
