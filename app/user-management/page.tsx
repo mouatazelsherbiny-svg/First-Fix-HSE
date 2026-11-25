@@ -17,6 +17,7 @@ interface ProfileRow {
   role: string;
   is_approved: boolean;
   created_at: string;
+  can_edit_performance?: boolean;
 }
 
 export default function UserManagementPage() {
@@ -41,8 +42,20 @@ function UserManagementView() {
       .from("profiles")
       .select("id, full_name, email, employee_code, project, role, is_approved, created_at")
       .order("created_at", { ascending: false });
-    setProfiles((data as ProfileRow[]) ?? []);
+    const rows = (data as ProfileRow[]) ?? [];
+    // HSE Performance editor flags (own query: ignored if the column isn't there yet)
+    const flags = await supabase.from("profiles").select("id, can_edit_performance");
+    const editor = new Map((flags.data ?? []).map((f: { id: string; can_edit_performance: boolean }) => [f.id, f.can_edit_performance]));
+    setProfiles(rows.map((r) => ({ ...r, can_edit_performance: !!editor.get(r.id) })));
     setIsLoading(false);
+  };
+
+  const handleTogglePerformanceEditor = async (p: ProfileRow) => {
+    setBusyId(p.id);
+    const { error } = await supabase.from("profiles").update({ can_edit_performance: !p.can_edit_performance }).eq("id", p.id);
+    if (error) window.alert("Could not change the HSE Performance editor right: " + error.message);
+    await loadProfiles();
+    setBusyId(null);
   };
 
   useEffect(() => {
@@ -205,6 +218,7 @@ function UserManagementView() {
                 <th className="px-4 py-3 text-start">{t.userManagement.colEmployeeCode}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colProject}</th>
                 <th className="px-4 py-3 text-start">{t.userManagement.colRole}</th>
+                <th className="px-4 py-3 text-center">HSE Performance Editor</th>
                 <th className="px-4 py-3 text-end">{t.userManagement.colActions}</th>
               </tr>
             </thead>
@@ -227,6 +241,23 @@ function UserManagementView() {
                   <td className="px-4 py-3 text-brand-grayDark">{p.project || "—"}</td>
                   <td className="px-4 py-3 text-brand-grayDark">
                     {p.role === "admin" ? t.userManagement.roleAdmin : t.userManagement.roleEmployee}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {p.role === "admin" ? (
+                      <span className="text-xs font-semibold text-brand-gray">Always</span>
+                    ) : (
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!!p.can_edit_performance}
+                        title={p.can_edit_performance ? "Can add / edit Weekly Performance Reports — click to remove" : "Click to let this person add / edit Weekly Performance Reports"}
+                        onClick={() => handleTogglePerformanceEditor(p)}
+                        disabled={busyId === p.id}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-60 ${p.can_edit_performance ? "bg-brand-orange" : "bg-white/15"}`}
+                      >
+                        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition ${p.can_edit_performance ? "translate-x-[22px] rtl:-translate-x-[22px]" : "translate-x-0.5 rtl:-translate-x-0.5"}`} />
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-end">
                     {p.id !== user?.id && (

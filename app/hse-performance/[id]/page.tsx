@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, FileDown, FileText, Trash2 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PerformanceForm from "@/components/hsePerformance/PerformanceForm";
+import PerformanceReport from "@/components/hsePerformance/PerformanceReport";
+import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 import PageTitle from "@/components/PageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -25,7 +27,9 @@ export default function HsePerformanceDetailPage() {
 function PerformanceDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const isAdmin = useAuth().user?.role === "admin";
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const canEdit = isAdmin || !!user?.canEditPerformance;
   const [p, setP] = useState<HsePerformance | null>(null);
   const [version, setVersion] = useState(0);
   const [error, setError] = useState("");
@@ -73,6 +77,21 @@ function PerformanceDetail() {
               </button>
             )}
           </PageTitle>
+          {!canEdit ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap justify-end gap-2">
+                <button type="button" onClick={() => exportPerformanceWord(p)} className="btn-secondary gap-2">
+                  <FileDown className="h-4 w-4" /> Word
+                </button>
+                <a href={`/hse-performance/${id}/print`} target="_blank" rel="noopener noreferrer" className="btn-primary gap-2">
+                  <FileText className="h-4 w-4" /> PDF
+                </a>
+              </div>
+              <div className="overflow-x-auto rounded-xl bg-[#e5e7eb] py-4">
+                <PerformanceReport p={p} />
+              </div>
+            </div>
+          ) : (
           <PerformanceForm
             key={version}
             initial={p}
@@ -83,6 +102,7 @@ function PerformanceDetail() {
             }}
             onCancel={() => router.push("/hse-performance")}
           />
+          )}
         </>
       )}
     </div>

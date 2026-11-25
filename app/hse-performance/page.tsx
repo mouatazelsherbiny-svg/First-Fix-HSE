@@ -15,6 +15,7 @@ import {
   CalendarDays,
   ChartColumnIncreasing,
   ClipboardList,
+  Eye,
   FileDown,
   FileText,
   Gauge,
@@ -65,7 +66,9 @@ function RatingPill({ r }: { r: Rating }) {
 
 function PerformanceDashboard() {
   const router = useRouter();
-  const isAdmin = useAuth().user?.role === "admin";
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const canEdit = isAdmin || !!user?.canEditPerformance;
   const [reports, setReports] = useState<HsePerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -227,9 +230,11 @@ function PerformanceDashboard() {
           </span>
         )}
         <ExportExcelButton filename="Weekly Performance Reports" sheets={exportSheets} disabled={rows.length === 0} />
-        <Link href="/hse-performance/new" className="btn-primary gap-2">
-          <Plus className="h-4 w-4" /> New Weekly Report
-        </Link>
+        {canEdit && (
+          <Link href="/hse-performance/new" className="btn-primary gap-2">
+            <Plus className="h-4 w-4" /> New Weekly Report
+          </Link>
+        )}
       </PageTitle>
 
       <SummaryCards
@@ -361,7 +366,7 @@ function PerformanceDashboard() {
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-10 text-center text-white/50">
-                    No reports yet — click New Weekly Report to add the first one.
+                    No reports yet.
                   </td>
                 </tr>
               ) : (
@@ -393,10 +398,10 @@ function PerformanceDashboard() {
                       <div className="flex items-center justify-center gap-1.5">
                         <Link
                           href={`/hse-performance/${p.id}`}
-                          title="Edit"
+                          title={canEdit ? "Edit" : "View"}
                           className="flex h-9 items-center gap-1 rounded-md border border-white/20 bg-white/[0.06] px-2 text-xs font-bold text-white hover:border-[#f36f24]"
                         >
-                          <Pencil className="h-3.5 w-3.5" /> Edit
+                          {canEdit ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />} {canEdit ? "Edit" : "View"}
                         </Link>
                         <button
                           type="button"

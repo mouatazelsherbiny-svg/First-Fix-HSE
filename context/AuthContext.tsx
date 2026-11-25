@@ -21,6 +21,8 @@ interface AuthUser {
   /** Real profile photo URL, once uploads are wired up. Undefined today —
    *  components should fall back to an initials avatar (see components/Avatar). */
   avatarUrl?: string;
+  /** May add / edit Weekly Performance Reports (admins always can). */
+  canEditPerformance?: boolean;
 }
 
 export interface SignUpInput {
@@ -100,6 +102,11 @@ async function loadProfile(
     };
   }
 
+  // Editor right for HSE Performance — read on its own so a missing column
+  // (before the database update) never breaks signing in.
+  const flag = await supabase.from("profiles").select("can_edit_performance").eq("id", userId).maybeSingle<{ can_edit_performance: boolean }>();
+  const role = data.role || "employee";
+
   return {
     user: {
       id: userId,
@@ -107,8 +114,9 @@ async function loadProfile(
       employeeCode: data.employee_code || "",
       project: data.project || "KSP",
       email,
-      role: data.role || "employee",
+      role,
       avatarUrl: data.avatar_url || undefined,
+      canEditPerformance: role === "admin" || !!flag.data?.can_edit_performance,
     },
     isApproved: data.is_approved !== false,
   };
