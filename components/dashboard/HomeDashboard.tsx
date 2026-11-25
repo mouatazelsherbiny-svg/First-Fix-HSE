@@ -404,7 +404,13 @@ function ProjectsSpotlight() {
 
         {/* The text fills the slide: big title, then the lines, centred in the free space. */}
         <div className="flex flex-1 flex-col justify-center pb-10 pt-4 sm:pe-20 sm:pb-4">
-          <h2 className="text-xl font-extrabold leading-tight text-white sm:text-3xl xl:text-[40px] xl:leading-[1.12]">{slide.title}</h2>
+          <h2
+            className={`font-extrabold leading-tight text-white ${
+              slide.title.length > 90 ? "text-lg sm:text-2xl xl:text-[30px] xl:leading-[1.18]" : "text-xl sm:text-3xl xl:text-[40px] xl:leading-[1.12]"
+            }`}
+          >
+            {slide.title}
+          </h2>
           <div className="mt-4 space-y-1.5 sm:mt-5">
             {slide.lines.map((line, k) => (
               <p key={k} className="text-sm font-medium leading-snug text-white/90 sm:text-lg xl:text-[22px]">

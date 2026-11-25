@@ -15,6 +15,30 @@ export interface GoodPracticePost {
 
 export const GOOD_PRACTICE_POSTS: GoodPracticePost[] = [
   {
+    id: "al-arab-1m-award",
+    image: "/brand/news/al-arab-1m-award.jpg",
+    title: "1,000,000 Safe Man-Hours",
+    details: "Achieved 1,000,000 Safe Man-Hours Without a Lost-Time Injury (LTI).",
+    project: "Al Arab Hospital",
+    date: null,
+  },
+  {
+    id: "qiddiya-1m-cake",
+    image: "/brand/news/qiddiya-1m-cake.jpg",
+    title: "1 Million Safe Work-Hours",
+    details: "Celebrating 1 Million Safe Work-Hours Without Lost-Time Injuries.",
+    project: "Al Qiddiya Hotels",
+    date: null,
+  },
+  {
+    id: "exhibition-mbl-certificate",
+    image: "/brand/news/exhibition-mbl-certificate.jpg",
+    title: "Recognized by MBL",
+    details: "A First Fix employee was recognized by MBL for his excellent safety performance and strong commitment to HSE standards.",
+    project: "Exhibition Center",
+    date: null,
+  },
+  {
     id: "eyewash-rosewood",
     image: "/brand/news/eyewash-rosewood.jpg",
     title: "Emergency Eyewash Stations",
@@ -52,6 +76,34 @@ export interface NewsPost {
 
 /** HSE News slides, shown in this order. */
 export const NEWS_POSTS: NewsPost[] = [
+  {
+    id: "al-arab-1m-safe-hours",
+    image: "/brand/news/al-arab-1m-safe-hours.jpg",
+    position: "center 40%",
+    title: "Achieved 1,000,000 Safe Man-Hours Without a Lost-Time Injury (LTI)",
+    lines: ["Project: Al Arab Hospital"],
+  },
+  {
+    id: "qiddiya-1m-celebration",
+    image: "/brand/news/qiddiya-1m-celebration.jpg",
+    position: "center 30%",
+    title: "Celebrating 1 Million Safe Work-Hours Without Lost-Time Injuries",
+    lines: ["Project: Al Qiddiya Hotels"],
+  },
+  {
+    id: "exhibition-mbl-recognition",
+    image: "/brand/news/exhibition-mbl-recognition.jpg",
+    position: "center 35%",
+    title: "A First Fix employee was recognized by MBL for his excellent safety performance and strong commitment to HSE standards.",
+    lines: ["Project: Exhibition Center"],
+  },
+  {
+    id: "seven-toolbox-talk",
+    image: "/brand/news/seven-toolbox-talk.jpg",
+    position: "center 45%",
+    title: "HSE awareness briefings and safety Toolbox Talks were delivered.",
+    lines: ["Project: SEVEN"],
+  },
   {
     id: "walkthrough",
     image: "/brand/news/walkthrough.jpg",
