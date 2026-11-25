@@ -26,6 +26,7 @@
   .bubble::after { content:""; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); border:7px solid transparent; border-top-color:var(--c); border-bottom:0; }
   .bubble small { display:block; font-size:9.5px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--c); }
   .bubble.empty { opacity:0; }
+  .bubble.ambient { border-style:dashed; background:rgba(255,255,255,.88); font-weight:500; }
   .bubble.pop { animation:pop .35s; }
   @keyframes pop { 0% { transform:scale(.6); } 70% { transform:scale(1.08); } 100% { transform:scale(1); } }
   .loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--muted); font-size:13px; background:var(--bg); z-index:5; transition:opacity .6s; }
@@ -618,7 +619,8 @@ function makeActor(def, i, gltf, clips) {
   root.position.set(s.x, 0, s.z); root.rotation.y = s.face;
   scene.add(root);
   actors[def.id] = { def, i, root, model, bones, mixer, act, cur: act.idle, label, bubble: el.querySelector(".bubble"),
-    path: [], spot: s, state: "idle", task: "", time: "", sit: 0, type: 0, gesture: 3 + i * 1.7 };
+    path: [], spot: s, state: "idle", task: "", time: "", sit: 0, type: 0, gesture: 3 + i * 1.7,
+    real: "idle", ambientT: 2 + i * 1.5 };
 }
 
 function play(ac, name, fade = 0.3) {
@@ -733,21 +735,52 @@ function apply(entry) {
   const ac = actors[entry.agent];
   if (!ac) return;
   const state = STATES.includes(entry.state) ? entry.state : "idle";
-  const changedState = state !== ac.state, changedTask = (entry.task || "") !== ac.task;
-  ac.state = state; ac.task = entry.task || ""; ac.time = entry.time || "";
-  const mon = monitors[ac.def.id]; mon.screen.material.emissiveIntensity = state === "working" ? 1.0 : 0.15;
-  if (changedState) routeTo(ac, SPOTS[ac.def.id][state]);
-  const show = !!ac.task && state !== "idle"; // idle = name tag only, keeps the coffee corner readable
-  ac.bubble.className = "bubble" + (show ? "" : " empty");
-  ac.bubble.innerHTML = `<small>${state}</small>${esc(ac.task)}`;
-  if (show && (changedTask || changedState)) { void ac.bubble.offsetWidth; ac.bubble.classList.add("pop"); }
+  const changedReal = state !== ac.real, changedTask = (entry.task || "") !== ac.task;
+  ac.real = state; ac.task = entry.task || ""; ac.time = entry.time || "";
+  if (state !== "idle") {
+    // a real task always wins over the office "life" below
+    goTo(ac, state, ac.task, false, changedReal || changedTask);
+    ac.ambientT = Infinity;
+  } else if (changedReal || ac.ambientT === Infinity) {
+    goTo(ac, "idle", "", false, false);
+    ac.ambientT = 6 + Math.random() * 8;            // a short break, then back to some activity
+  }
+}
+
+/* While an agent has no real task they keep busy: desk work, quick team syncs, server checks, coffee. */
+const AMBIENT = {
+  "project-manager": ["Reviewing the roadmap", "Checking team progress", "Planning the next sprint", "Reading user feedback"],
+  "frontend-dev": ["Polishing dashboard UI", "Reviewing page layouts", "Tuning charts", "Checking dark theme"],
+  "backend-dev": ["Watching database health", "Reviewing RLS policies", "Optimizing queries", "Checking backups"],
+  "mobile-dev": ["Testing the app on phones", "Improving mobile forms", "Checking photo uploads", "Reviewing the sign-in flow"],
+  "qa-tester": ["Running smoke tests", "Checking the last deploy", "Reviewing the bug list", "Testing Word/PDF exports"],
+};
+function ambientStep(ac) {
+  const pool = ac.def.id === "qa-tester" ? ["testing", "testing", "working", "idle", "meeting"]
+    : ac.def.id === "project-manager" ? ["working", "working", "meeting", "idle", "testing"]
+    : ["working", "working", "working", "meeting", "idle", "testing"];
+  let st = pool[Math.floor(Math.random() * pool.length)];
+  if (st === ac.state) st = "working" === st ? "idle" : "working";
+  const tasks = AMBIENT[ac.def.id];
+  const task = st === "idle" ? "Coffee break" : st === "meeting" ? "Quick team sync" : st === "testing" && ac.def.id !== "qa-tester" ? "Checking the servers" : tasks[Math.floor(Math.random() * tasks.length)];
+  goTo(ac, st, task, true, true);
+  ac.ambientT = (st === "idle" ? 12 : 22) + Math.random() * 20;
+}
+function goTo(ac, state, task, ambient, pop) {
+  if (state !== ac.state || !ac.spot || ac.spot !== SPOTS[ac.def.id][state]) routeTo(ac, SPOTS[ac.def.id][state]);
+  ac.state = state;
+  monitors[ac.def.id].screen.material.emissiveIntensity = state === "working" ? 1.0 : 0.15;
+  const show = !!task && state !== "idle";
+  ac.bubble.className = "bubble" + (ambient ? " ambient" : "") + (show ? "" : " empty");
+  ac.bubble.innerHTML = `<small>${ambient ? "auto · " : ""}${state}</small>${esc(task)}`;
+  if (show && pop) { void ac.bubble.offsetWidth; ac.bubble.classList.add("pop"); }
 }
 
 let follow = null;
 function renderRoster() {
   const box = document.getElementById("roster");
   box.innerHTML = TEAM.map((a) => {
-    const ac = actors[a.id] || { state: "idle", task: "", time: "" };
+    const ac0 = actors[a.id] || { real: "idle", task: "", time: "" }; const ac = { state: ac0.real || "idle", task: ac0.task, time: ac0.time };
     return `<div class="card" data-id="${a.id}" style="--c:${a.color}"><span class="sw"></span><span class="nm">${a.name}${a.role ? ` <small style="color:var(--muted);font-weight:500">· ${a.role}</small>` : ""}</span>
       <span class="pill s-${ac.state}">${ac.state}</span>
       <span class="tk" title="${esc(ac.task)}">${esc(ac.task || "—")}${ac.time ? " · " + ago(ac.time) : ""}</span></div>`;
@@ -834,7 +867,10 @@ addEventListener("resize", resize); resize();
 let ledT = 0;
 function frame() {
   const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
-  for (const ac of Object.values(actors)) updateActor(ac, dt, t);
+  for (const ac of Object.values(actors)) {
+    if (ac.real === "idle" && !ac.path.length && !demo) { ac.ambientT -= dt; if (ac.ambientT <= 0) ambientStep(ac); }
+    updateActor(ac, dt, t);
+  }
   for (const id in monitors) { const m = monitors[id]; if (actors[id]?.state === "working") m.tex.offset.y -= dt * 0.04; }
   qaMon.forEach((m) => (m.tex.offset.y -= dt * 0.02));
   ledT += dt;
