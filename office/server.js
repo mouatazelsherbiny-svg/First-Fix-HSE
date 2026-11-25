@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const root = __dirname;
 const port = Number(process.argv[2]) || 4321;
-const types = { ".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".svg": "image/svg+xml" };
+const types = { ".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".svg": "image/svg+xml", ".glb": "model/gltf-binary", ".txt": "text/plain" };
 
 http
   .createServer((req, res) => {
