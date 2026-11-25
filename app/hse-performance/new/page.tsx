@@ -7,7 +7,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PerformanceForm from "@/components/hsePerformance/PerformanceForm";
 import PageTitle from "@/components/PageTitle";
 import { emptyPerformance } from "@/lib/hsePerformance";
-import { useAuth } from "@/context/AuthContext";
 
 export default function NewHsePerformancePage() {
   return (
@@ -19,17 +18,6 @@ export default function NewHsePerformancePage() {
 
 function NewReport() {
   const router = useRouter();
-  const { user } = useAuth();
-  const canEdit = user?.role === "admin" || !!user?.canEditPerformance;
-  if (!canEdit)
-    return (
-      <div className="card py-16 text-center text-sm font-medium text-brand-gray">
-        Only the HSE Performance editor can add Weekly Performance Reports.{" "}
-        <Link href="/hse-performance" className="text-brand-orange underline">
-          Back to HSE Performance
-        </Link>
-      </div>
-    );
   return (
     <>
         <div>

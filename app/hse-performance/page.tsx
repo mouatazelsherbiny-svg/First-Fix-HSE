@@ -230,11 +230,9 @@ function PerformanceDashboard() {
           </span>
         )}
         <ExportExcelButton filename="Weekly Performance Reports" sheets={exportSheets} disabled={rows.length === 0} />
-        {canEdit && (
-          <Link href="/hse-performance/new" className="btn-primary gap-2">
-            <Plus className="h-4 w-4" /> New Weekly Report
-          </Link>
-        )}
+        <Link href="/hse-performance/new" className="btn-primary gap-2">
+          <Plus className="h-4 w-4" /> New Weekly Report
+        </Link>
       </PageTitle>
 
       <SummaryCards
@@ -268,7 +266,7 @@ function PerformanceDashboard() {
           {loading ? (
             <p className="py-16 text-center text-sm text-white/50">Loading…</p>
           ) : !chart.length ? (
-            <p className="py-16 text-center text-sm text-white/50">No reports yet.</p>
+            <p className="py-16 text-center text-sm text-white/50">No reports yet — click New Weekly Report to add the first one.</p>
           ) : (
             <div className="overflow-y-auto pe-1" style={{ maxHeight: 10 * 44 + 40 }}>
               <div style={{ height: chart.length * 44 + 40 }}>
@@ -366,7 +364,7 @@ function PerformanceDashboard() {
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-10 text-center text-white/50">
-                    No reports yet.
+                    No reports yet — click New Weekly Report to add the first one.
                   </td>
                 </tr>
               ) : (
