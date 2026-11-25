@@ -527,8 +527,23 @@ function retarget(srcGltf, tgtGltf) {
   const names = Object.keys(T).filter((n) => S[n] && !/Eye|End|Toe_End|HeadTop/.test(n));
   const order = []; (function walk(o) { if (o.isBone) { const n = o.name.replace("mixamorig", ""); if (names.includes(n)) order.push(n); } o.children.forEach(walk); })(tgt);
   const wq = (o) => o.getWorldQuaternion(new THREE.Quaternion());
+  // Rest poses differ (Xbot stands in a T-pose, some avatars in an A-pose): first turn each target bone's
+  // rest direction onto the Xbot's, so arms hang and swing the same way on every person.
+  const childOf = (map, n) => {
+    const kids = map[n].children.filter((c) => c.isBone).map((c) => c.name.replace("mixamorig", "")).filter((k) => names.includes(k));
+    return kids.find((k) => /Spine|Neck|Head$|Middle1/.test(k)) || (kids.length === 1 ? kids[0] : null);
+  };
+  const wp = (o) => o.getWorldPosition(new THREE.Vector3());
   const sRest = {}, tRest = {};
-  for (const n of order) { sRest[n] = wq(S[n]).invert(); tRest[n] = wq(T[n]); }
+  for (const n of order) {
+    sRest[n] = wq(S[n]).invert();
+    tRest[n] = wq(T[n]);
+    const c = childOf(T, n);
+    if (c && S[c] && n !== "Hips") {
+      const tDir = wp(T[c]).sub(wp(T[n])).normalize(), sDir = wp(S[c]).sub(wp(S[n])).normalize();
+      tRest[n].premultiply(new THREE.Quaternion().setFromUnitVectors(tDir, sDir));
+    }
+  }
   const sHip0 = S.Hips.getWorldPosition(new THREE.Vector3()), tHip0 = T.Hips.getWorldPosition(new THREE.Vector3());
   const ratio = tHip0.y / sHip0.y;
   const out = {};
