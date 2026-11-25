@@ -1,0 +1,6 @@
+3D people used by the AI office (local, internal use only):
+- Xbot.glb, Michelle.glb — three.js examples (Mixamo characters/animations).
+- brunette.glb — Ready Player Me avatar, CC BY-NC 4.0 (non-commercial), via github.com/met4citizen/TalkingHead.
+- avaturn.glb — Avaturn avatar, free for non-commercial use, via met4citizen/TalkingHead.
+- avatarsdk.glb — Avatar SDK avatar, non-commercial use, via met4citizen/TalkingHead.
+Textures were resized to 1024 px (WebP) and face blend-shapes removed to keep the files small.

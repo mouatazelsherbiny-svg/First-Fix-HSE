@@ -87,11 +87,12 @@ import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const TEAM = [
-  { id: "project-manager", name: "Project Manager", color: "#f36f24", hat: "#f8fafc" },
-  { id: "frontend-dev", name: "Frontend Dev", color: "#8b5cf6", hat: "#facc15" },
-  { id: "backend-dev", name: "Backend Dev", color: "#0ea5e9", hat: "#facc15" },
-  { id: "mobile-dev", name: "Mobile Dev", color: "#ec4899", hat: "#facc15" },
-  { id: "qa-tester", name: "QA Tester", color: "#22c55e", hat: "#facc15" },
+  // look: which person model (models/<file>.glb); top / bottom recolour the clothes (casual), skin tints the face + hands
+  { id: "project-manager", name: "Moataz Elsherbiny", role: "Project Manager", color: "#f36f24", look: { model: "avatarsdk" } },
+  { id: "frontend-dev", name: "Frontend Dev", role: "Web app UI", color: "#8b5cf6", look: { model: "brunette" } },
+  { id: "backend-dev", name: "Backend Dev", role: "Supabase / APIs", color: "#0ea5e9", look: { model: "avaturn" } },
+  { id: "mobile-dev", name: "Mobile Dev", role: "HSE-Reporting app", color: "#ec4899", look: { model: "Michelle" } },
+  { id: "qa-tester", name: "QA Tester", role: "Tests before push", color: "#22c55e", look: { model: "avatarsdk", top: "#e9e4da", bottom: "#3a3f4b", skin: "#c99a7a" } },
 ];
 const STATES = ["working", "meeting", "testing", "idle"];
 const params = new URLSearchParams(location.search);
@@ -492,42 +493,93 @@ const actors = {};
 const clock = new THREE.Clock();
 const loadBar = document.getElementById("loadBar");
 const loader = new GLTFLoader();
-loader.load("models/Xbot.glb", (gltf) => {
-  const clips = Object.fromEntries(gltf.animations.map((c) => [c.name, c]));
-  TEAM.forEach((a, i) => makeActor(a, i, gltf, clips));
-  document.getElementById("loading").style.opacity = "0";
-  setTimeout(() => document.getElementById("loading").remove(), 700);
-  start();
-}, (e) => { if (e.total) loadBar.style.width = Math.round((e.loaded / e.total) * 100) + "%"; },
-(err) => { document.querySelector("#loading div").textContent = "Could not load the 3D people — open the office with start-office.bat."; console.error(err); });
+const loaded = {}, files = { anim: "models/Xbot.glb" }, progress = {};
+TEAM.forEach((a) => (files[a.look.model] = `models/${a.look.model}.glb`));
+const nFiles = Object.keys(files).length;
+Promise.all(Object.entries(files).map(([k, url]) => new Promise((res, rej) => loader.load(url, (g) => res((loaded[k] = g)),
+  (e) => { if (e.total) { progress[k] = e.loaded / e.total; loadBar.style.width = Math.round((Object.values(progress).reduce((x, y) => x + y, 0) / nFiles) * 100) + "%"; } }, rej))))
+  .then(() => {
+    const clips = {};
+    for (const k of Object.keys(files)) if (k !== "anim") clips[k] = retarget(loaded.anim, loaded[k]);
+    TEAM.forEach((a, i) => makeActor(a, i, loaded[a.look.model], clips[a.look.model]));
+    document.getElementById("loading").style.opacity = "0";
+    setTimeout(() => document.getElementById("loading").remove(), 700);
+    start();
+  })
+  .catch((err) => { document.querySelector("#loading div").textContent = "Could not load the 3D people — open the office with start-office.bat."; console.error(err); });
+
+/**
+ * The walk / idle / nod clips come from the Mixamo "Xbot"; bake them onto each human rig.
+ * Each bone gets the same change from its rest pose (world space) as the Xbot bone of the same name,
+ * so differences in bone axes between the rigs don't matter. Bone lengths stay the person's own.
+ */
+function retarget(srcGltf, tgtGltf) {
+  const src = SkeletonUtils.clone(srcGltf.scene), tgt = SkeletonUtils.clone(tgtGltf.scene);
+  const bonesOf = (root) => { const m = {}; root.traverse((o) => { if (o.isBone) m[o.name.replace("mixamorig", "")] = o; }); return m; };
+  const S = bonesOf(src), T = bonesOf(tgt);
+  src.updateMatrixWorld(true); tgt.updateMatrixWorld(true);
+  const names = Object.keys(T).filter((n) => S[n] && !/Eye|End|Toe_End|HeadTop/.test(n));
+  const order = []; (function walk(o) { if (o.isBone) { const n = o.name.replace("mixamorig", ""); if (names.includes(n)) order.push(n); } o.children.forEach(walk); })(tgt);
+  const wq = (o) => o.getWorldQuaternion(new THREE.Quaternion());
+  const sRest = {}, tRest = {};
+  for (const n of order) { sRest[n] = wq(S[n]).invert(); tRest[n] = wq(T[n]); }
+  const sHip0 = S.Hips.getWorldPosition(new THREE.Vector3()), tHip0 = T.Hips.getWorldPosition(new THREE.Vector3());
+  const ratio = tHip0.y / sHip0.y;
+  const out = {};
+  const q = new THREE.Quaternion(), pw = new THREE.Quaternion(), p = new THREE.Vector3();
+  for (const clip of srcGltf.animations) {
+    const mixer = new THREE.AnimationMixer(src);
+    const action = mixer.clipAction(clip); action.play();
+    const fps = 30, frames = Math.max(2, Math.round(clip.duration * fps) + 1);
+    const times = new Float32Array(frames), rot = {}, hip = new Float32Array(frames * 3);
+    order.forEach((n) => (rot[n] = new Float32Array(frames * 4)));
+    for (let f = 0; f < frames; f++) {
+      const t = Math.min(clip.duration, f / fps); times[f] = t;
+      mixer.setTime(t); src.updateMatrixWorld(true);
+      for (const n of order) {
+        const tb = T[n];
+        q.copy(wq(S[n])).multiply(sRest[n]).multiply(tRest[n]);          // wanted world rotation
+        tb.parent.getWorldQuaternion(pw);
+        tb.quaternion.copy(pw.invert().multiply(q));
+        tb.updateMatrixWorld(true);
+        tb.quaternion.toArray(rot[n], f * 4);
+      }
+      p.copy(S.Hips.getWorldPosition(new THREE.Vector3())).sub(sHip0).multiplyScalar(ratio).add(tHip0);
+      T.Hips.parent.worldToLocal(p); p.toArray(hip, f * 3);
+    }
+    const tracks = order.map((n) => new THREE.QuaternionKeyframeTrack(`${T[n].name}.quaternion`, times, rot[n]));
+    tracks.push(new THREE.VectorKeyframeTrack(`${T.Hips.name}.position`, times, hip));
+    out[clip.name] = new THREE.AnimationClip(clip.name, clip.duration, tracks);
+  }
+  return out;
+}
 
 function makeActor(def, i, gltf, clips) {
   const root = new THREE.Group();
   const model = SkeletonUtils.clone(gltf.scene);
   root.add(model);
   const bones = {};
+  const L = def.look;
+  model.scale.setScalar(L.h || 1);
   model.traverse((o) => {
     if (o.isBone) bones[o.name.replace("mixamorig", "").replace(":", "")] = o;
     if (o.isMesh) {
       o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
-      const isJoint = /Joints/i.test(o.material.name);
-      o.material = new THREE.MeshPhysicalMaterial(isJoint
-        ? { color: 0x2b2f36, roughness: 0.45, metalness: 0.4 }
-        : { color: new THREE.Color(def.color), roughness: 0.42, metalness: 0.05, clearcoat: 0.6, clearcoatRoughness: 0.35 });
+      if (!L.top && !L.skin) return;
+      const n = o.name;
+      const recolor = (hex, gray) => {
+        const m = o.material.clone();
+        m.color.set(hex);
+        if (gray) m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>",
+          "#ifdef USE_MAP\n vec4 tx = texture2D( map, vMapUv ); float g = dot( tx.rgb, vec3( .299, .587, .114 ) ); diffuseColor *= vec4( vec3( min( g * 2.2, 1.0 ) ), tx.a );\n#endif"); };
+        m.customProgramCacheKey = () => "rc" + gray;
+        o.material = m;
+      };
+      if (/top/i.test(n) && L.top) recolor(L.top, true);
+      else if (/bottom/i.test(n) && L.bottom) recolor(L.bottom, true);
+      else if (/AvatarHead|AvatarBody/.test(n) && L.skin) recolor(L.skin, false);
     }
   });
-  // HSE hard hat on the head bone
-  const head = bones.Head;
-  model.updateMatrixWorld(true);
-  const ws = new THREE.Vector3(); head.getWorldScale(ws);
-  const hat = new THREE.Group(); hat.scale.setScalar(1 / ws.x);
-  const hatMat = new THREE.MeshPhysicalMaterial({ color: def.hat, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.15 });
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.125, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), hatMat); dome.scale.set(1, 0.9, 1.12); dome.castShadow = true;
-  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.155, 0.012, 32), hatMat); brim.scale.set(1, 1, 1.2); brim.position.set(0, 0.0, 0.03); brim.castShadow = true;
-  const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.03, 0.27), hatMat); ridge.position.set(0, 0.11, 0.0);
-  hat.add(dome, brim, ridge);
-  hat.position.set(0, 0.128 / ws.x, 0.012 / ws.x);
-  head.add(hat);
   // label
   const el = document.createElement("div");
   el.className = "lbl"; el.style.setProperty("--c", def.color);
@@ -675,7 +727,7 @@ function renderRoster() {
   const box = document.getElementById("roster");
   box.innerHTML = TEAM.map((a) => {
     const ac = actors[a.id] || { state: "idle", task: "", time: "" };
-    return `<div class="card" data-id="${a.id}" style="--c:${a.color}"><span class="sw"></span><span class="nm">${a.name}</span>
+    return `<div class="card" data-id="${a.id}" style="--c:${a.color}"><span class="sw"></span><span class="nm">${a.name}${a.role ? ` <small style="color:var(--muted);font-weight:500">· ${a.role}</small>` : ""}</span>
       <span class="pill s-${ac.state}">${ac.state}</span>
       <span class="tk" title="${esc(ac.task)}">${esc(ac.task || "—")}${ac.time ? " · " + ago(ac.time) : ""}</span></div>`;
   }).join("");
