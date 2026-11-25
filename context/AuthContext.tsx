@@ -8,7 +8,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { signupClient, supabase } from "@/lib/supabaseClient";
 
 interface AuthUser {
   /** Supabase auth user id (uuid) — not for display, use employeeCode. */
@@ -74,24 +74,29 @@ interface ProfileRow {
 async function loadProfile(
   userId: string,
   email: string
-): Promise<{ user: AuthUser; isApproved: boolean }> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("full_name, employee_code, project, avatar_url, role, is_approved")
-    .eq("id", userId)
-    .single<ProfileRow>();
+): Promise<{ user: AuthUser; isApproved: boolean | null }> {
+  // A failed lookup (network blip, a request racing a token refresh) is NOT
+  // the same as "not approved": it used to sign people out at random. Retry,
+  // and if it still fails report `null` (unknown) so the caller keeps the
+  // session. A deleted account still ends up signed out: its refresh token
+  // stops working, which signs the session out on its own.
+  let data: ProfileRow | null = null;
+  let missing = false;
+  for (let attempt = 0; attempt < 3 && !data; attempt++) {
+    if (attempt) await new Promise((r) => setTimeout(r, 400 * attempt));
+    const res = await supabase
+      .from("profiles")
+      .select("full_name, employee_code, project, avatar_url, role, is_approved")
+      .eq("id", userId)
+      .maybeSingle<ProfileRow>();
+    data = res.data;
+    missing = !res.error && !res.data;
+  }
 
-  if (error || !data) {
+  if (!data) {
     return {
-      user: {
-        id: userId,
-        name: email,
-        employeeCode: "",
-        project: "KSP",
-        email,
-        role: "employee",
-      },
-      isApproved: false,
+      user: { id: userId, name: email, employeeCode: "", project: "KSP", email, role: "employee" },
+      isApproved: missing ? false : null,
     };
   }
 
@@ -109,6 +114,10 @@ async function loadProfile(
   };
 }
 
+/** Automatic sign-outs end this browser's session only, never the person's
+ *  sessions on their other devices. */
+const signOutHere = () => supabase.auth.signOut({ scope: "local" });
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,8 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         // A pending account shouldn't silently ride an existing session —
         // sign it back out so the login page can show the pending message.
-        if (!isApproved) {
-          await supabase.auth.signOut();
+        if (isApproved === false) {
+          await signOutHere();
           if (active) setUser(null);
         } else if (active) {
           setUser(profile);
@@ -134,30 +143,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (active) setIsLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!active) return;
-        if (session?.user) {
-          const { user: profile, isApproved } = await loadProfile(
-            session.user.id,
-            session.user.email ?? ""
-          );
-          if (isApproved) {
-            if (active) setUser(profile);
-          } else {
-            // Access was revoked (or never approved) since this session
-            // started — this fires on every automatic token refresh too
-            // (roughly hourly), not just at login, so a revoked admin can
-            // actually kick an active session out, not just block the
-            // next login attempt.
-            await supabase.auth.signOut();
-            if (active) setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (!session?.user) {
+        setUser(null);
+        return;
       }
-    );
+      // Only (re)check the profile when someone signs in or the token is
+      // refreshed (roughly hourly) — not on every tab focus. Run it outside
+      // the auth callback: calling Supabase from inside it can stall the
+      // client's session lock.
+      if (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED" && event !== "USER_UPDATED") return;
+      const { id, email } = session.user;
+      setTimeout(async () => {
+        const { user: profile, isApproved } = await loadProfile(id, email ?? "");
+        if (!active) return;
+        if (isApproved === false) {
+          // Access was revoked (or never approved) since this session started.
+          await signOutHere();
+          if (active) setUser(null);
+        } else if (isApproved) {
+          setUser(profile);
+        }
+        // isApproved === null: lookup failed — keep the current session.
+      }, 0);
+    });
 
     return () => {
       active = false;
@@ -181,18 +191,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data.user.id,
           data.user.email ?? email
         );
-        if (!isApproved) {
+        if (isApproved === false) {
           // Valid credentials, but an admin hasn't approved this account
           // yet — don't let them into the app, and don't leave a signed-in
           // session sitting around either.
-          await supabase.auth.signOut();
+          await signOutHere();
           return { ok: false, pending: true };
         }
         setUser(profile);
         return { ok: true };
       },
       signUp: async ({ fullName, employeeCode, project, email, password }) => {
-        const { data, error } = await supabase.auth.signUp({
+        // Separate client: a sign-up never touches the session already
+        // signed in on this browser (and its other tabs).
+        const { data, error } = await signupClient.auth.signUp({
           email,
           password,
           options: {
@@ -211,13 +223,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error || !data.user) {
           return { ok: false, error: error?.message };
         }
-        // Self-registered accounts are pending — make sure no session
-        // carries over from the sign-up call itself.
-        await supabase.auth.signOut();
+        // Self-registered accounts are pending; the sign-up client keeps no
+        // session, so nothing to sign out here.
         return { ok: true };
       },
       logout: () => {
-        void supabase.auth.signOut();
+        void signOutHere();
         setUser(null);
       },
     }),

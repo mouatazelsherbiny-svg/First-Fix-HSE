@@ -19,6 +19,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+/**
+ * A second client used only for "Create an account". It never stores a
+ * session, so signing someone up in a browser never replaces (or signs out)
+ * the account that is already signed in there — e.g. the admin's own tabs.
+ */
+export const signupClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "sb-signup-only" },
+});
+
 /** Convenience accessor for the signed-in user's auth id, used to stamp
  *  created_by on inserts. Returns null when signed out. */
 export async function getCurrentUserId(): Promise<string | null> {
