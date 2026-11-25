@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * New / edit an HSE Performance report: details, then the "HSE Project
- * Assessment" exactly as on the HSE Audit form — Health and Safety and
- * Environmental scored 0–10 (or N/A), each score box with its rating —
- * comments and the assessor's signature. Save, then Word / PDF.
+ * New / edit a Weekly Performance Report (the First Fix form): Project,
+ * Contractor, HSE Manager, Project Director, Auditor / Position, Date; Health
+ * and Safety and Environmental scored 0–10 (or N/A); the H&S, Environmental
+ * and Overall Performance scores; the three signatures (HSE Auditor, Regional
+ * HSE Manager, HSE Director). Save, then Word / PDF.
  */
 
 import { useState } from "react";
@@ -15,7 +16,8 @@ import SignaturePad from "@/components/SignaturePad";
 import { PROJECTS } from "@/lib/mockData";
 import { getCurrentUserId, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, itemsFor, ratingOf, scoreOf } from "@/lib/hseAudit";
-import { toPerformanceRow, type HsePerformance } from "@/lib/hsePerformance";
+import { PERF_SIGN_ROLES, REPORT_TITLE, overallOf, toPerformanceRow, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
+import { ScoreRing } from "@/components/hseAudit/SummaryWidgets";
 import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 
 export default function PerformanceForm({
@@ -69,10 +71,13 @@ export default function PerformanceForm({
 
   return (
     <div className="space-y-6">
-      {/* Details */}
+      {/* Details — as on the Weekly Performance Report */}
       <div className="card">
-        <h2 className="mb-4 text-lg font-bold text-brand-black">Report Details</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-bold text-brand-black">{REPORT_TITLE}</h2>
+          {p.assessmentDate && <span className="rounded-full bg-brand-orange/10 px-3 py-1 text-xs font-bold text-brand-orange">{weekLabel(p.assessmentDate)}</span>}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label-field">Project *</label>
             <select className="input-field" value={p.projectName} onChange={(e) => set({ projectName: e.target.value })}>
@@ -84,48 +89,68 @@ export default function PerformanceForm({
               ))}
             </select>
           </div>
-          <div>
-            <label className="label-field">Date *</label>
-            <input type="date" className="input-field" value={p.assessmentDate} onChange={(e) => set({ assessmentDate: e.target.value })} />
-          </div>
-          <div>
-            <label className="label-field">Target %</label>
-            <input type="number" min={0} max={100} className="input-field" value={p.targetPct} onChange={(e) => set({ targetPct: Number(e.target.value) || 0 })} />
-          </div>
-          <Field label="Assessed by" value={p.assessedBy} onChange={(v) => set({ assessedBy: v })} />
+          <Field label="Contractor" value={p.contractor} onChange={(v) => set({ contractor: v })} />
           <Field label="HSE Manager" value={p.hseManager} onChange={(v) => set({ hseManager: v })} />
+          <Field label="Project Director" value={p.projectDirector} onChange={(v) => set({ projectDirector: v })} />
+          <Field label="Auditor / Position" value={p.assessedBy} onChange={(v) => set({ assessedBy: v })} />
+          <div className="grid grid-cols-[1fr_110px] gap-3">
+            <div>
+              <label className="label-field">Date *</label>
+              <input type="date" className="input-field" value={p.assessmentDate} onChange={(e) => set({ assessmentDate: e.target.value })} />
+            </div>
+            <div>
+              <label className="label-field">Target %</label>
+              <input type="number" min={0} max={100} className="input-field" value={p.targetPct} onChange={(e) => set({ targetPct: Number(e.target.value) || 0 })} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* HSE Project Assessment */}
+      {/* Scores */}
       <div className="card">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <h2 className="text-lg font-bold text-brand-black">HSE Project Assessment</h2>
-          <p className="text-xs text-brand-gray">All scores are rated on a scale of 0 to 10 (0 lowest, 10 highest). Mark N/A where not applicable to the project at this time.</p>
+          <h2 className="text-lg font-bold text-brand-black">Health and Safety · Environmental</h2>
+          <p className="text-xs text-brand-gray">Score each item 0 to 10 (0 lowest, 10 highest). N/A where it does not apply this week.</p>
         </div>
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-5 lg:grid-cols-2">
           <ScoreList title="Health and Safety" items={itemsFor(HS_ITEMS, p.hsScores)} scores={p.hsScores} onChange={(s) => set({ hsScores: s })} />
           <ScoreList title="Environmental" items={itemsFor(ENV_ITEMS, p.envScores)} scores={p.envScores} onChange={(s) => set({ envScores: s })} />
-          <div className="space-y-4">
+        </div>
+        <div className="mt-5 grid gap-5 md:grid-cols-3">
+          <div className="space-y-3">
             <ScorePanel title="Health & Safety Score" result={hs} target={p.targetPct} />
             <RatingPicker value={p.hsRating} auto={ratingOf("", hs.pct, p.targetPct)} onChange={(v) => set({ hsRating: v })} />
+          </div>
+          <div className="space-y-3">
             <ScorePanel title="Environmental Score" result={env} target={p.targetPct} />
             <RatingPicker value={p.envRating} auto={ratingOf("", env.pct, p.targetPct)} onChange={(v) => set({ envRating: v })} />
           </div>
+          <div className="flex flex-col overflow-hidden rounded-xl border border-brand-border bg-[#111111] text-white">
+            <p className="border-b-2 border-[#f36f24] px-3 py-2 text-center text-xs font-bold uppercase tracking-wide">Overall Performance Score</p>
+            <div className="flex flex-1 items-center justify-center py-4">
+              <ScoreRing value={overallOf(hs.pct, env.pct)} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Comments + signature */}
-      <div className="card grid gap-5 md:grid-cols-[1fr_320px]">
-        <div>
-          <label className="label-field">Comments</label>
-          <textarea className="input-field min-h-[150px]" value={p.comments} onChange={(e) => set({ comments: e.target.value })} />
+      {/* Signatures */}
+      <div className="card">
+        <h2 className="mb-4 text-lg font-bold text-brand-black">Signatures</h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          {PERF_SIGN_ROLES.map(({ key, label }) => (
+            <div key={key} className="rounded-xl border border-brand-border p-3">
+              <p className="mb-2 rounded-md bg-[#111111] px-3 py-1.5 text-center text-sm font-bold text-white">{label}</p>
+              <Field label="Name" value={p.signatures[key].name} onChange={(v) => set({ signatures: { ...p.signatures, [key]: { ...p.signatures[key], name: v } } })} />
+              <div className="mt-3">
+                <SignaturePad label="Signature" value={p.signatures[key].image} onChange={(v) => set({ signatures: { ...p.signatures, [key]: { ...p.signatures[key], image: v } } })} />
+              </div>
+            </div>
+          ))}
         </div>
-        <div>
-          <Field label="Signature name" value={p.signature.name} onChange={(v) => set({ signature: { ...p.signature, name: v } })} />
-          <div className="mt-3">
-            <SignaturePad label="Signature" value={p.signature.image} onChange={(v) => set({ signature: { ...p.signature, image: v } })} />
-          </div>
+        <div className="mt-5">
+          <label className="label-field">Comments</label>
+          <textarea className="input-field min-h-[110px]" value={p.comments} onChange={(e) => set({ comments: e.target.value })} />
         </div>
       </div>
 

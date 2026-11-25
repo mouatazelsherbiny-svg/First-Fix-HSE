@@ -10,7 +10,7 @@ import PerformanceForm from "@/components/hsePerformance/PerformanceForm";
 import PageTitle from "@/components/PageTitle";
 import { supabase } from "@/lib/supabaseClient";
 import { formatDate } from "@/lib/hseAudit";
-import { mapPerformance, type HsePerformance } from "@/lib/hsePerformance";
+import { mapPerformance, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
 
 export default function HsePerformanceDetailPage() {
   return (
@@ -65,7 +65,7 @@ function PerformanceDetail() {
       {p && (
         <>
           <PageTitle section="HSE Performance" title={p.projectName || "Report"}>
-            <span className="text-sm text-white/60">{formatDate(p.assessmentDate)}</span>
+            <span className="text-sm text-white/60">{weekLabel(p.assessmentDate)} · {formatDate(p.assessmentDate)}</span>
             <button type="button" onClick={remove} className="btn-secondary gap-2 !text-red-600">
               <Trash2 className="h-4 w-4" /> Delete
             </button>

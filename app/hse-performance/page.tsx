@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HSE Performance (admin only) — Performance Summary, drawn like HSE Audit →
+ * HSE Performance (admin only) — summary of the Weekly Performance Reports, drawn like HSE Audit →
  * Audit Summary: headline cards, performance score per project (H&S and
  * Environmental, latest report per project), the overall score ring, a
  * written summary, then every report with Edit / Word / PDF.
@@ -41,7 +41,7 @@ import { Bullet, ENV_COLOR, HS_COLOR, MiniScore, ScoreChip, ScoreRing, pct } fro
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, formatDate, itemsFor, type Rating } from "@/lib/hseAudit";
-import { PERFORMANCE_LIST_COLUMNS, mapPerformance, performanceScores, type HsePerformance } from "@/lib/hsePerformance";
+import { PERFORMANCE_LIST_COLUMNS, REPORT_TITLE, mapPerformance, performanceScores, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
 import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 
 export default function HsePerformancePage() {
@@ -87,7 +87,7 @@ function PerformanceDashboard() {
     const q = query.trim().toLowerCase();
     return scoped
       .map((p) => ({ p, s: performanceScores(p) }))
-      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager].some((v) => v.toLowerCase().includes(q))));
+      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager, p.contractor, p.projectDirector, weekLabel(p.assessmentDate)].some((v) => v.toLowerCase().includes(q))));
   }, [scoped, query]);
 
   // Latest report per project for the chart, best overall first.
@@ -168,12 +168,15 @@ function PerformanceDashboard() {
 
   const exportSheets = [
     {
-      name: "HSE Performance",
+      name: "Weekly Performance",
       columns: [
+        { header: "Week", key: "week" },
         { header: "Date", key: "date" },
         { header: "Project", key: "project" },
-        { header: "Assessed by", key: "by" },
+        { header: "Contractor", key: "contractor" },
         { header: "HSE Manager", key: "mgr" },
+        { header: "Project Director", key: "director" },
+        { header: "Auditor / Position", key: "by" },
         { header: "H&S Score", key: "hs" },
         { header: "H&S %", key: "hsPct" },
         { header: "H&S Rating", key: "hsRating" },
@@ -185,10 +188,13 @@ function PerformanceDashboard() {
         ...ENV_ITEMS.map((i) => ({ header: `ENV: ${i}`, key: `e:${i}` })),
       ],
       rows: rows.map(({ p, s }) => ({
+        week: weekLabel(p.assessmentDate),
         date: formatDate(p.assessmentDate),
         project: p.projectName,
-        by: p.assessedBy,
+        contractor: p.contractor,
         mgr: p.hseManager,
+        director: p.projectDirector,
+        by: p.assessedBy,
         hs: s.hs.max ? `${s.hs.total}/${s.hs.max}` : "N/A",
         hsPct: s.hs.pct == null ? "" : Number(s.hs.pct.toFixed(1)),
         hsRating: s.hsRating,
@@ -211,7 +217,7 @@ function PerformanceDashboard() {
             HSE Performance
           </span>
         }
-        title="Performance Summary"
+        title="Weekly Performance Summary"
       >
         {stats.asOf && (
           <span className="inline-flex items-center gap-2 rounded-xl border border-[#f36f24]/50 px-3.5 py-2 text-sm font-semibold text-white/90">
@@ -219,9 +225,9 @@ function PerformanceDashboard() {
             As of {formatDate(stats.asOf)}
           </span>
         )}
-        <ExportExcelButton filename="HSE Performance" sheets={exportSheets} disabled={rows.length === 0} />
+        <ExportExcelButton filename="Weekly Performance Reports" sheets={exportSheets} disabled={rows.length === 0} />
         <Link href="/hse-performance/new" className="btn-primary gap-2">
-          <Plus className="h-4 w-4" /> New Report
+          <Plus className="h-4 w-4" /> New Weekly Report
         </Link>
       </PageTitle>
 
@@ -231,7 +237,7 @@ function PerformanceDashboard() {
           { label: "Projects Assessed", value: stats.projects, icon: ClipboardList, color: "#F36F24" },
           { label: "Avg. Health & Safety", value: pct(stats.hsAvg), icon: ShieldCheck, color: "#F36F24" },
           { label: "Avg. Environmental", value: pct(stats.envAvg), icon: Leaf, color: "#16A34A" },
-          { label: "Total Reports", value: stats.reports, icon: FileText, color: "#F36F24" },
+          { label: "Weekly Reports", value: stats.reports, icon: FileText, color: "#F36F24" },
           { label: "Compliant Ratings", value: stats.compliant, icon: BadgeCheck, color: "#16A34A" },
           { label: "Needs Improvement", value: stats.needs, icon: TriangleAlert, color: "#D97706" },
         ]}
@@ -242,7 +248,7 @@ function PerformanceDashboard() {
         <DarkPanel>
           <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
             <h2 className={`${CHART_TITLE} flex items-center gap-2`}>
-              <ChartColumnIncreasing className="h-5 w-5 text-[#ff8a3d]" /> Performance Score by Project
+              <ChartColumnIncreasing className="h-5 w-5 text-[#ff8a3d]" /> Performance Score by Project · latest week
             </h2>
             <div className="ms-auto flex flex-wrap gap-4 text-xs text-white/80">
               <span className="inline-flex items-center gap-1.5">
@@ -321,20 +327,21 @@ function PerformanceDashboard() {
       <DarkPanel className="mb-5">
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <h2 className={`${TABLE_TITLE} flex items-center gap-2`}>
-            <Layers className="h-5 w-5 text-[#ff8a3d]" /> Performance Reports
+            <Layers className="h-5 w-5 text-[#ff8a3d]" /> {REPORT_TITLE}s
           </h2>
           <label className="relative w-full sm:ms-auto sm:max-w-xs">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by project, assessor, manager…" className={SEARCH_INPUT} />
+            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search project, contractor, auditor, week…" className={SEARCH_INPUT} />
           </label>
         </div>
         <div className="overflow-x-auto rounded-lg">
-          <table className="w-full min-w-[1080px] text-start text-sm">
+          <table className="w-full min-w-[1240px] text-start text-sm">
             <thead>
               <tr className={TH_ROW}>
                 <th className={`${TH} rounded-s-lg`}>Project</th>
-                <th className={TH}>Date</th>
-                <th className={TH}>Assessed by</th>
+                <th className={TH}>Week</th>
+                <th className={TH}>Contractor</th>
+                <th className={TH}>Auditor</th>
                 <th className={`${TH} !text-center`}>H&amp;S Score</th>
                 <th className={`${TH} !text-center`}>ENV Score</th>
                 <th className={`${TH} !text-center`}>Overall</th>
@@ -346,21 +353,25 @@ function PerformanceDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
                     Loading…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
-                    No reports yet — click New Report to add the first one.
+                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
+                    No reports yet — click New Weekly Report to add the first one.
                   </td>
                 </tr>
               ) : (
                 rows.map(({ p, s }) => (
                   <tr key={p.id} onClick={() => router.push(`/hse-performance/${p.id}`)} className={`${TR} cursor-pointer`}>
                     <td className={`${TD} font-bold text-white`}>{p.projectName}</td>
-                    <td className={`${TD} whitespace-nowrap text-white/80`}>{formatDate(p.assessmentDate)}</td>
+                    <td className={`${TD} whitespace-nowrap text-white/80`}>
+                      <span className="font-semibold text-white">{weekLabel(p.assessmentDate)}</span>
+                      <span className="block text-xs text-white/50">{formatDate(p.assessmentDate)}</span>
+                    </td>
+                    <td className={`${TD} text-white/80`}>{p.contractor || "—"}</td>
                     <td className={`${TD} text-white/80`}>{p.assessedBy || "—"}</td>
                     <td className={`${TD} text-center`}>
                       <ScoreChip value={s.hs.pct} tint="rgba(243,111,36,0.22)" />

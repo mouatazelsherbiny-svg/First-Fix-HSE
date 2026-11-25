@@ -18,7 +18,7 @@ export default function NewHsePerformancePage() {
           <Link href="/hse-performance" className="mb-3 inline-flex items-center gap-1 text-sm text-brand-gray hover:text-brand-orange">
             <ArrowLeft className="h-4 w-4" /> HSE Performance
           </Link>
-          <PageTitle section="HSE Performance" title="New Report — HSE Project Assessment" />
+          <PageTitle section="HSE Performance" title="New Weekly Performance Report" />
           <PerformanceForm
             initial={emptyPerformance()}
             onSaved={(id) => router.push(`/hse-performance/${id}`)}
