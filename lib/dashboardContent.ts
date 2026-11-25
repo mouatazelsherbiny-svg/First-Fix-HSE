@@ -11,6 +11,8 @@ export interface GoodPracticePost {
   project: string;
   /** YYYY-MM-DD, or null when undated. */
   date: string | null;
+  /** CSS object-position for the photo crop. */
+  position?: string;
 }
 
 export const GOOD_PRACTICE_POSTS: GoodPracticePost[] = [
@@ -39,28 +41,28 @@ export const GOOD_PRACTICE_POSTS: GoodPracticePost[] = [
     date: null,
   },
   {
-    id: "eyewash-rosewood",
-    image: "/brand/news/eyewash-rosewood.jpg",
-    title: "Emergency Eyewash Stations",
-    details: "Provision of Emergency Eyewash Stations at Iconic and Zone 3.",
-    project: "Amaala – Rosewood",
+    id: "seven-toolbox-talk",
+    image: "/brand/news/seven-toolbox-talk.jpg",
+    title: "HSE Toolbox Talks",
+    details: "HSE awareness briefings and safety Toolbox Talks were delivered.",
+    project: "SEVEN",
     date: null,
   },
   {
-    id: "training-oceanarium",
-    image: "/brand/news/training-oceanarium.jpg",
-    title: "Onsite training: Near Miss reporting",
-    details: "Onsite training conducted on Near Miss reporting.",
-    project: "JCD Oceanarium",
-    date: "2026-10-04",
+    id: "al-arab-1m-safe-hours",
+    image: "/brand/news/al-arab-1m-safe-hours.jpg",
+    title: "Safe Man-Hours Milestone",
+    details: "Achieved 1,000,000 Safe Man-Hours Without a Lost-Time Injury (LTI).",
+    project: "Al Arab Hospital",
+    date: null,
   },
   {
-    id: "walkthrough",
-    image: "/brand/news/walkthrough.jpg",
-    title: "Weekly HSE Site Walkthrough",
-    details:
-      "Walkthrough with Construction team Management. Findings and commitment: housekeeping and material management, barricading and warning signage, PTW compliance.",
-    project: "Construction Management",
+    id: "exhibition-mbl-recognition",
+    image: "/brand/news/exhibition-mbl-recognition.jpg",
+    position: "center 40%",
+    title: "MBL Recognition Award",
+    details: "A First Fix employee was recognized by MBL for his excellent safety performance and strong commitment to HSE standards.",
+    project: "Exhibition Center",
     date: null,
   },
 ];

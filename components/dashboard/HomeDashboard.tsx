@@ -452,7 +452,7 @@ function GoodPractices() {
           >
             <div className="h-48 overflow-hidden bg-brand-grayLight">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={g.image} alt={g.title} className="h-full w-full object-cover transition group-hover:scale-105" />
+              <img src={g.image} alt={g.title} className="h-full w-full object-cover transition group-hover:scale-105" style={{ objectPosition: g.position ?? "center" }} />
             </div>
             <div className="flex flex-1 flex-col p-3">
               <p className="text-sm font-bold leading-snug text-brand-black">{g.title}</p>
