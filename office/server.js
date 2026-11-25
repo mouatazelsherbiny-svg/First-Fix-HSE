@@ -10,8 +10,9 @@ const url = `http://localhost:${port}`;
 const types = { ".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".svg": "image/svg+xml", ".glb": "model/gltf-binary", ".txt": "text/plain" };
 
 function openBrowser() {
-  const cmd = process.platform === "win32" ? `start "" "${url}"` : process.platform === "darwin" ? `open "${url}"` : `xdg-open "${url}"`;
-  exec(cmd, () => {});
+  // On Windows open Microsoft Edge (smooth 3D on this PC); fall back to the default browser.
+  if (process.platform === "win32") return exec(`start "" msedge "${url}"`, (err) => err && exec(`start "" "${url}"`));
+  exec(process.platform === "darwin" ? `open "${url}"` : `xdg-open "${url}"`, () => {});
 }
 
 const server = http.createServer((req, res) => {
