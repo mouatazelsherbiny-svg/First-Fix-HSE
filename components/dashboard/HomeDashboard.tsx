@@ -360,41 +360,24 @@ function ProjectsSpotlight() {
     "flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:scale-105";
 
   return (
-    <section className="relative flex min-h-[20rem] flex-1 flex-col overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:min-h-[24rem]" style={{ background: "#14202e" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        key={slide.id}
-        src={slide.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: slide.position ?? "center" }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(10,12,18,0.92) 0%, rgba(10,12,18,0.78) 55%, rgba(10,12,18,0.35) 100%)",
-        }}
-      />
-
-      <div className="relative flex flex-1 flex-col p-5 sm:p-8">
-        <div className="flex items-start justify-between gap-4">
+    <section className="relative flex min-h-[20rem] flex-1 flex-col overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] sm:min-h-[24rem] md:flex-row" style={{ background: "#0d0f14" }}>
+      {/* Text: its own column on the side, so the photo stays fully visible. */}
+      <div className="relative z-10 order-2 flex flex-col border-t border-white/10 p-5 md:order-1 md:w-[36%] md:shrink-0 md:border-e md:border-t-0 md:p-7" style={{ background: "linear-gradient(180deg, #14171f 0%, #0d0f14 100%)" }}>
+        <div className="flex items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
             <span className="h-4 w-1 rounded bg-brand-orange" />
             HSE News
           </p>
           {slides.length > 1 && (
             <div className="flex items-center gap-2">
-              <span className="rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ background: "rgba(0,0,0,0.45)" }}>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
                 {index + 1} of {slides.length}
               </span>
               <button
                 type="button"
                 onClick={() => setPaused((p) => !p)}
                 aria-label={paused ? "Play" : "Pause"}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-white"
-                style={{ background: "rgba(0,0,0,0.45)" }}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
               >
                 {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
               </button>
@@ -402,18 +385,18 @@ function ProjectsSpotlight() {
           )}
         </div>
 
-        {/* The text fills the slide: big title, then the lines, centred in the free space. */}
-        <div className="flex flex-1 flex-col justify-center pb-10 pt-4 sm:pe-20 sm:pb-4">
+        <div key={slide.id} className="flex flex-1 flex-col justify-center py-5">
           <h2
             className={`font-extrabold leading-tight text-white ${
-              slide.title.length > 90 ? "text-lg sm:text-2xl xl:text-[30px] xl:leading-[1.18]" : "text-xl sm:text-3xl xl:text-[40px] xl:leading-[1.12]"
+              slide.title.length > 90 ? "text-lg sm:text-xl xl:text-2xl" : "text-xl sm:text-2xl xl:text-[30px] xl:leading-[1.15]"
             }`}
           >
             {slide.title}
           </h2>
-          <div className="mt-4 space-y-1.5 sm:mt-5">
+          <span className="mt-4 h-1 w-12 rounded bg-brand-orange" />
+          <div className="mt-4 space-y-1.5">
             {slide.lines.map((line, k) => (
-              <p key={k} className="text-sm font-medium leading-snug text-white/90 sm:text-lg xl:text-[22px]">
+              <p key={k} className="text-sm font-medium leading-snug text-white/85 sm:text-base xl:text-lg">
                 {line}
               </p>
             ))}
@@ -421,15 +404,37 @@ function ProjectsSpotlight() {
         </div>
 
         {slides.length > 1 && (
-          <div className="absolute bottom-5 end-5 flex gap-2">
-            <button type="button" onClick={() => go(index - 1)} aria-label="Previous" className={roundBtn} style={{ background: "rgba(0,0,0,0.4)" }}>
-              <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
-            </button>
-            <button type="button" onClick={() => go(index + 1)} aria-label="Next" className={roundBtn} style={{ background: "rgba(0,0,0,0.4)" }}>
-              <ChevronRight className="h-5 w-5 rtl:rotate-180" />
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5">
+              {slides.map((s, k) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => go(k)}
+                  aria-label={`Slide ${k + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${k === index ? "w-6 bg-brand-orange" : "w-1.5 bg-white/30 hover:bg-white/60"}`}
+                />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => go(index - 1)} aria-label="Previous" className={`${roundBtn} bg-white/10 hover:bg-white/20`}>
+                <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+              </button>
+              <button type="button" onClick={() => go(index + 1)} aria-label="Next" className={`${roundBtn} bg-white/10 hover:bg-white/20`}>
+                <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+              </button>
+            </div>
           </div>
         )}
+      </div>
+
+      {/* Photo: the whole picture, no text or shade over it. */}
+      <div className="relative order-1 min-h-[14rem] flex-1 overflow-hidden md:order-2">
+        {/* blurred copy fills the frame; the photo itself is shown whole on top */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img key={`${slide.id}-bg`} src={slide.image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img key={slide.id} src={slide.image} alt={slide.title} className="absolute inset-0 h-full w-full object-contain" />
       </div>
     </section>
   );
