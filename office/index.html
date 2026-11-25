@@ -78,6 +78,12 @@
   </aside>
 </div>
 
+<script>
+  window.addEventListener("error", (e) => { const l = document.querySelector("#loading div"); if (l) l.textContent = "Error: " + (e.message || "could not start") + " — send me a screenshot of this."; });
+  (function () { try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) throw 0; }
+    catch (_) { addEventListener("DOMContentLoaded", () => { const l = document.querySelector("#loading div"); l.innerHTML = "3D (WebGL) is turned off in this browser. Open it in Chrome or Edge, or turn on <b>Use graphics acceleration</b> in the browser settings. <a href='index-2d.html' style='color:#f36f24'>Open the 2D office</a>"; }); }
+  })();
+</script>
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
