@@ -430,11 +430,9 @@ function ProjectsSpotlight() {
 
       {/* Photo: the whole picture, no text or shade over it. */}
       <div className="relative order-1 min-h-[14rem] flex-1 overflow-hidden md:order-2">
-        {/* blurred copy fills the frame; the photo itself is shown whole on top */}
+        {/* the photo fills the whole frame; each slide's `position` keeps its people in view */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img key={`${slide.id}-bg`} src={slide.image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img key={slide.id} src={slide.image} alt={slide.title} className="absolute inset-0 h-full w-full object-contain" />
+        <img key={slide.id} src={slide.image} alt={slide.title} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: slide.position ?? "center" }} />
       </div>
     </section>
   );

@@ -93,7 +93,7 @@ export const NEWS_POSTS: NewsPost[] = [
   {
     id: "exhibition-mbl-recognition",
     image: "/brand/news/exhibition-mbl-recognition.jpg",
-    position: "center 35%",
+    position: "center 42%",
     title: "A First Fix employee was recognized by MBL for his excellent safety performance and strong commitment to HSE standards.",
     lines: ["Project: Exhibition Center"],
   },
