@@ -34,6 +34,7 @@ import { CHART_TITLE, DarkPanel, SEARCH_INPUT, TABLE_TITLE, TD, TH, TH_ROW, TR }
 import { useLanguage } from "@/context/LanguageContext";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
+import { useProfileNames } from "@/lib/profileNames";
 import {
   AUDIT_LIST_COLUMNS,
   AuditFinding,
@@ -71,6 +72,8 @@ function HseAuditDashboard() {
   const [findings, setFindings] = useState<FindingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const names = useProfileNames();
+  const creatorOf = (a: HseAudit) => (a.createdBy ? names.get(a.createdBy) ?? "…" : "—");
 
   useEffect(() => {
     let active = true;
@@ -189,6 +192,7 @@ function HseAuditDashboard() {
         { header: "Project", key: "project" },
         { header: "Auditor", key: "auditor" },
         { header: "HSE Manager", key: "hseManager" },
+        { header: "Created by", key: "createdBy" },
         { header: "H&S Score", key: "hs" },
         { header: "H&S %", key: "hsPct" },
         { header: "H&S Status", key: "hsStatus" },
@@ -205,6 +209,7 @@ function HseAuditDashboard() {
         project: audit.projectName,
         auditor: audit.auditor,
         hseManager: audit.hseManager,
+        createdBy: creatorOf(audit),
         hs: hs.max ? `${hs.total}/${hs.max}` : "N/A",
         hsPct: hs.pct ?? "",
         hsStatus: hs.level?.label ?? "",
@@ -377,12 +382,13 @@ function HseAuditDashboard() {
           </label>
         </div>
         <div className="overflow-x-auto rounded-lg">
-          <table className="w-full min-w-[980px] text-start text-sm">
+          <table className="w-full min-w-[1100px] text-start text-sm">
             <thead>
               <tr className={TH_ROW}>
                 <th className={`${TH} rounded-s-lg`}>Project</th>
                 <th className={TH}>Audit Date</th>
                 <th className={TH}>Auditor</th>
+                <th className={TH}>Created by</th>
                 <th className={`${TH} !text-center`}>H&amp;S Score</th>
                 <th className={`${TH} !text-center`}>ENV Score</th>
                 <th className={`${TH} !text-center`}>Overall</th>
@@ -394,13 +400,13 @@ function HseAuditDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
                     Loading…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
                     No audits yet — click New Audit to add the first one.
                   </td>
                 </tr>
@@ -414,6 +420,7 @@ function HseAuditDashboard() {
                       <td className={`${TD} font-bold text-white`}>{audit.projectName}</td>
                       <td className={`${TD} whitespace-nowrap text-white/80`}>{formatDate(audit.auditDate)}</td>
                       <td className={`${TD} text-white/80`}>{audit.auditor || "—"}</td>
+                      <td className={`${TD} text-white/80`}>{creatorOf(audit)}</td>
                       <td className={`${TD} text-center`}>
                         <ScoreChip value={hs.pct} tint="rgba(243,111,36,0.22)" />
                       </td>

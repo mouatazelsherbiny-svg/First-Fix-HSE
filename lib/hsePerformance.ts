@@ -44,6 +44,8 @@ export interface HsePerformance {
   comments: string;
   signatures: Record<PerfSignKey, PerfSignature>;
   createdAt?: string;
+  /** profiles id of whoever created the report */
+  createdBy?: string | null;
 }
 
 export function emptyPerformance(): HsePerformance {
@@ -91,6 +93,7 @@ export function mapPerformance(r: any): HsePerformance {
       })
     ) as Record<PerfSignKey, PerfSignature>,
     createdAt: r.created_at,
+    createdBy: r.created_by ?? null,
   };
 }
 
@@ -114,7 +117,7 @@ export function toPerformanceRow(p: HsePerformance) {
 }
 
 /** Columns for lists (no signature picture). */
-export const PERFORMANCE_LIST_COLUMNS = "id,project_name,assessment_date,contractor,assessed_by,hse_manager,project_director,target_pct,hs_scores,env_scores,hs_rating,env_rating,comments,created_at";
+export const PERFORMANCE_LIST_COLUMNS = "id,project_name,assessment_date,contractor,assessed_by,hse_manager,project_director,target_pct,hs_scores,env_scores,hs_rating,env_rating,comments,created_at,created_by";
 
 export interface PerformanceScores {
   hs: ScoreResult;

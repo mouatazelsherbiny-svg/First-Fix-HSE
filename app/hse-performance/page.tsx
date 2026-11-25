@@ -44,6 +44,7 @@ import { fetchAllRows, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, formatDate, itemsFor, type Rating } from "@/lib/hseAudit";
 import { PERFORMANCE_LIST_COLUMNS, REPORT_TITLE, mapPerformance, performanceScores, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
 import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
+import { useProfileNames } from "@/lib/profileNames";
 
 export default function HsePerformancePage() {
   return (
@@ -73,6 +74,8 @@ function PerformanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState("");
+  const names = useProfileNames();
+  const creatorOf = (p: HsePerformance) => (p.createdBy ? names.get(p.createdBy) ?? "…" : "—");
 
   useEffect(() => {
     let active = true;
@@ -91,8 +94,8 @@ function PerformanceDashboard() {
     const q = query.trim().toLowerCase();
     return scoped
       .map((p) => ({ p, s: performanceScores(p) }))
-      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager, p.contractor, p.projectDirector, weekLabel(p.assessmentDate)].some((v) => v.toLowerCase().includes(q))));
-  }, [scoped, query]);
+      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager, p.contractor, p.projectDirector, weekLabel(p.assessmentDate), p.createdBy ? names.get(p.createdBy) ?? "" : ""].some((v) => v.toLowerCase().includes(q))));
+  }, [scoped, query, names]);
 
   // Latest report per project for the chart, best overall first.
   const chart = useMemo(() => {
@@ -181,6 +184,7 @@ function PerformanceDashboard() {
         { header: "HSE Manager", key: "mgr" },
         { header: "Project Director", key: "director" },
         { header: "Auditor / Position", key: "by" },
+        { header: "Created by", key: "createdBy" },
         { header: "H&S Score", key: "hs" },
         { header: "H&S %", key: "hsPct" },
         { header: "H&S Rating", key: "hsRating" },
@@ -199,6 +203,7 @@ function PerformanceDashboard() {
         mgr: p.hseManager,
         director: p.projectDirector,
         by: p.assessedBy,
+        createdBy: creatorOf(p),
         hs: s.hs.max ? `${s.hs.total}/${s.hs.max}` : "N/A",
         hsPct: s.hs.pct == null ? "" : Number(s.hs.pct.toFixed(1)),
         hsRating: s.hsRating,
@@ -335,17 +340,18 @@ function PerformanceDashboard() {
           </h2>
           <label className="relative w-full sm:ms-auto sm:max-w-xs">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search project, contractor, auditor, week…" className={SEARCH_INPUT} />
+            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search project, contractor, auditor, creator…" className={SEARCH_INPUT} />
           </label>
         </div>
         <div className="overflow-x-auto rounded-lg">
-          <table className="w-full min-w-[1240px] text-start text-sm">
+          <table className="w-full min-w-[1360px] text-start text-sm">
             <thead>
               <tr className={TH_ROW}>
                 <th className={`${TH} rounded-s-lg`}>Project</th>
                 <th className={TH}>Week</th>
                 <th className={TH}>Contractor</th>
                 <th className={TH}>Auditor</th>
+                <th className={TH}>Created by</th>
                 <th className={`${TH} !text-center`}>H&amp;S Score</th>
                 <th className={`${TH} !text-center`}>ENV Score</th>
                 <th className={`${TH} !text-center`}>Overall</th>
@@ -357,13 +363,13 @@ function PerformanceDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={11} className="px-4 py-10 text-center text-white/50">
                     Loading…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={11} className="px-4 py-10 text-center text-white/50">
                     No reports yet — click New Weekly Report to add the first one.
                   </td>
                 </tr>
@@ -377,6 +383,10 @@ function PerformanceDashboard() {
                     </td>
                     <td className={`${TD} text-white/80`}>{p.contractor || "—"}</td>
                     <td className={`${TD} text-white/80`}>{p.assessedBy || "—"}</td>
+                    <td className={`${TD} text-white/80`}>
+                      {creatorOf(p)}
+                      {p.createdAt && <span className="block text-xs text-white/45">{formatDate(p.createdAt.slice(0, 10))}</span>}
+                    </td>
                     <td className={`${TD} text-center`}>
                       <ScoreChip value={s.hs.pct} tint="rgba(243,111,36,0.22)" />
                     </td>
