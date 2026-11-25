@@ -212,6 +212,7 @@ export default function Sidebar({
       count: disciplinaryRecords.length + ppeRecords.length + trainingRecords.length,
     },
     { kind: "link", href: "/hse-audit", label: t.nav.hseAudit, icon: ClipboardList },
+    { kind: "link", href: "/hse-performance", activePrefix: "/hse-performance", label: "HSE Performance", icon: Gauge },
     { kind: "link", href: "/summary-performance-report", label: t.nav.summaryPerformanceReport, icon: ChartLine },
     { kind: "link", href: "/hse-team", label: t.nav.hseTeam, icon: Network },
   ];
@@ -221,7 +222,6 @@ export default function Sidebar({
     user?.role === "admin"
       ? [
           { href: "/iir", label: "IIR", icon: FileSearch },
-          { href: "/hse-performance", label: "HSE Performance", icon: Gauge },
           { href: "/edit-requests", label: t.nav.editRequests, icon: ClipboardCheck },
           { href: "/user-management", label: t.nav.userManagement, icon: UserCog },
         ]

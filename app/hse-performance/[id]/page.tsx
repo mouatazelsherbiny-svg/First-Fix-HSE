@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AdminOnly from "@/components/iir/AdminOnly";
 import PerformanceForm from "@/components/hsePerformance/PerformanceForm";
 import PageTitle from "@/components/PageTitle";
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { formatDate } from "@/lib/hseAudit";
 import { mapPerformance, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
@@ -15,9 +15,9 @@ import { mapPerformance, weekLabel, type HsePerformance } from "@/lib/hsePerform
 export default function HsePerformanceDetailPage() {
   return (
     <ProtectedRoute>
-      <AdminOnly>
+      <>
         <PerformanceDetail />
-      </AdminOnly>
+      </>
     </ProtectedRoute>
   );
 }
@@ -25,6 +25,7 @@ export default function HsePerformanceDetailPage() {
 function PerformanceDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const isAdmin = useAuth().user?.role === "admin";
   const [p, setP] = useState<HsePerformance | null>(null);
   const [version, setVersion] = useState(0);
   const [error, setError] = useState("");
@@ -66,9 +67,11 @@ function PerformanceDetail() {
         <>
           <PageTitle section="HSE Performance" title={p.projectName || "Report"}>
             <span className="text-sm text-white/60">{weekLabel(p.assessmentDate)} · {formatDate(p.assessmentDate)}</span>
-            <button type="button" onClick={remove} className="btn-secondary gap-2 !text-red-600">
-              <Trash2 className="h-4 w-4" /> Delete
-            </button>
+            {isAdmin && (
+              <button type="button" onClick={remove} className="btn-secondary gap-2 !text-red-600">
+                <Trash2 className="h-4 w-4" /> Delete
+              </button>
+            )}
           </PageTitle>
           <PerformanceForm
             key={version}

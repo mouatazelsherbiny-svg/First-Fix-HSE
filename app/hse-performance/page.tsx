@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HSE Performance (admin only) — summary of the Weekly Performance Reports, drawn like HSE Audit →
+ * HSE Performance (every approved user; delete is admin only) — summary of the Weekly Performance Reports, drawn like HSE Audit →
  * Audit Summary: headline cards, performance score per project (H&S and
  * Environmental, latest report per project), the overall score ring, a
  * written summary, then every report with Edit / Word / PDF.
@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AdminOnly from "@/components/iir/AdminOnly";
 import SummaryCards from "@/components/SummaryCards";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import PageTitle from "@/components/PageTitle";
@@ -39,6 +38,7 @@ import { BrandMark } from "@/components/Sidebar";
 import { CHART_TITLE, DarkPanel, SEARCH_INPUT, TABLE_TITLE, TD, TH, TH_ROW, TR } from "@/components/charts/InjuryStyle";
 import { Bullet, ENV_COLOR, HS_COLOR, MiniScore, ScoreChip, ScoreRing, pct } from "@/components/hseAudit/SummaryWidgets";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
+import { useAuth } from "@/context/AuthContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, formatDate, itemsFor, type Rating } from "@/lib/hseAudit";
 import { PERFORMANCE_LIST_COLUMNS, REPORT_TITLE, mapPerformance, performanceScores, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
@@ -47,9 +47,9 @@ import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 export default function HsePerformancePage() {
   return (
     <ProtectedRoute>
-      <AdminOnly>
+      <>
         <PerformanceDashboard />
-      </AdminOnly>
+      </>
     </ProtectedRoute>
   );
 }
@@ -65,6 +65,7 @@ function RatingPill({ r }: { r: Rating }) {
 
 function PerformanceDashboard() {
   const router = useRouter();
+  const isAdmin = useAuth().user?.role === "admin";
   const [reports, setReports] = useState<HsePerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -414,9 +415,11 @@ function PerformanceDashboard() {
                         >
                           <FileText className="h-4 w-4" /> PDF
                         </a>
-                        <button type="button" onClick={() => remove(p)} title="Delete" className="flex h-9 w-9 items-center justify-center rounded-md text-white/50 hover:bg-red-500/20 hover:text-red-400">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {isAdmin && (
+                          <button type="button" onClick={() => remove(p)} title="Delete" className="flex h-9 w-9 items-center justify-center rounded-md text-white/50 hover:bg-red-500/20 hover:text-red-400">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
