@@ -16,7 +16,7 @@ import SignaturePad from "@/components/SignaturePad";
 import { PROJECTS } from "@/lib/mockData";
 import { getCurrentUserId, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, itemsFor, ratingOf, scoreOf } from "@/lib/hseAudit";
-import { PERF_SIGN_ROLES, REPORT_TITLE, overallOf, toPerformanceRow, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
+import { PERF_SIGN_ROLES, REPORT_TITLE, overallClass, overallOf, toPerformanceRow, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
 import { ScoreRing } from "@/components/hseAudit/SummaryWidgets";
 import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 
@@ -35,6 +35,8 @@ export default function PerformanceForm({
   const set = (patch: Partial<HsePerformance>) => setP((x) => ({ ...x, ...patch }));
   const hs = scoreOf(p.hsScores, HS_ITEMS);
   const env = scoreOf(p.envScores, ENV_ITEMS);
+  const overall = overallOf(hs.pct, env.pct);
+  const band = overallClass(overall);
   const projects = PROJECTS.includes(p.projectName) || !p.projectName ? PROJECTS : [p.projectName, ...PROJECTS];
 
   const save = async () => {
@@ -128,8 +130,11 @@ export default function PerformanceForm({
           <div className="flex flex-col overflow-hidden rounded-xl border border-brand-border bg-[#111111] text-white">
             <p className="border-b-2 border-[#f36f24] px-3 py-2 text-center text-xs font-bold uppercase tracking-wide">Overall Performance Score</p>
             <div className="flex flex-1 items-center justify-center py-4">
-              <ScoreRing value={overallOf(hs.pct, env.pct)} />
+              <ScoreRing value={overall} color={band?.color} />
             </div>
+            <p className="px-3 py-2 text-center text-sm font-extrabold" style={band ? { background: band.color, color: band.text } : { background: "#27272a", color: "#a1a1aa" }}>
+              {band ? band.label : "No score yet"}
+            </p>
           </div>
         </div>
       </div>

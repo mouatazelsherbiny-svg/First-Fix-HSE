@@ -10,7 +10,7 @@
  */
 
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, TONE_STYLE, formatDate, itemsFor, scoreTone, type Rating, type ScoreResult, type Scores } from "@/lib/hseAudit";
-import { PERF_SIGN_ROLES, REPORT_TITLE, performanceScores, type HsePerformance } from "@/lib/hsePerformance";
+import { PERF_SIGN_ROLES, REPORT_TITLE, overallClass, performanceScores, type HsePerformance } from "@/lib/hsePerformance";
 
 const ORANGE = "#F36F24";
 const BLACK = "#111111";
@@ -94,21 +94,15 @@ function Box({ title, r, target, rating }: { title: string; r: ScoreResult; targ
   );
 }
 
-function Ring({ value }: { value: number | null }) {
+function Ring({ value, color }: { value: number | null; color: string }) {
   const r = 40;
   const c = 2 * Math.PI * r;
   const p = Math.max(0, Math.min(100, value ?? 0)) / 100;
   return (
     <div className="pr-ring">
       <svg viewBox="0 0 96 96">
-        <defs>
-          <linearGradient id="prRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FBBF24" />
-            <stop offset="100%" stopColor={ORANGE} />
-          </linearGradient>
-        </defs>
         <circle cx="48" cy="48" r={r} fill="none" stroke="#3f3f46" strokeWidth="9" />
-        <circle cx="48" cy="48" r={r} fill="none" stroke="url(#prRing)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${c * p} ${c}`} />
+        <circle cx="48" cy="48" r={r} fill="none" stroke={color} strokeWidth="9" strokeLinecap="round" strokeDasharray={`${c * p} ${c}`} />
       </svg>
       <div>
         {value == null ? "N/A" : `${value.toFixed(1)}%`}
@@ -120,6 +114,7 @@ function Ring({ value }: { value: number | null }) {
 
 export default function PerformanceReport({ p }: { p: HsePerformance }) {
   const s = performanceScores(p);
+  const band = overallClass(s.overall);
   return (
     <div className="pr">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -175,7 +170,10 @@ export default function PerformanceReport({ p }: { p: HsePerformance }) {
               Overall Performance Score
             </div>
             <div className="p">
-              <Ring value={s.overall} />
+              <Ring value={s.overall} color={band?.color ?? "#71717a"} />
+            </div>
+            <div className="rt" style={band ? { background: band.color, color: band.text } : { background: "#F3F4F6" }}>
+              {band ? band.label : "—"}
             </div>
           </div>
         </div>

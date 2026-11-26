@@ -22,7 +22,7 @@ import {
   WidthType,
 } from "docx";
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, TONE_STYLE, formatDate, itemsFor, scoreTone, type Rating, type ScoreResult, type Scores } from "@/lib/hseAudit";
-import { PERF_SIGN_ROLES, REPORT_TITLE, performanceFileName, performanceScores, type HsePerformance } from "@/lib/hsePerformance";
+import { PERF_SIGN_ROLES, REPORT_TITLE, overallClass, performanceFileName, performanceScores, type HsePerformance } from "@/lib/hsePerformance";
 
 const FONT = "Calibri";
 const ORANGE = "F36F24";
@@ -98,7 +98,7 @@ function boxParas(title: string, r: ScoreResult, target: number, rating: Rating)
 }
 
 /** The Overall Performance Score ring, drawn on a canvas so Word shows it as a picture. */
-function ringPng(value: number | null) {
+function ringPng(value: number | null, color: string) {
   const size = 240;
   const cv = document.createElement("canvas");
   cv.width = size;
@@ -113,9 +113,7 @@ function ringPng(value: number | null) {
   g.beginPath(); g.arc(cx, cx, r, 0, Math.PI * 2); g.stroke();
   const p = Math.max(0, Math.min(100, value ?? 0)) / 100;
   if (p > 0) {
-    const gr = g.createLinearGradient(0, 0, size, size);
-    gr.addColorStop(0, "#FBBF24"); gr.addColorStop(1, "#F36F24");
-    g.strokeStyle = gr;
+    g.strokeStyle = color;
     g.beginPath(); g.arc(cx, cx, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); g.stroke();
   }
   g.fillStyle = "#ffffff"; g.textAlign = "center"; g.textBaseline = "middle";
@@ -132,6 +130,7 @@ function ringPng(value: number | null) {
 
 export async function buildPerformanceDocx(p: HsePerformance): Promise<Blob> {
   const s = performanceScores(p);
+  const band = overallClass(s.overall);
   const logoBlob = await fetch("/brand/logo-print.png").then((r) => (r.ok ? r.blob() : null)).catch(() => null);
   const logoUrl = logoBlob ? await new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(logoBlob); }) : "";
   const logo = await loadImg(logoUrl);
@@ -207,7 +206,13 @@ export async function buildPerformanceDocx(p: HsePerformance): Promise<Blob> {
                     fill: BLACK,
                     children: [
                       new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 60 }, children: [t("Overall Performance Score", { bold: true, color: "FFFFFF", size: 22 })] }),
-                      new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: "png", data: ringPng(s.overall), transformation: { width: 120, height: 120 } })] }),
+                      new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: "png", data: ringPng(s.overall, band?.color ?? "#71717a"), transformation: { width: 120, height: 120 } })] }),
+                      new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        shading: { type: ShadingType.CLEAR, color: "auto", fill: band ? hex(band.color) : "F3F4F6" },
+                        spacing: { before: 60, after: 40 },
+                        children: [t(band ? band.label : "—", { bold: true, color: band ? hex(band.text) : "111827", size: 20 })],
+                      }),
                     ],
                   }),
                 ],

@@ -9,6 +9,24 @@
 
 export const REPORT_TITLE = "Weekly Performance Report";
 
+/** 11.1 Overall performance classification — colour + label of the Overall Performance Score. */
+export const OVERALL_BANDS = [
+  { min: 100, label: "Outstanding Performance", color: "#00B050", text: "#FFFFFF" },
+  { min: 90, label: "Excellent Performance", color: "#92D050", text: "#111111" },
+  { min: 80, label: "Very Good Performance", color: "#92D050", text: "#111111" },
+  { min: 70, label: "Good Performance", color: "#92D050", text: "#111111" },
+  { min: 40, label: "Moderate / Improvement Required", color: "#FFC000", text: "#111111" },
+  { min: 0, label: "Poor / Unacceptable Performance", color: "#E02424", text: "#FFFFFF" },
+] as const;
+export type OverallBand = (typeof OVERALL_BANDS)[number];
+
+/** Classification for an overall %; null when there is no score (all N/A). */
+export function overallClass(value: number | null): OverallBand | null {
+  if (value == null || Number.isNaN(value)) return null;
+  // 100% only when it is a full score (99.96 rounds to 100.0 on screen but is still "Excellent").
+  return OVERALL_BANDS.find((b) => (b.min === 100 ? value >= 99.995 : value >= b.min)) ?? OVERALL_BANDS[OVERALL_BANDS.length - 1];
+}
+
 export const PERF_SIGN_ROLES = [
   { key: "auditor", label: "HSE Auditor" },
   { key: "regional", label: "Regional HSE Manager" },

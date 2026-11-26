@@ -32,7 +32,7 @@ export function ScoreChip({ value, tint }: { value: number | null; tint: string 
 }
 
 /** Ring for the overall score: green → orange arc on a dark track. */
-export function ScoreRing({ value }: { value: number | null }) {
+export function ScoreRing({ value, color, label = "Overall" }: { value: number | null; color?: string; label?: string }) {
   const r = 62;
   const c = 2 * Math.PI * r;
   const p = Math.max(0, Math.min(100, value ?? 0)) / 100;
@@ -52,16 +52,16 @@ export function ScoreRing({ value }: { value: number | null }) {
           cy="80"
           r={r}
           fill="none"
-          stroke="url(#auditRing)"
+          stroke={color ?? "url(#auditRing)"}
           strokeWidth="14"
           strokeLinecap="round"
           strokeDasharray={`${c * p} ${c}`}
-          style={{ filter: "drop-shadow(0 0 8px rgba(243,111,36,0.55))" }}
+          style={{ filter: `drop-shadow(0 0 8px ${color ? `${color}99` : "rgba(243,111,36,0.55)"})` }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-3xl font-extrabold tabular-nums">{pct(value)}</span>
-        <span className="text-sm font-semibold text-white/70">Overall</span>
+        <span className="text-sm font-semibold text-white/70">{label}</span>
       </div>
     </div>
   );
