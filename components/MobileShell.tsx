@@ -22,7 +22,7 @@ import { MOBILE_HOME } from "@/lib/mobileApp";
 
 const MENU_PAGES = ["/m/reports/daily", "/m/reports/monthly", "/m/reports/incident"];
 /** The width the phone app is designed at. */
-const DESIGN_W = 390;
+const DESIGN_W = 430;
 const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /** Scale for the current screen (1 in landscape) and the matching --mvh.
@@ -35,7 +35,7 @@ function useFit() {
     const fit = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const next = h > w ? Math.max(0.8, Math.min(3, w / DESIGN_W)) : 1;
+      const next = h > w ? Math.max(0.75, Math.min(3, w / DESIGN_W)) : 1;
       document.documentElement.classList.toggle("m-zoom", h > w && w >= 640);
       setK(next);
       document.documentElement.style.setProperty("--mvh", next === 1 ? "1dvh" : `${h / next / 100}px`);
