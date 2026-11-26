@@ -7,7 +7,7 @@
  * written summary, then every report with Edit / Word / PDF.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -24,6 +24,7 @@ import {
   Loader2,
   Pencil,
   Plus,
+  Printer,
   Search,
   ShieldCheck,
   Target,
@@ -42,7 +43,7 @@ import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { useAuth } from "@/context/AuthContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
 import { ENV_ITEMS, HS_ITEMS, RATING_STYLE, formatDate, itemsFor, type Rating } from "@/lib/hseAudit";
-import { PERFORMANCE_LIST_COLUMNS, REPORT_TITLE, mapPerformance, performanceScores, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
+import { PERFORMANCE_LIST_COLUMNS, REPORT_TITLE, mapPerformance, overallClass, performanceScores, weekLabel, type HsePerformance } from "@/lib/hsePerformance";
 import { exportPerformanceWord } from "@/lib/hsePerformanceWord";
 import { useProfileNames } from "@/lib/profileNames";
 
@@ -65,6 +66,20 @@ function RatingPill({ r }: { r: Rating }) {
   );
 }
 
+/** Overall % coloured by the 11.1 overall performance classification (label on hover). */
+function OverallChip({ value }: { value: number | null }) {
+  const band = overallClass(value);
+  return (
+    <span
+      title={band?.label}
+      className="inline-flex min-w-[76px] justify-center rounded-lg px-3 py-1.5 text-sm font-bold tabular-nums"
+      style={band ? { background: band.color, color: band.text } : { background: "rgba(255,255,255,0.08)", color: "#fff" }}
+    >
+      {value == null ? "—" : `${value.toFixed(1)}%`}
+    </span>
+  );
+}
+
 function PerformanceDashboard() {
   const router = useRouter();
   const { user } = useAuth();
@@ -76,6 +91,30 @@ function PerformanceDashboard() {
   const [busy, setBusy] = useState("");
   const names = useProfileNames();
   const creatorOf = (p: HsePerformance) => (p.createdBy ? names.get(p.createdBy) ?? "…" : "—");
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  /** Print the whole summary (title → reports table) without the sidebar / top bar.
+   *  The page is made as wide as the screen layout (landscape A4 proportions),
+   *  so it prints exactly as seen; a printer scales it to the paper. */
+  const printScreen = () => {
+    const root = document.documentElement;
+    const el = pageRef.current;
+    const content = el ? Math.max(el.scrollWidth, ...Array.from(el.querySelectorAll("table")).map((t) => t.scrollWidth)) : 1300;
+    // Chrome lays a printed page out at 3/4 of its size in px, so ask for 4/3 of the screen width.
+    const w = Math.ceil((Math.max(1360, content + 48) * 4) / 3);
+    const h = Math.round((w * 210) / 297);
+    root.classList.add("print-screen");
+    const page = document.createElement("style");
+    page.textContent = `@page { size: ${w}px ${h}px; margin: 24px; }`;
+    document.head.appendChild(page);
+    const done = () => {
+      root.classList.remove("print-screen");
+      page.remove();
+      window.removeEventListener("afterprint", done);
+    };
+    window.addEventListener("afterprint", done);
+    setTimeout(() => window.print(), 150);
+  };
 
   useEffect(() => {
     let active = true;
@@ -218,7 +257,7 @@ function PerformanceDashboard() {
   ];
 
   return (
-    <div>
+    <div ref={pageRef}>
       <PageTitle
         section={
           <span className="flex items-center gap-3">
@@ -234,8 +273,13 @@ function PerformanceDashboard() {
             As of {formatDate(stats.asOf)}
           </span>
         )}
-        <ExportExcelButton filename="Weekly Performance Reports" sheets={exportSheets} disabled={rows.length === 0} />
-        <Link href="/hse-performance/new" className="btn-primary gap-2">
+        <span className="print-hide">
+          <ExportExcelButton filename="Weekly Performance Reports" sheets={exportSheets} disabled={rows.length === 0} />
+        </span>
+        <button type="button" onClick={printScreen} className="print-hide btn-secondary gap-2">
+          <Printer className="h-4 w-4" /> Print Screen
+        </button>
+        <Link href="/hse-performance/new" className="print-hide btn-primary gap-2">
           <Plus className="h-4 w-4" /> New Weekly Report
         </Link>
       </PageTitle>
@@ -252,7 +296,7 @@ function PerformanceDashboard() {
         ]}
       />
 
-      <div className="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+      <div className="print-avoid-break print-two-col mb-5 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         {/* ---- Performance score by project ---- */}
         <DarkPanel>
           <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -273,7 +317,7 @@ function PerformanceDashboard() {
           ) : !chart.length ? (
             <p className="py-16 text-center text-sm text-white/50">No reports yet — click New Weekly Report to add the first one.</p>
           ) : (
-            <div className="overflow-y-auto pe-1" style={{ maxHeight: 10 * 44 + 40 }}>
+            <div className="print-expand overflow-y-auto pe-1" style={{ maxHeight: 10 * 44 + 40 }}>
               <div style={{ height: chart.length * 44 + 40 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chart} layout="vertical" margin={{ top: 4, right: 56, bottom: 4, left: 0 }} barGap={2} barCategoryGap={8}>
@@ -338,12 +382,12 @@ function PerformanceDashboard() {
           <h2 className={`${TABLE_TITLE} flex items-center gap-2`}>
             <Layers className="h-5 w-5 text-[#ff8a3d]" /> {REPORT_TITLE}s
           </h2>
-          <label className="relative w-full sm:ms-auto sm:max-w-xs">
+          <label className="print-hide relative w-full sm:ms-auto sm:max-w-xs">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
             <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search project, contractor, auditor, creator…" className={SEARCH_INPUT} />
           </label>
         </div>
-        <div className="overflow-x-auto rounded-lg">
+        <div className="print-expand overflow-x-auto rounded-lg">
           <table className="w-full min-w-[1360px] text-start text-sm">
             <thead>
               <tr className={TH_ROW}>
@@ -357,7 +401,7 @@ function PerformanceDashboard() {
                 <th className={`${TH} !text-center`}>Overall</th>
                 <th className={`${TH} !text-center`}>H&amp;S Rating</th>
                 <th className={`${TH} !text-center`}>ENV Rating</th>
-                <th className={`${TH} rounded-e-lg !text-center`}>Actions</th>
+                <th className={`${TH} print-hide rounded-e-lg !text-center`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -394,7 +438,7 @@ function PerformanceDashboard() {
                       <ScoreChip value={s.env.pct} tint="rgba(34,197,94,0.2)" />
                     </td>
                     <td className={`${TD} text-center`}>
-                      <ScoreChip value={s.overall} tint="rgba(255,255,255,0.08)" />
+                      <OverallChip value={s.overall} />
                     </td>
                     <td className={`${TD} text-center`}>
                       <RatingPill r={s.hsRating} />
@@ -402,7 +446,7 @@ function PerformanceDashboard() {
                     <td className={`${TD} text-center`}>
                       <RatingPill r={s.envRating} />
                     </td>
-                    <td className={`${TD} text-center`} onClick={(e) => e.stopPropagation()}>
+                    <td className={`${TD} print-hide text-center`} onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1.5">
                         <Link
                           href={`/hse-performance/${p.id}`}

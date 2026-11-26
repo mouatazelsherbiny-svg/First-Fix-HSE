@@ -535,3 +535,46 @@ html.m-app .iir.edit .iir-cb .g {
     color: #555;
   }
 }
+
+/* ---- "Print Screen" (HSE Performance summary): print the page content only —
+   no sidebar, no top bar — in its dark design and its desktop layout. The
+   button puts `print-screen` on <html> and a landscape @page as wide as the
+   screen (so the layout matches what you see; printers fit it to the paper). ---- */
+@media print {
+  html.print-screen .app-chrome,
+  html.print-screen .print-hide {
+    display: none !important;
+  }
+  html.print-screen,
+  html.print-screen body {
+    background: #0b0b0e !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html.print-screen main {
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+  html.print-screen main > div {
+    padding: 0 !important;
+  }
+  html.print-screen .print-expand {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  html.print-screen .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  html.print-screen .print-avoid-break {
+    break-inside: avoid;
+  }
+  /* keep the desktop layout on paper whatever width the printer reports */
+  html.print-screen [class*="xl:grid-cols-6"] {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  }
+  html.print-screen .print-two-col {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) !important;
+  }
+}

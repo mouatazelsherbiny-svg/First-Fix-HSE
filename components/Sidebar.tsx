@@ -243,7 +243,7 @@ export default function Sidebar({
 
       <aside
         aria-label="Main navigation"
-        className={`fixed bottom-0 start-0 z-50 flex flex-col transition-transform duration-300 ease-out lg:z-30 lg:translate-x-0 ${
+        className={`app-chrome fixed bottom-0 start-0 z-50 flex flex-col transition-transform duration-300 ease-out lg:z-30 lg:translate-x-0 ${
           mobileOpen ? "top-0 translate-x-0" : `top-0 ${closedTranslate}`
         }`}
         style={{ width: SIDEBAR_WIDTH, background: SIDEBAR_BG }}

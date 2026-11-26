@@ -104,7 +104,7 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-40 flex items-center gap-3 border-b px-3 sm:px-4 lg:ps-0"
+      className="app-chrome fixed inset-x-0 top-0 z-40 flex items-center gap-3 border-b px-3 sm:px-4 lg:ps-0"
       style={{ height: TOPBAR_HEIGHT, background: SHELL_BG, borderColor: "rgba(255,255,255,0.06)" }}
     >
       <button
