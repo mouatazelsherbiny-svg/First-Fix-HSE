@@ -57,7 +57,7 @@ export const REGIONAL_TEAM: OrgPerson[] = [
   { id: "dsq", name: "Mohammed Aquib", title: "Diriyah Square (DSQ)", phone: "059 996 8126", photoUrl: teamPhoto("dsq"), group: "Riyadh", col: 1 },
   { id: "qiddiya", name: "Abid Khan", title: "Al Qiddiya ENV Hotels", phone: "059 653 3550", photoUrl: teamPhoto("qiddiya"), group: "Riyadh", col: 2 },
   { id: "exhibition", name: "Haitham El Chaar", title: "Exhibition Center", phone: "056 698 6644", photoUrl: teamPhoto("exhibition"), group: "Riyadh", col: 1 },
-  { id: "kkia", name: "Walid Abu Agla", title: "KKIA", phone: "054 068 6783", photoUrl: teamPhoto("kkia"), group: "Riyadh", col: 2 },
+  { id: "kkia", name: "Walid Abu Agla", title: "KKIA", phone: "054 068 6783", photoUrl: "/brand/team/kkia-walid.jpg", group: "Riyadh", col: 2 },
   { id: "ksp", name: "Ali Shawky", title: "King Salman Park (KSP)", phone: "056 677 3639", photoUrl: teamPhoto("ksp"), group: "Riyadh", col: 1 },
   { id: "six-senses", name: "Khalid Albedaiwi", title: "Six Sense Hotels", phone: "056 408 0004", photoUrl: teamPhoto("six-senses"), group: "Riyadh", col: 2 },
   { id: "misk", name: "Langton Joseph", title: "MISK (ILMI)", phone: "053 066 7424", photoUrl: teamPhoto("misk"), group: "Riyadh", col: 1 },
