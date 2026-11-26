@@ -53,6 +53,7 @@ import {
   scoreOf,
 } from "@/lib/hseAudit";
 import PageTitle from "@/components/PageTitle";
+import { useAuth } from "@/context/AuthContext";
 import { Bullet, ENV_COLOR, HS_COLOR, MiniScore, ScoreChip, ScoreRing, overallOf, pct } from "@/components/hseAudit/SummaryWidgets";
 
 export default function HseAuditPage() {
@@ -74,6 +75,7 @@ function HseAuditDashboard() {
   const [query, setQuery] = useState("");
   const names = useProfileNames();
   const creatorOf = (a: HseAudit) => (a.createdBy ? names.get(a.createdBy) ?? "…" : "—");
+  const isAdmin = useAuth().user?.role === "admin"; // "Created by" is shown to admins only
 
   useEffect(() => {
     let active = true;
@@ -192,7 +194,7 @@ function HseAuditDashboard() {
         { header: "Project", key: "project" },
         { header: "Auditor", key: "auditor" },
         { header: "HSE Manager", key: "hseManager" },
-        { header: "Created by", key: "createdBy" },
+        ...(isAdmin ? [{ header: "Created by", key: "createdBy" }] : []),
         { header: "H&S Score", key: "hs" },
         { header: "H&S %", key: "hsPct" },
         { header: "H&S Status", key: "hsStatus" },
@@ -388,7 +390,7 @@ function HseAuditDashboard() {
                 <th className={`${TH} rounded-s-lg`}>Project</th>
                 <th className={TH}>Audit Date</th>
                 <th className={TH}>Auditor</th>
-                <th className={TH}>Created by</th>
+                {isAdmin && <th className={TH}>Created by</th>}
                 <th className={`${TH} !text-center`}>H&amp;S Score</th>
                 <th className={`${TH} !text-center`}>ENV Score</th>
                 <th className={`${TH} !text-center`}>Overall</th>
@@ -400,13 +402,13 @@ function HseAuditDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={isAdmin ? 10 : 9} className="px-4 py-10 text-center text-white/50">
                     Loading…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={isAdmin ? 10 : 9} className="px-4 py-10 text-center text-white/50">
                     No audits yet — click New Audit to add the first one.
                   </td>
                 </tr>
@@ -420,7 +422,7 @@ function HseAuditDashboard() {
                       <td className={`${TD} font-bold text-white`}>{audit.projectName}</td>
                       <td className={`${TD} whitespace-nowrap text-white/80`}>{formatDate(audit.auditDate)}</td>
                       <td className={`${TD} text-white/80`}>{audit.auditor || "—"}</td>
-                      <td className={`${TD} text-white/80`}>{creatorOf(audit)}</td>
+                      {isAdmin && <td className={`${TD} text-white/80`}>{creatorOf(audit)}</td>}
                       <td className={`${TD} text-center`}>
                         <ScoreChip value={hs.pct} tint="rgba(243,111,36,0.22)" />
                       </td>

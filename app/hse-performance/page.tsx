@@ -38,7 +38,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import PageTitle from "@/components/PageTitle";
 import { BrandMark } from "@/components/Sidebar";
 import { CHART_TITLE, DarkPanel, SEARCH_INPUT, TABLE_TITLE, TD, TH, TH_ROW, TR } from "@/components/charts/InjuryStyle";
-import { Bullet, ENV_COLOR, HS_COLOR, MiniScore, ScoreChip, ScoreRing, pct } from "@/components/hseAudit/SummaryWidgets";
+import { Bullet, ENV_COLOR, HS_COLOR, MiniScore, ScoreRing, pct } from "@/components/hseAudit/SummaryWidgets";
 import { useProjectScoped } from "@/context/ProjectFilterContext";
 import { useAuth } from "@/context/AuthContext";
 import { fetchAllRows, supabase } from "@/lib/supabaseClient";
@@ -66,7 +66,7 @@ function RatingPill({ r }: { r: Rating }) {
   );
 }
 
-/** Overall % coloured by the 11.1 overall performance classification (label on hover). */
+/** A score % in a box coloured by the 11.1 performance classification (label on hover). */
 function OverallChip({ value }: { value: number | null }) {
   const band = overallClass(value);
   return (
@@ -133,8 +133,8 @@ function PerformanceDashboard() {
     const q = query.trim().toLowerCase();
     return scoped
       .map((p) => ({ p, s: performanceScores(p) }))
-      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager, p.contractor, p.projectDirector, weekLabel(p.assessmentDate), p.createdBy ? names.get(p.createdBy) ?? "" : ""].some((v) => v.toLowerCase().includes(q))));
-  }, [scoped, query, names]);
+      .filter(({ p }) => (!q ? true : [p.projectName, p.assessedBy, p.hseManager, p.contractor, p.projectDirector, weekLabel(p.assessmentDate), isAdmin && p.createdBy ? names.get(p.createdBy) ?? "" : ""].some((v) => v.toLowerCase().includes(q))));
+  }, [scoped, query, names, isAdmin]);
 
   // Latest report per project for the chart, best overall first.
   const chart = useMemo(() => {
@@ -223,7 +223,7 @@ function PerformanceDashboard() {
         { header: "HSE Manager", key: "mgr" },
         { header: "Project Director", key: "director" },
         { header: "Auditor / Position", key: "by" },
-        { header: "Created by", key: "createdBy" },
+        ...(isAdmin ? [{ header: "Created by", key: "createdBy" }] : []),
         { header: "H&S Score", key: "hs" },
         { header: "H&S %", key: "hsPct" },
         { header: "H&S Rating", key: "hsRating" },
@@ -395,7 +395,7 @@ function PerformanceDashboard() {
                 <th className={TH}>Week</th>
                 <th className={TH}>Contractor</th>
                 <th className={TH}>Auditor</th>
-                <th className={TH}>Created by</th>
+                {isAdmin && <th className={TH}>Created by</th>}
                 <th className={`${TH} !text-center`}>H&amp;S Score</th>
                 <th className={`${TH} !text-center`}>ENV Score</th>
                 <th className={`${TH} !text-center`}>Overall</th>
@@ -407,13 +407,13 @@ function PerformanceDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={isAdmin ? 11 : 10} className="px-4 py-10 text-center text-white/50">
                     Loading…
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-10 text-center text-white/50">
+                  <td colSpan={isAdmin ? 11 : 10} className="px-4 py-10 text-center text-white/50">
                     No reports yet — click New Weekly Report to add the first one.
                   </td>
                 </tr>
@@ -427,15 +427,17 @@ function PerformanceDashboard() {
                     </td>
                     <td className={`${TD} text-white/80`}>{p.contractor || "—"}</td>
                     <td className={`${TD} text-white/80`}>{p.assessedBy || "—"}</td>
-                    <td className={`${TD} text-white/80`}>
-                      {creatorOf(p)}
-                      {p.createdAt && <span className="block text-xs text-white/45">{formatDate(p.createdAt.slice(0, 10))}</span>}
+                    {isAdmin && (
+                      <td className={`${TD} text-white/80`}>
+                        {creatorOf(p)}
+                        {p.createdAt && <span className="block text-xs text-white/45">{formatDate(p.createdAt.slice(0, 10))}</span>}
+                      </td>
+                    )}
+                    <td className={`${TD} text-center`}>
+                      <OverallChip value={s.hs.pct} />
                     </td>
                     <td className={`${TD} text-center`}>
-                      <ScoreChip value={s.hs.pct} tint="rgba(243,111,36,0.22)" />
-                    </td>
-                    <td className={`${TD} text-center`}>
-                      <ScoreChip value={s.env.pct} tint="rgba(34,197,94,0.2)" />
+                      <OverallChip value={s.env.pct} />
                     </td>
                     <td className={`${TD} text-center`}>
                       <OverallChip value={s.overall} />
