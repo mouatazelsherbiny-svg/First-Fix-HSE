@@ -73,7 +73,7 @@ function MobileHome() {
       </div>
 
       {/* Welcome */}
-      <p className="mt-7 text-[17px] font-medium uppercase tracking-wide text-white/95">Welcome to First Fix</p>
+      <p className="mt-7 text-[16px] font-medium uppercase tracking-wide text-white/95">Welcome to First Fix</p>
       <div className="mt-1">
         <HseReportingTitle size={44} />
       </div>
@@ -81,7 +81,7 @@ function MobileHome() {
         <button
           type="button"
           onClick={() => setSheet("projects")}
-          className="inline-flex max-w-[70%] items-center gap-1 rounded-full px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(255,106,19,0.5)]"
+          className="inline-flex max-w-[70%] items-center gap-1 rounded-full px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(255,106,19,0.5)]"
           style={{ background: ORANGE }}
         >
           <span className="truncate">{project || "Projects"}</span>
@@ -109,12 +109,12 @@ function MobileHome() {
 
         <div className="relative px-4 pb-4 pt-20">
           <div className="origin-left" style={{ transform: "scaleX(0.84)" }}>
-            <p className="text-[38px] font-black leading-[0.95] tracking-tight">HSE</p>
-            <p className="text-[38px] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
+            <p className="text-[35px] font-black leading-[0.95] tracking-tight">HSE</p>
+            <p className="text-[35px] font-black leading-[0.95] tracking-tight" style={{ color: ORANGE }}>
               REPORTING
             </p>
           </div>
-          <p className="mt-2 max-w-[60%] text-[13px] leading-snug text-white/90">Report. Monitor. Improve Workplace Safety.</p>
+          <p className="mt-2 max-w-[60%] text-[12.5px] leading-snug text-white/90">Report. Monitor. Improve Workplace Safety.</p>
 
           <div className="mt-6 grid grid-cols-3 gap-2.5">
             {BIG.map((b, i) => (
@@ -129,7 +129,7 @@ function MobileHome() {
                 }
               >
                 <b.icon className="h-10 w-10" strokeWidth={1.6} style={{ color: i === 2 ? ORANGE : "#fff" }} />
-                <span className="text-[14px] font-bold leading-tight">{b.label}</span>
+                <span className="text-[13px] font-bold leading-tight">{b.label}</span>
                 <span className="h-[5px] w-9 rounded-full" style={{ background: ORANGE }} />
               </Link>
             ))}
@@ -147,12 +147,12 @@ function MobileHome() {
           style={{ maskImage: "linear-gradient(to right, transparent 0%, #000 35%)", WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 35%)" }}
         />
         <div className="relative px-4 py-5">
-          <p className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wide text-white/90">
+          <p className="flex items-center gap-2 text-[11.5px] font-medium uppercase tracking-wide text-white/90">
             <span className="h-5 w-[6px] rounded-full" style={{ background: ORANGE }} />
             Latest HSE Update
           </p>
-          <p className="mt-2 max-w-[66%] text-[20px] font-extrabold leading-tight">Keep Your Site Safe</p>
-          <p className="mt-2 max-w-[60%] text-[12.5px] leading-snug text-white/85">Report incidents on time and stay compliant.</p>
+          <p className="mt-2 max-w-[66%] text-[18.5px] font-extrabold leading-tight">Keep Your Site Safe</p>
+          <p className="mt-2 max-w-[60%] text-[12px] leading-snug text-white/85">Report incidents on time and stay compliant.</p>
         </div>
       </section>
 
