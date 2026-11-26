@@ -445,11 +445,11 @@ html.app-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.18); }
 .kpi-grid thead tr:first-child > * { border-top: 0; }
 .kpi-grid tbody tr:last-child > * { border-bottom: 0; }
 
-/* ---- Phone app (HSE-Reporting): bigger, clearer text and buttons on the
+/* ---- Phone app (HSE-Reporting): clear text and buttons on the
    whole screen. MobileShell puts `m-app` on <html> while the phone app is
    open; everything sized in rem grows with the root size. ---- */
 html.m-app {
-  font-size: 17.5px;
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
 }
 /* 16px+ in fields so iPhone never zooms the page when a field is tapped. */
@@ -481,10 +481,10 @@ html.m-app .card {
   border-radius: 1.1rem;
 }
 html.m-app .iir.edit {
-  font-size: 15px;
+  font-size: 14px;
 }
 html.m-app .iir.edit .iir-cb .g {
-  font-size: 19px;
+  font-size: 18px;
 }
 
 /* Phone app scaled up on a wide portrait screen (html.m-zoom, see

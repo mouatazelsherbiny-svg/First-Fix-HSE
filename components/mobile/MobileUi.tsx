@@ -122,7 +122,7 @@ export function MobileNav() {
               {i > 0 && <span className="my-3 w-px bg-white/15" />}
               <Link
                 href={n.href}
-                className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[20px] py-2.5 text-[13px] font-bold transition ${
+                className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[20px] py-2.5 text-[12px] font-bold transition ${
                   active ? "text-[#ff7a2a]" : "text-white/85 active:text-white"
                 }`}
                 style={active ? { background: "radial-gradient(70% 80% at 50% 45%, rgba(255,106,19,0.38), rgba(255,106,19,0.08) 70%, transparent)" } : undefined}
@@ -176,7 +176,7 @@ export function NotificationsButton() {
       >
         <Bell className="h-7 w-7" strokeWidth={1.7} />
         {items.length > 0 && (
-          <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-[13px] font-bold text-white" style={{ background: ORANGE }}>
+          <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-[12px] font-bold text-white" style={{ background: ORANGE }}>
             {items.length}
           </span>
         )}
@@ -396,7 +396,7 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
                 style={{ borderColor: "rgba(255,106,19,0.75)", boxShadow: "0 0 18px rgba(255,106,19,0.35), inset 0 0 24px rgba(255,106,19,0.12)" }}
               >
                 <CardIcon icon={c.icon} accent={c.accent} accentColor={c.accentColor} size={compact ? 44 : cards.length === 1 ? 66 : 56} />
-                <span className={`font-bold leading-tight ${compact ? "text-[15px]" : cards.length === 1 ? "text-[22px]" : "text-[18px]"}`}>{c.label}</span>
+                <span className={`font-bold leading-tight ${compact ? "text-[14px]" : cards.length === 1 ? "text-[20px]" : "text-[16.5px]"}`}>{c.label}</span>
                 <span className="h-[5px] w-11 rounded-full" style={{ background: ORANGE }} />
               </Link>
             ))}
@@ -405,8 +405,8 @@ export function MobileMenuPage({ cards }: { cards: MenuCard[] }) {
 
         {/* Footer */}
         <div className="mt-5">
-          <p className="text-[24px] font-extrabold leading-tight">Your platform for</p>
-          <p className="text-[28px] font-extrabold leading-tight" style={{ color: ORANGE }}>
+          <p className="text-[22px] font-extrabold leading-tight">Your platform for</p>
+          <p className="text-[26px] font-extrabold leading-tight" style={{ color: ORANGE }}>
             HSE Reports
           </p>
         </div>
