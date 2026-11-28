@@ -79,8 +79,9 @@ for (let i = 0; i < missing.length; i += BATCH) {
   const chunk = missing.slice(i, i + BATCH).map((e) => ({
     employee_code: e.code,
     name: e.name,
-    project: e.project || null,
-    department: e.department || null,
+    // project and department are NOT NULL in the employees table.
+    project: e.project || "",
+    department: e.department || "",
   }));
   await withRetry("add employees", () =>
     supabase.from("employees").upsert(chunk, { onConflict: "employee_code", ignoreDuplicates: true })
