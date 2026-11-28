@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Badge from "@/components/Badge";
@@ -9,6 +9,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { PhotoSection, useLinkedObservationPhotos } from "@/components/observations/ObservationPhotos";
 import { useLanguage } from "@/context/LanguageContext";
 import { useObservations } from "@/context/ObservationsContext";
+import { useAuth } from "@/context/AuthContext";
 import PageTitle from "@/components/PageTitle";
 
 export default function ObservationDetailPage() {
@@ -22,7 +23,12 @@ export default function ObservationDetailPage() {
 function ObservationDetail() {
   const { t, locale } = useLanguage();
   const params = useParams<{ id: string }>();
-  const { getById, updateObservation } = useObservations();
+  const { getById, updateObservation, deleteObservation } = useObservations();
+  const router = useRouter();
+  const isAdmin = useAuth().user?.role === "admin";
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [cancelOpen, setCancelOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState("");
@@ -41,6 +47,19 @@ function ObservationDetail() {
       setCancelError(t.detail.cancelError);
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!observation) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteObservation(observation.id);
+      router.push("/observations");
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "Delete failed");
+      setIsDeleting(false);
     }
   };
 
@@ -82,6 +101,15 @@ function ObservationDetail() {
           {observation.status !== "Cancelled" && (
             <button type="button" onClick={() => setCancelOpen(true)} className="btn-secondary">
               {t.detail.cancelBtn}
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => { setDeleteError(""); setDeleteOpen(true); }}
+              className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              {locale === "ar" ? "حذف" : "Delete"}
             </button>
           )}
         </div>
@@ -161,6 +189,18 @@ function ObservationDetail() {
             setCancelError("");
             setCancelOpen(false);
           }}
+        />
+      )}
+      {isAdmin && deleteOpen && (
+        <ConfirmDialog
+          title={locale === "ar" ? `حذف الملاحظة #${observation.reportNumber}؟` : `Delete observation #${observation.reportNumber}?`}
+          message={locale === "ar" ? "سيتم حذف الملاحظة وصورها نهائياً ولا يمكن التراجع." : "This permanently deletes the observation and its photos. It cannot be undone."}
+          confirmLabel={isDeleting ? (locale === "ar" ? "جارٍ الحذف..." : "Deleting...") : (locale === "ar" ? "حذف" : "Delete")}
+          cancelLabel={t.common.close}
+          isBusy={isDeleting}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onClose={() => { setDeleteError(""); setDeleteOpen(false); }}
         />
       )}
     </div>

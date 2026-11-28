@@ -7,6 +7,8 @@ import { ChevronDown, FolderOpen, LockKeyhole, LockKeyholeOpen, Search, Tag, Thu
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProjectFilter from "@/components/ProjectFilter";
 import ObservationModal from "@/components/observations/ObservationModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { useAuth } from "@/context/AuthContext";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import { ColumnFilter, useColumnFilters, type FilterColumn } from "@/components/table/ColumnFilter";
 import { BarList, MonthAreaChart, PILL_SELECT, SEARCH_INPUT, TABLE_TITLE, TH_ROW } from "@/components/charts/InjuryStyle";
@@ -132,7 +134,26 @@ function Pill({ value, label }: { value: string; label?: string }) {
 
 function ObservationsList() {
   const { t, locale } = useLanguage();
-  const { observations, isLoading, getById } = useObservations();
+  const { observations, isLoading, getById, deleteObservation } = useObservations();
+  const isAdmin = useAuth().user?.role === "admin";
+  // Admin-only delete: the observation waiting for confirmation.
+  const [deleteTarget, setDeleteTarget] = useState<Observation | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteObservation(deleteTarget.id);
+      if (openId === deleteTarget.id) setOpenId(null);
+      setDeleteTarget(null);
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   // The observation open in the box in the middle of the page.
@@ -430,6 +451,11 @@ function ObservationsList() {
                           <Link href={`/observations/${o.id}/edit`} className="text-[#ffa31a] hover:underline">
                             {t.list.edit}
                           </Link>
+                          {isAdmin && (
+                            <button type="button" onClick={() => { setDeleteError(""); setDeleteTarget(o); }} className="text-red-400 hover:underline">
+                              {locale === "ar" ? "حذف" : "Delete"}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -467,6 +493,18 @@ function ObservationsList() {
       )}
 
       {openId && getById(openId) && <ObservationModal observation={getById(openId)!} onClose={() => setOpenId(null)} />}
+      {isAdmin && deleteTarget && (
+        <ConfirmDialog
+          title={locale === "ar" ? `حذف الملاحظة #${deleteTarget.reportNumber}؟` : `Delete observation #${deleteTarget.reportNumber}?`}
+          message={locale === "ar" ? "سيتم حذف الملاحظة وصورها نهائياً ولا يمكن التراجع." : "This permanently deletes the observation and its photos. It cannot be undone."}
+          confirmLabel={isDeleting ? (locale === "ar" ? "جارٍ الحذف..." : "Deleting...") : (locale === "ar" ? "حذف" : "Delete")}
+          cancelLabel={t.common.close}
+          isBusy={isDeleting}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onClose={() => { setDeleteError(""); setDeleteTarget(null); }}
+        />
+      )}
     </div>
   );
 }

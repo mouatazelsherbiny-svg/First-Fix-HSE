@@ -22,6 +22,9 @@ interface ObservationsContextValue {
     obs: Omit<Observation, "id" | "reportNumber" | "createdAt" | "updatedAt">
   ) => Promise<Observation>;
   updateObservation: (id: string, patch: Partial<Observation>) => Promise<void>;
+  /** Admin only (enforced by RLS): removes the observation, its photo rows
+   * (FK cascade) and, best-effort, its files in the observation-photos bucket. */
+  deleteObservation: (id: string) => Promise<void>;
 }
 
 const ObservationsContext = createContext<ObservationsContextValue | undefined>(
@@ -153,6 +156,40 @@ export function ObservationsProvider({ children }: { children: ReactNode }) {
         }
         const updated = mapRow(data);
         setObservations((prev) => prev.map((o) => (o.id === id ? updated : o)));
+      },
+      deleteObservation: async (id) => {
+        // Collect the photo files first: the photo rows go with the cascade.
+        const { data: photoRows } = await supabase
+          .from("observation_photos")
+          .select("storage_path")
+          .eq("observation_id", id);
+        const paths: string[] = [];
+        for (const r of photoRows ?? []) {
+          const sp = r.storage_path as string;
+          if (!sp) continue;
+          paths.push(sp);
+          if (sp.startsWith("sharepoint/")) paths.push(sp.replace("sharepoint/", "sharepoint-thumbs/"));
+        }
+
+        const { data, error } = await supabase
+          .from("observations")
+          .delete()
+          .eq("id", id)
+          .select("id");
+        if (error) throw new Error(error.message);
+        // RLS hides a refused delete as "0 rows" rather than an error.
+        if (!data || data.length === 0) {
+          throw new Error("Delete was not allowed (admin only).");
+        }
+
+        if (paths.length > 0) {
+          try {
+            await supabase.storage.from("observation-photos").remove(paths);
+          } catch {
+            /* files left behind are harmless; the record is gone */
+          }
+        }
+        setObservations((prev) => prev.filter((o) => o.id !== id));
       },
     }),
     [observations, scopedObservations, isLoading]
