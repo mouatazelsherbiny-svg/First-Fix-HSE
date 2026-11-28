@@ -7,6 +7,7 @@ import { useHsePassport } from "@/context/HsePassportContext";
 import { useObservations } from "@/context/ObservationsContext";
 import { searchEmployees } from "@/lib/employeeDirectory";
 import { EmployeeRecord } from "@/lib/mockData";
+import type { TrainingCourseRecord } from "@/types/hsePassport";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import PageTitle from "@/components/PageTitle";
@@ -22,7 +23,8 @@ export default function SummaryPerformanceReportPage() {
 
 function SummaryPerformanceReport() {
   const { t } = useLanguage();
-  const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
+  const { disciplinaryRecords, ppeRecords, fetchTrainingFor } = useHsePassport();
+  const [training, setTraining] = useState<TrainingCourseRecord[]>([]);
   const { observations } = useObservations();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -67,11 +69,25 @@ function SummaryPerformanceReport() {
     };
   }, [query, selected]);
 
+  // Training is fetched per employee (the table is too big to load whole).
+  useEffect(() => {
+    if (!selected) {
+      setTraining([]);
+      return;
+    }
+    let active = true;
+    fetchTrainingFor(selected.id).then((rows) => {
+      if (active) setTraining(rows);
+    });
+    return () => {
+      active = false;
+    };
+  }, [selected, fetchTrainingFor]);
+
   const stats = useMemo(() => {
     if (!selected) return null;
     const disciplinary = disciplinaryRecords.filter((r) => r.employeeId === selected.id);
     const ppe = ppeRecords.filter((r) => r.employeeId === selected.id);
-    const training = trainingRecords.filter((r) => r.employeeId === selected.id);
     const trainingHours = training.reduce((sum, r) => sum + (r.hours || 0), 0);
     const lsr = disciplinary.filter((r) => r.type === "LSR");
     const observationsInspected = observations.filter(
@@ -85,7 +101,7 @@ function SummaryPerformanceReport() {
       lsrCount: lsr.length,
       observationsCount: observationsInspected.length,
     };
-  }, [selected, disciplinaryRecords, ppeRecords, trainingRecords, observations]);
+  }, [selected, disciplinaryRecords, ppeRecords, training, observations]);
 
   const openEdit = () => {
     if (!selected) return;

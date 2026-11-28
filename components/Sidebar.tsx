@@ -186,7 +186,7 @@ export default function Sidebar({
   const { observations } = useObservations();
   const { records: kpiRecords } = useWeeklyKpi();
   const { permits } = usePermits();
-  const { disciplinaryRecords, ppeRecords, trainingRecords } = useHsePassport();
+  const { disciplinaryRecords, ppeRecords, trainingSummary } = useHsePassport();
 
   // Close the mobile drawer after any navigation.
   useEffect(() => {
@@ -209,7 +209,7 @@ export default function Sidebar({
       activePrefix: "/hse-passport",
       label: t.nav.hsePassport,
       icon: IdCard,
-      count: disciplinaryRecords.length + ppeRecords.length + trainingRecords.length,
+      count: disciplinaryRecords.length + ppeRecords.length + (trainingSummary?.total ?? 0),
     },
     { kind: "link", href: "/hse-audit", label: t.nav.hseAudit, icon: ClipboardList },
     { kind: "link", href: "/hse-performance", activePrefix: "/hse-performance", label: "HSE Performance", icon: Gauge },

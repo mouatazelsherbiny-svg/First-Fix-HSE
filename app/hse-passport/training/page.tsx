@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PassportShell from "@/components/hsePassport/PassportShell";
@@ -13,7 +13,7 @@ import ExportExcelButton from "@/components/ExportExcelButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useHsePassport } from "@/context/HsePassportContext";
 import { EmployeeRecord } from "@/lib/mockData";
-import { TrainingStatus } from "@/types/hsePassport";
+import { TrainingCourseRecord, TrainingStatus } from "@/types/hsePassport";
 import { UploadedFile } from "@/types/toolboxTalk";
 
 const BENDING_ITEMS = ["5 Duties", "First Aid", "Fire Watcher"];
@@ -28,15 +28,38 @@ export default function TrainingPage() {
 
 function TrainingContent() {
   const { t, locale } = useLanguage();
-  const { trainingRecords, addTrainingRecord, employees } = useHsePassport();
+  const { trainingSummary, addTrainingRecord, fetchTrainingFor } = useHsePassport();
   const [employee, setEmployee] = useState<EmployeeRecord | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  // The selected employee's history, fetched on demand — the training table
+  // holds the whole company's records (~90k rows), so it is never loaded whole.
+  const [records, setRecords] = useState<TrainingCourseRecord[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const records = employee
-    ? trainingRecords.filter((r) => r.employeeId === employee.id)
-    : [];
-  // Headline cards: the selected employee, or everyone when none is chosen.
-  const cardRecords = employee ? records : trainingRecords;
+  useEffect(() => {
+    if (!employee) {
+      setRecords([]);
+      return;
+    }
+    let active = true;
+    fetchTrainingFor(employee.id).then((rows) => {
+      if (active) setRecords(rows);
+    });
+    return () => {
+      active = false;
+    };
+  }, [employee, fetchTrainingFor, reloadKey]);
+
+  // Headline cards: the selected employee, or company-wide totals when none is chosen.
+  const cards = employee
+    ? {
+        total: records.length,
+        employees: records.length > 0 ? 1 : 0,
+        hours: records.reduce((a, r) => a + (Number(r.hours) || 0), 0),
+        valid: records.filter((r) => r.status === "Valid").length,
+        expired: records.filter((r) => r.status === "Expired").length,
+      }
+    : trainingSummary;
 
   const totalCourses = records.length;
   const totalHours = records.reduce((a, r) => a + r.hours, 0);
@@ -58,12 +81,11 @@ function TrainingContent() {
           { header: t.hse.training.status, key: "status" },
           { header: t.hse.training.hours, key: "hours" },
         ],
-        rows: (employee ? records : trainingRecords).map((r) => {
-          const emp = employees.find((e) => e.id === r.employeeId);
+        rows: records.map((r) => {
           return {
-            employeeName: emp?.name ?? "—",
-            employeeIdCol: emp?.employeeId ?? "—",
-            project: emp?.project ?? "—",
+            employeeName: employee?.name ?? "—",
+            employeeIdCol: employee?.employeeId ?? "—",
+            project: employee?.project ?? "—",
             courseName: r.courseName,
             date: r.date,
             status: r.status,
@@ -72,7 +94,7 @@ function TrainingContent() {
         }),
       },
     ],
-    [trainingRecords, records, employee, employees, t]
+    [records, employee, t]
   );
 
   return (
@@ -83,7 +105,7 @@ function TrainingContent() {
         <ExportExcelButton
           filename={t.hse.training.title}
           sheets={exportSheets}
-          disabled={(employee ? records : trainingRecords).length === 0}
+          disabled={!employee || records.length === 0}
         />
         </>
       }
@@ -91,11 +113,11 @@ function TrainingContent() {
       <SummaryCards
         dark
         cards={[
-          { label: "Total Trainings", value: cardRecords.length, icon: GraduationCap, color: "#2563EB" },
-          { label: "Employees Trained", value: new Set(cardRecords.map((r) => r.employeeId)).size, icon: Users, color: "#F36F24" },
-          { label: "Training Hours", value: cardRecords.reduce((a, r) => a + (Number(r.hours) || 0), 0), icon: Clock, color: "#7C3AED" },
-          { label: "Valid", value: cardRecords.filter((r) => r.status === "Valid").length, icon: BadgeCheck, color: "#16A34A" },
-          { label: "Expired", value: cardRecords.filter((r) => r.status === "Expired").length, icon: CalendarX, color: "#DC2626" },
+          { label: "Total Trainings", value: cards?.total ?? 0, icon: GraduationCap, color: "#2563EB" },
+          { label: "Employees Trained", value: cards?.employees ?? 0, icon: Users, color: "#F36F24" },
+          { label: "Training Hours", value: cards?.hours ?? 0, icon: Clock, color: "#7C3AED" },
+          { label: "Valid", value: cards?.valid ?? 0, icon: BadgeCheck, color: "#16A34A" },
+          { label: "Expired", value: cards?.expired ?? 0, icon: CalendarX, color: "#DC2626" },
         ]}
       />
 
@@ -226,7 +248,10 @@ function TrainingContent() {
           {showAddForm && employee && (
             <AddTrainingForm
               employeeId={employee.id}
-              onDone={() => setShowAddForm(false)}
+              onDone={() => {
+                setShowAddForm(false);
+                setReloadKey((k) => k + 1);
+              }}
               onAdd={addTrainingRecord}
             />
           )}

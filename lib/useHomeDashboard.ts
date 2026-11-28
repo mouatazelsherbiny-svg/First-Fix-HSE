@@ -14,7 +14,6 @@ import { useHsePassport } from "@/context/HsePassportContext";
 import type { Observation } from "@/types/observation";
 import type { Incident } from "@/types/incident";
 import type { WeeklyKpiRecord } from "@/types/weeklyKpi";
-import type { TrainingCourseRecord } from "@/types/hsePassport";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const GOOD_PRACTICE = "Good Practice";
@@ -146,7 +145,7 @@ export function computeHomeDashboard(
   observations: Observation[],
   incidents: Incident[],
   kpi: WeeklyKpiRecord[],
-  training: TrainingCourseRecord[] = []
+  trainingHours = 0
 ): Omit<HomeDashboardData, "isLoading"> {
   // ---- Hero stats ----------------------------------------------------------
   const totalSafeWorkHours = kpi.reduce((s, r) => s + (r.totalSafeWorkHours || 0), 0);
@@ -296,7 +295,7 @@ export function computeHomeDashboard(
     hero: {
       totalSafeWorkHours,
       safeHoursAsOf,
-      totalTrainingHours: Math.round(training.reduce((s, r) => s + (r.hours || 0), 0)),
+      totalTrainingHours: Math.round(trainingHours),
       daysSinceLti: daysSince(lastLti),
       daysSinceMtcRwc: daysSince(lastMtcRwc),
     },
@@ -315,11 +314,12 @@ export function useHomeDashboard(): HomeDashboardData {
   const { observations, isLoading: obsLoading } = useObservations();
   const { incidents, isLoading: incLoading } = useIncidents();
   const { records, isLoading: kpiLoading } = useWeeklyKpi();
-  const { trainingRecords, isLoading: passportLoading } = useHsePassport();
+  const { trainingSummary, isLoading: passportLoading } = useHsePassport();
+  const trainingHours = trainingSummary?.hours ?? 0;
 
   const data = useMemo(
-    () => computeHomeDashboard(observations, incidents, records, trainingRecords),
-    [observations, incidents, records, trainingRecords]
+    () => computeHomeDashboard(observations, incidents, records, trainingHours),
+    [observations, incidents, records, trainingHours]
   );
 
   return { isLoading: obsLoading || incLoading || kpiLoading || passportLoading, ...data };

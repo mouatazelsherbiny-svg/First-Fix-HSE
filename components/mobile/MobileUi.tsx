@@ -150,15 +150,16 @@ export function useMobileNotifications() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { permits } = usePermits();
-  const { employees, ppeRecords, trainingRecords } = useHsePassport();
+  const { employees, ppeRecords, trainingSummary } = useHsePassport();
+  const expiredTrainingCount = trainingSummary?.expired ?? 0;
   const { submissions: checklistSubmissions } = useChecklistSubmissions();
   const { incidents } = useIncidents();
   return useMemo(
     () =>
       user
-        ? buildNotifications({ t, project: user.project, permits, employees, ppeRecords, trainingRecords, checklistSubmissions, incidents })
+        ? buildNotifications({ t, project: user.project, permits, employees, ppeRecords, expiredTrainingCount, checklistSubmissions, incidents })
         : [],
-    [t, user, permits, employees, ppeRecords, trainingRecords, checklistSubmissions, incidents]
+    [t, user, permits, employees, ppeRecords, expiredTrainingCount, checklistSubmissions, incidents]
   );
 }
 

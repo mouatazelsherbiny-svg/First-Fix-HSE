@@ -1,5 +1,5 @@
 import { PermitToWork } from "@/types/permit";
-import { PPERecord, TrainingCourseRecord } from "@/types/hsePassport";
+import { PPERecord } from "@/types/hsePassport";
 import { EmployeeRecord } from "@/lib/mockData";
 import { ChecklistSubmission } from "@/types/checklistSubmission";
 import { Incident } from "@/types/incident";
@@ -30,7 +30,7 @@ export function buildNotifications({
   permits,
   employees,
   ppeRecords,
-  trainingRecords,
+  expiredTrainingCount,
   checklistSubmissions,
   incidents,
 }: {
@@ -39,7 +39,7 @@ export function buildNotifications({
   permits: PermitToWork[];
   employees: EmployeeRecord[];
   ppeRecords: PPERecord[];
-  trainingRecords: TrainingCourseRecord[];
+  expiredTrainingCount: number;
   checklistSubmissions: ChecklistSubmission[];
   incidents: Incident[];
 }): AppNotification[] {
@@ -87,14 +87,12 @@ export function buildNotifications({
     });
   }
 
-  // Training records already marked Expired.
-  const expiredTraining = trainingRecords.filter(
-    (r) => projectEmployeeIds.has(r.employeeId) && r.status === "Expired"
-  );
-  if (expiredTraining.length > 0) {
+  // Training records already marked Expired (company-wide count from the
+  // training summary — the records themselves are no longer loaded).
+  if (expiredTrainingCount > 0) {
     notifications.push({
       id: "training-expired",
-      text: t.topbar.trainingExpired.replace("{count}", String(expiredTraining.length)),
+      text: t.topbar.trainingExpired.replace("{count}", String(expiredTrainingCount)),
       tone: "red",
     });
   }

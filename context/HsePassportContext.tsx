@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -23,7 +24,11 @@ interface HsePassportContextValue {
   employees: EmployeeRecord[];
   disciplinaryRecords: DisciplinaryRecord[];
   ppeRecords: PPERecord[];
-  trainingRecords: TrainingCourseRecord[];
+  /** Company-wide training totals (computed in Postgres — the table holds
+   *  ~90k rows, far too many to load into the browser). Null until loaded. */
+  trainingSummary: TrainingSummary | null;
+  /** One employee's training history, fetched on demand. */
+  fetchTrainingFor: (employeeId: string) => Promise<TrainingCourseRecord[]>;
   isLoading: boolean;
   addDisciplinaryRecord: (
     r: Omit<DisciplinaryRecord, "id" | "createdAt">
@@ -32,6 +37,14 @@ interface HsePassportContextValue {
   addTrainingRecord: (
     r: Omit<TrainingCourseRecord, "id" | "createdAt">
   ) => Promise<void>;
+}
+
+export interface TrainingSummary {
+  total: number;
+  employees: number;
+  hours: number;
+  valid: number;
+  expired: number;
 }
 
 const HsePassportContext = createContext<HsePassportContextValue | undefined>(
@@ -96,6 +109,17 @@ function mapTraining(row: any): TrainingCourseRecord {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapSummary(row: any): TrainingSummary {
+  return {
+    total: Number(row?.total) || 0,
+    employees: Number(row?.employees) || 0,
+    hours: Number(row?.hours) || 0,
+    valid: Number(row?.valid) || 0,
+    expired: Number(row?.expired) || 0,
+  };
+}
+
 export function HsePassportProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
@@ -103,9 +127,7 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
     DisciplinaryRecord[]
   >([]);
   const [ppeRecords, setPpeRecords] = useState<PPERecord[]>([]);
-  const [trainingRecords, setTrainingRecords] = useState<
-    TrainingCourseRecord[]
-  >([]);
+  const [trainingSummary, setTrainingSummary] = useState<TrainingSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Gated on `user` — see the matching comment in ObservationsContext.tsx.
@@ -114,7 +136,7 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
       setEmployees([]);
       setDisciplinaryRecords([]);
       setPpeRecords([]);
-      setTrainingRecords([]);
+      setTrainingSummary(null);
       setIsLoading(false);
       return;
     }
@@ -130,17 +152,14 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
         .from("ppe_records")
         .select("*")
         .order("created_at", { ascending: false }),
-      supabase
-        .from("hse_training_records")
-        .select("*")
-        .order("created_at", { ascending: false }),
+      supabase.rpc("hse_training_summary"),
     ]).then(([emp, disc, ppe, trn]) => {
       if (!active) return;
       if (!emp.error && emp.data) setEmployees(emp.data.map(mapEmployee));
       if (!disc.error && disc.data)
         setDisciplinaryRecords(disc.data.map(mapDisciplinary));
       if (!ppe.error && ppe.data) setPpeRecords(ppe.data.map(mapPpe));
-      if (!trn.error && trn.data) setTrainingRecords(trn.data.map(mapTraining));
+      if (!trn.error && trn.data) setTrainingSummary(mapSummary(trn.data));
       setIsLoading(false);
     });
     return () => {
@@ -148,25 +167,37 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  // Stable identity so pages can use it as an effect dependency.
+  const fetchTrainingFor = useCallback(async (employeeId: string) => {
+    const { data, error } = await supabase
+      .from("hse_training_records")
+      .select("*")
+      .eq("employee_id", employeeId)
+      .order("date", { ascending: false })
+      .limit(1000);
+    if (error || !data) return [];
+    return data.map(mapTraining);
+  }, []);
+
   // Project filter: employees by their project, records by their employee.
   const { project } = useProjectFilter();
   const scopedEmployees = useProjectScoped(employees, (e) => e.project);
   const scoped = useMemo(() => {
-    if (!project) return { disciplinaryRecords, ppeRecords, trainingRecords };
+    if (!project) return { disciplinaryRecords, ppeRecords };
     const ids = new Set(scopedEmployees.map((e) => e.id));
     return {
       disciplinaryRecords: disciplinaryRecords.filter((r) => ids.has(r.employeeId)),
       ppeRecords: ppeRecords.filter((r) => ids.has(r.employeeId)),
-      trainingRecords: trainingRecords.filter((r) => ids.has(r.employeeId)),
     };
-  }, [project, scopedEmployees, disciplinaryRecords, ppeRecords, trainingRecords]);
+  }, [project, scopedEmployees, disciplinaryRecords, ppeRecords]);
 
   const value = useMemo<HsePassportContextValue>(
     () => ({
       employees: scopedEmployees,
       disciplinaryRecords: scoped.disciplinaryRecords,
       ppeRecords: scoped.ppeRecords,
-      trainingRecords: scoped.trainingRecords,
+      trainingSummary,
+      fetchTrainingFor,
       isLoading,
       addDisciplinaryRecord: async (r) => {
         const created_by = await getCurrentUserId();
@@ -228,10 +259,11 @@ export function HsePassportProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw new Error(error?.message ?? "Failed to add training record");
         }
-        setTrainingRecords((prev) => [mapTraining(data), ...prev]);
+        const { data: summary } = await supabase.rpc("hse_training_summary");
+        if (summary) setTrainingSummary(mapSummary(summary));
       },
     }),
-    [scopedEmployees, scoped, isLoading]
+    [scopedEmployees, scoped, trainingSummary, fetchTrainingFor, isLoading]
   );
 
   return (

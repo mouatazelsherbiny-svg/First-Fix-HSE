@@ -30,7 +30,8 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { permits } = usePermits();
-  const { employees, ppeRecords, trainingRecords } = useHsePassport();
+  const { employees, ppeRecords, trainingSummary } = useHsePassport();
+  const expiredTrainingCount = trainingSummary?.expired ?? 0;
   const { submissions: checklistSubmissions } = useChecklistSubmissions();
   const { incidents } = useIncidents();
 
@@ -74,11 +75,11 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
       permits,
       employees,
       ppeRecords,
-      trainingRecords,
+      expiredTrainingCount,
       checklistSubmissions,
       incidents,
     });
-  }, [t, user, permits, employees, ppeRecords, trainingRecords, checklistSubmissions, incidents]);
+  }, [t, user, permits, employees, ppeRecords, expiredTrainingCount, checklistSubmissions, incidents]);
 
   const handleLogout = () => {
     logout();
